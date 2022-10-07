@@ -1,9 +1,13 @@
+import CoreController from "./2d/controllers/core.controller";
+
 class App {
+  controller2D: CoreController
 
-
-  run() {
-    console.log('running')
+  constructor() {
+    this.controller2D = new CoreController();
   }
+
+  run() {}
 }
 
 export default App
