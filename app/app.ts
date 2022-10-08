@@ -1,11 +1,8 @@
-import CoreController from "./2d/controllers/core.controller";
+import {default as _2DController} from "./2d";
 
 class App {
-  controller2D: CoreController
+  _2d: _2DController = new _2DController()
 
-  constructor() {
-    this.controller2D = new CoreController();
-  }
 
   run() {}
 }

@@ -6,21 +6,51 @@ class CanvasController {
     model: CanvasModel
 
     constructor() {
-        this.view = new CanvasView();
         this.model = new CanvasModel();
+        this.view = new CanvasView(this.model)
+        if (this.view.container){
+            this.view.container.addEventListener('mousemove', this.mouseMove.bind(this));
+            this.view.container.addEventListener('mousedown', this.mouseDown.bind(this));
+            this.view.container.addEventListener('mouseup', this.mouseUp.bind(this));
+        }
     }
 
-    mouseMove(){
+    mouseDown(e: Event): void {
+        this.model.clicked = true;
+    }
+
+    mouseMove(e: MouseEvent): void {
+
+
+        if (!this.model.mouse){
+            this.model.mouse = {
+                x: e.offsetX,
+                y: e.offsetY
+            }
+        } else {
+            this.model.mouse.x = e.offsetX;
+            this.model.mouse.y = e.offsetY;
+        }
+
+        if (this.model.clicked){
+            if(this.model.offset){
+                this.model.offset.x += e.movementX;
+                this.model.offset.y += e.movementY;
+            } else {
+                this.model.offset = {
+                    x: 0,
+                    y: 0
+                }
+            }
+        }
+
         this.view.draw();
     }
 
-    mouseDown(){
-
+    mouseUp(e: Event) {
+        this.model.clicked = false;
     }
 
-    mouseUp(){
-
-    }
 }
 
 export default CanvasController;
