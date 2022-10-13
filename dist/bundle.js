@@ -77,6 +77,9 @@ var CanvasModel = /** @class */function () {
         this.keyboard = null;
         this.offset = { x: 0, y: 0 };
         this.config = {
+            axis: {
+                show: true
+            },
             net: {
                 show: true,
                 step: 20
@@ -103,6 +106,7 @@ var CanvasView = /** @class */function () {
     CanvasView.prototype.draw = function () {
         this.clear();
         this.drawNet();
+        this.drawAxis();
         this.drawMouse();
     };
     CanvasView.prototype.clear = function () {
@@ -117,7 +121,7 @@ var CanvasView = /** @class */function () {
         if (!ctx || !this.model.mouse) return;
         ctx.save();
         ctx.beginPath();
-        ctx.strokeStyle = 'red';
+        ctx.strokeStyle = "red";
         ctx.lineWidth = 2;
         ctx.arc(this.model.mouse.x, this.model.mouse.y, 1, 0, 2 * Math.PI);
         ctx.restore();
@@ -133,20 +137,26 @@ var CanvasView = /** @class */function () {
         var step = this.model.config.net.step;
         var h = this.container.height;
         var w = this.container.width;
+        var netOffset = {
+            x: this.model.offset.x % step,
+            y: this.model.offset.y % step
+        };
+        //x
         var iV = 0;
         var maxV = w / step;
-        while (iV < maxV) {
-            var from = this.getGlobalCoordinates(step * iV, 0);
-            var to = this.getGlobalCoordinates(step * iV, h);
+        while (iV <= maxV) {
+            var from = { x: step * iV + netOffset.x, y: 0 };
+            var to = { x: step * iV + netOffset.x, y: h };
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             iV++;
         }
+        //y
         var iH = 0;
         var maxH = h / step;
-        while (iH < maxH) {
-            var from = this.getGlobalCoordinates(0, step * iH);
-            var to = this.getGlobalCoordinates(w, step * iH);
+        while (iH <= maxH) {
+            var from = { x: 0, y: step * iH + netOffset.y };
+            var to = { x: w, y: step * iH + netOffset.y };
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             iH++;
@@ -158,23 +168,31 @@ var CanvasView = /** @class */function () {
         var _a;
         var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
         if (!ctx || !this.model.mouse || !this.container) return;
-        if (!this.model.config.net.show) return;
+        if (!this.model.config.axis.show) return;
         ctx.save();
         ctx.beginPath();
-        var step = this.model.config.net.step;
         var h = this.container.height;
         var w = this.container.width;
-        var _i = 0;
-        var _max = this.container.width / step;
-        while (_i < _max) {
-            ctx.moveTo(step * _i, 0);
-            ctx.lineTo(step * _i, h);
-            _i++;
-        }
+        var x_From = this.getWorldCoordinates(0, 0);
+        var x_To = this.getWorldCoordinates(w, 0);
+        var y_From = this.getWorldCoordinates(0, 0);
+        var y_To = this.getWorldCoordinates(0, h);
+        ctx.moveTo(0, x_From.y);
+        ctx.lineTo(w, x_To.y);
+        ctx.moveTo(y_From.x, 0);
+        ctx.lineTo(y_To.x, h);
+        ctx.strokeStyle = "red";
         ctx.stroke();
         ctx.restore();
     };
-    CanvasView.prototype.getGlobalCoordinates = function (x, y) {
+    //TODO: apply scale transformation here
+    CanvasView.prototype.getWorldCoordinates = function (x, y) {
+        return {
+            x: x + this.model.offset.x,
+            y: y + this.model.offset.y
+        };
+    };
+    CanvasView.prototype.getLocalCoordinates = function (x, y) {
         return {
             x: x + this.model.offset.x,
             y: y + this.model.offset.y
@@ -182,11 +200,11 @@ var CanvasView = /** @class */function () {
     };
     CanvasView.prototype.initCanvasContainer = function () {
         if (!this.container) return;
-        this.container.style.height = '600px';
-        this.container.style.width = '900px';
+        this.container.style.height = "600px";
+        this.container.style.width = "900px";
         this.container.height = 600;
         this.container.width = 900;
-        this.container.style.border = '1px solid black';
+        this.container.style.border = "1px solid black";
     };
     return CanvasView;
 }();
