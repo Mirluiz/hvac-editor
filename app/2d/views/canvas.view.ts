@@ -1,4 +1,4 @@
-import { IVec } from "../../Geometry/vect";
+import { IVec } from "../../geometry/vect";
 import CanvasModel from "../models/canvas.model";
 
 class CanvasView {
@@ -17,7 +17,8 @@ class CanvasView {
 
   draw() {
     this.clear();
-    this.drawNet();
+    // this.drawNet();
+    this.drawNet1();
     this.drawAxis();
     this.drawMouse();
   }
@@ -56,7 +57,7 @@ class CanvasView {
     ctx.beginPath();
     ctx.lineWidth = 1;
 
-    let step = this.model.config.net.step;
+    let step = this.model.config.net.step * this.model.scale.amount;
     let h = this.container.height;
     let w = this.container.width;
     let netOffset: IVec = {
@@ -82,6 +83,50 @@ class CanvasView {
     while (iH <= maxH) {
       let from: IVec = { x: 0, y: step * iH + netOffset.y };
       let to: IVec = { x: w, y: step * iH + netOffset.y };
+
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+
+      iH++;
+    }
+
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  drawNet1() {
+    const ctx = this.container?.getContext("2d");
+
+    if (!ctx || !this.model.mouse || !this.container) return;
+    if (!this.model.config.net.show) return;
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.lineWidth = 1;
+
+    let step = this.model.config.net.step * this.model.scale.amount;
+    let h = this.container.height;
+    let w = this.container.width;
+
+    //x
+    let iV = 0;
+    let maxV = w / step;
+    while (iV <= maxV) {
+      let from: IVec = this.getWorldCoordinates(step * iV, 0);
+      let to: IVec = this.getWorldCoordinates(step * iV, h);
+
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+      iV++;
+    }
+
+    //y
+    let iH = 0;
+    let maxH = h / step;
+    while (iH <= maxH) {
+      let from: IVec = this.getWorldCoordinates(0, step * iH);
+      let to: IVec = this.getWorldCoordinates(w, step * iH);
 
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
@@ -123,18 +168,37 @@ class CanvasView {
 
   //TODO: apply scale transformation here
   getWorldCoordinates(x: number, y: number): IVec {
-    return {
-      x: x + this.model.offset.x,
-      y: y + this.model.offset.y,
+    let _this = this;
+
+    let translate = function (vec: IVec): IVec {
+      return {
+        x: vec.x + _this.model.offset.x,
+        y: vec.y + _this.model.offset.y,
+      };
+    }.bind(this);
+
+    let scale = function (vec: IVec): IVec {
+      return {
+        x: vec.x * _this.model.scale.amount,
+        y: vec.y * _this.model.scale.amount,
+      };
     };
+
+    let t = { x, y };
+    t = translate(t);
+    t = scale(t);
+
+    return t;
   }
 
-  getLocalCoordinates(x: number, y: number) {
-    return {
-      x: x + this.model.offset.x,
-      y: y + this.model.offset.y,
-    };
-  }
+  //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
+  //       y: (y + this.model.offset.y)  * this.model.scale.amount,
+  // getLocalCoordinates(x: number, y: number) {
+  //   return {
+  //     x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord ,
+  //     y: (y + this.model.offset.y)  * this.model.scale.amount,
+  //   };
+  // }
 
   initCanvasContainer(): void {
     if (!this.container) return;

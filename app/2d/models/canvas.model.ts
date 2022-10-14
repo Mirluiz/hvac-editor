@@ -1,7 +1,14 @@
-import { IVec } from "../../Geometry/vect";
+import { IVec } from "../../geometry/vect";
 
 class CanvasModel {
   mouse: IVec | null = null;
+  scale: {
+    amount: number,
+    coord: IVec | null
+  } = {
+    amount: 1,
+    coord: null
+  }
   clicked: boolean = false;
   keyboard: string | null = null;
   offset: IVec = { x: 0, y: 0 };

@@ -12,11 +12,30 @@ var CanvasController = /** @class */function () {
         this.model = new canvas_model_1.default();
         this.view = new canvas_view_1.default(this.model);
         if (this.view.container) {
-            this.view.container.addEventListener('mousemove', this.mouseMove.bind(this));
-            this.view.container.addEventListener('mousedown', this.mouseDown.bind(this));
-            this.view.container.addEventListener('mouseup', this.mouseUp.bind(this));
+            this.view.container.addEventListener("mousemove", this.mouseMove.bind(this));
+            this.view.container.addEventListener("mousedown", this.mouseDown.bind(this));
+            this.view.container.addEventListener("mouseup", this.mouseUp.bind(this));
+            this.view.container.addEventListener("wheel", this.mouseWheel.bind(this));
         }
     }
+    CanvasController.prototype.mouseWheel = function (e) {
+        this.model.scale.amount += -Math.sign(e.deltaY) * 0.01;
+        this.model.scale.amount = Math.min(Math.max(0.5, this.model.scale.amount), 4);
+        this.model.scale.coord = {
+            x: e.offsetX,
+            y: e.offsetY
+        };
+        var _el = document.querySelector("#editor");
+        var w, h;
+        if (_el) {
+            w = _el.width;
+            h = _el.height;
+            console.log("--", w, w / this.model.scale.amount, this.model.scale.amount, (w / this.model.scale.amount - w) * (e.offsetX / w));
+            this.model.offset.x += (w / this.model.scale.amount - w) * (e.offsetX / w);
+            this.model.offset.y += (h / this.model.scale.amount - h) * (e.offsetY / h);
+        }
+        this.view.draw();
+    };
     CanvasController.prototype.mouseDown = function (e) {
         this.model.clicked = true;
     };
@@ -73,6 +92,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var CanvasModel = /** @class */function () {
     function CanvasModel() {
         this.mouse = null;
+        this.scale = {
+            amount: 1,
+            coord: null
+        };
         this.clicked = false;
         this.keyboard = null;
         this.offset = { x: 0, y: 0 };
@@ -105,7 +128,8 @@ var CanvasView = /** @class */function () {
     };
     CanvasView.prototype.draw = function () {
         this.clear();
-        this.drawNet();
+        // this.drawNet();
+        this.drawNet1();
         this.drawAxis();
         this.drawMouse();
     };
@@ -134,7 +158,7 @@ var CanvasView = /** @class */function () {
         ctx.save();
         ctx.beginPath();
         ctx.lineWidth = 1;
-        var step = this.model.config.net.step;
+        var step = this.model.config.net.step * this.model.scale.amount;
         var h = this.container.height;
         var w = this.container.width;
         var netOffset = {
@@ -157,6 +181,40 @@ var CanvasView = /** @class */function () {
         while (iH <= maxH) {
             var from = { x: 0, y: step * iH + netOffset.y };
             var to = { x: w, y: step * iH + netOffset.y };
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            iH++;
+        }
+        ctx.stroke();
+        ctx.restore();
+    };
+    CanvasView.prototype.drawNet1 = function () {
+        var _a;
+        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
+        if (!ctx || !this.model.mouse || !this.container) return;
+        if (!this.model.config.net.show) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        var step = this.model.config.net.step * this.model.scale.amount;
+        var h = this.container.height;
+        var w = this.container.width;
+        //x
+        var iV = 0;
+        var maxV = w / step;
+        while (iV <= maxV) {
+            var from = this.getWorldCoordinates(step * iV, 0);
+            var to = this.getWorldCoordinates(step * iV, h);
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            iV++;
+        }
+        //y
+        var iH = 0;
+        var maxH = h / step;
+        while (iH <= maxH) {
+            var from = this.getWorldCoordinates(0, step * iH);
+            var to = this.getWorldCoordinates(w, step * iH);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             iH++;
@@ -187,17 +245,32 @@ var CanvasView = /** @class */function () {
     };
     //TODO: apply scale transformation here
     CanvasView.prototype.getWorldCoordinates = function (x, y) {
-        return {
-            x: x + this.model.offset.x,
-            y: y + this.model.offset.y
+        var _this = this;
+        var translate = function (vec) {
+            return {
+                x: vec.x + _this.model.offset.x,
+                y: vec.y + _this.model.offset.y
+            };
+        }.bind(this);
+        var scale = function scale(vec) {
+            return {
+                x: vec.x * _this.model.scale.amount,
+                y: vec.y * _this.model.scale.amount
+            };
         };
+        var t = { x: x, y: y };
+        t = translate(t);
+        t = scale(t);
+        return t;
     };
-    CanvasView.prototype.getLocalCoordinates = function (x, y) {
-        return {
-            x: x + this.model.offset.x,
-            y: y + this.model.offset.y
-        };
-    };
+    //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
+    //       y: (y + this.model.offset.y)  * this.model.scale.amount,
+    // getLocalCoordinates(x: number, y: number) {
+    //   return {
+    //     x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord ,
+    //     y: (y + this.model.offset.y)  * this.model.scale.amount,
+    //   };
+    // }
     CanvasView.prototype.initCanvasContainer = function () {
         if (!this.container) return;
         this.container.style.height = "600px";
