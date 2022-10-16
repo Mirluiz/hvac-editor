@@ -105,7 +105,8 @@ class CanvasView {
     ctx.beginPath();
     ctx.lineWidth = 1;
 
-    let step = this.model.config.net.step * this.model.scale.amount;
+    // let step = this.model.config.net.step * this.model.scale.amount;
+    let step = this.model.config.net.step;
     let h = this.container.height;
     let w = this.container.width;
 
@@ -208,6 +209,11 @@ class CanvasView {
     this.container.height = 600;
     this.container.width = 900;
     this.container.style.border = "1px solid black";
+
+    this.model.canvasSize = {
+      y: 600,
+      x: 900,
+    };
   }
 }
 

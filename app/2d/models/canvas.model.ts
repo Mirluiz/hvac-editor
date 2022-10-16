@@ -2,13 +2,15 @@ import { IVec } from "../../geometry/vect";
 
 class CanvasModel {
   mouse: IVec | null = null;
+  canvasSize: IVec | null = null;
+  mouseCanvasRatio: IVec | null = null;
   scale: {
-    amount: number,
-    coord: IVec | null
+    amount: number;
+    coord: IVec | null;
   } = {
     amount: 1,
-    coord: null
-  }
+    coord: null,
+  };
   clicked: boolean = false;
   keyboard: string | null = null;
   offset: IVec = { x: 0, y: 0 };

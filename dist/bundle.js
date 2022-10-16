@@ -7,10 +7,12 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_view_1 = __importDefault(require("../views/canvas.view"));
 var canvas_model_1 = __importDefault(require("../models/canvas.model"));
+var stats_view_1 = __importDefault(require("../views/stats.view"));
 var CanvasController = /** @class */function () {
     function CanvasController() {
         this.model = new canvas_model_1.default();
         this.view = new canvas_view_1.default(this.model);
+        this.stats = new stats_view_1.default(this.model);
         if (this.view.container) {
             this.view.container.addEventListener("mousemove", this.mouseMove.bind(this));
             this.view.container.addEventListener("mousedown", this.mouseDown.bind(this));
@@ -28,12 +30,19 @@ var CanvasController = /** @class */function () {
         var _el = document.querySelector("#editor");
         var w, h;
         if (_el) {
-            w = _el.width;
-            h = _el.height;
-            console.log("--", w, w / this.model.scale.amount, this.model.scale.amount, (w / this.model.scale.amount - w) * (e.offsetX / w));
-            this.model.offset.x += (w / this.model.scale.amount - w) * (e.offsetX / w);
-            this.model.offset.y += (h / this.model.scale.amount - h) * (e.offsetY / h);
+            w = _el.width / this.model.scale.amount;
+            h = _el.height / this.model.scale.amount;
+            console.log("w ", w, w * (Math.sign(e.deltaY) * 0.01), _el.width / this.model.scale.amount);
+            this.model.mouseCanvasRatio = {
+                x: e.offsetX / _el.width,
+                y: e.offsetY / _el.height
+            };
+            if (this.model.scale.amount > 0.5 && this.model.scale.amount < 4) {
+                this.model.offset.x += w * (Math.sign(e.deltaY) * 0.01) * (e.offsetX / _el.width);
+                this.model.offset.y += h * (Math.sign(e.deltaY) * 0.01) * (e.offsetY / _el.height);
+            }
         }
+        this.stats.render();
         this.view.draw();
     };
     CanvasController.prototype.mouseDown = function (e) {
@@ -60,6 +69,7 @@ var CanvasController = /** @class */function () {
                 };
             }
         }
+        this.stats.render();
         this.view.draw();
     };
     CanvasController.prototype.mouseUp = function (e) {
@@ -69,7 +79,7 @@ var CanvasController = /** @class */function () {
 }();
 exports.default = CanvasController;
 
-},{"../models/canvas.model":3,"../views/canvas.view":4}],2:[function(require,module,exports){
+},{"../models/canvas.model":3,"../views/canvas.view":4,"../views/stats.view":5}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -92,6 +102,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var CanvasModel = /** @class */function () {
     function CanvasModel() {
         this.mouse = null;
+        this.canvasSize = null;
+        this.mouseCanvasRatio = null;
         this.scale = {
             amount: 1,
             coord: null
@@ -196,7 +208,8 @@ var CanvasView = /** @class */function () {
         ctx.save();
         ctx.beginPath();
         ctx.lineWidth = 1;
-        var step = this.model.config.net.step * this.model.scale.amount;
+        // let step = this.model.config.net.step * this.model.scale.amount;
+        var step = this.model.config.net.step;
         var h = this.container.height;
         var w = this.container.width;
         //x
@@ -278,12 +291,45 @@ var CanvasView = /** @class */function () {
         this.container.height = 600;
         this.container.width = 900;
         this.container.style.border = "1px solid black";
+        this.model.canvasSize = {
+            y: 600,
+            x: 900
+        };
     };
     return CanvasView;
 }();
 exports.default = CanvasView;
 
 },{}],5:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var StatsView = /** @class */function () {
+    function StatsView(model) {
+        this.model = model;
+        this.container = document.querySelector("#stats");
+        this.init();
+    }
+    StatsView.prototype.init = function () {
+        this.initContainer();
+    };
+    StatsView.prototype.render = function () {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        if (!this.container) return;
+        this.container.innerHTML = "\n      <div style=\"display: flex; flex-direction: column\">\n        <div>x - ".concat(Math.round(this.model.offset.x), " \n        / y - ").concat(Math.round(this.model.offset.y), "</div>\n        \n        <div>x - ").concat(Math.round((_b = (_a = this.model.mouse) === null || _a === void 0 ? void 0 : _a.x) !== null && _b !== void 0 ? _b : 0), " \n        / y - ").concat(Math.round((_d = (_c = this.model.mouse) === null || _c === void 0 ? void 0 : _c.y) !== null && _d !== void 0 ? _d : 0), "</div>\n        \n        <div>scale - ").concat(this.model.scale.amount, "</div>\n        <div>width - ").concat((_e = this.model.canvasSize) === null || _e === void 0 ? void 0 : _e.x, " / height - ").concat((_f = this.model.canvasSize) === null || _f === void 0 ? void 0 : _f.y, " / </div>\n        <div>ratio x ").concat((_g = this.model.mouseCanvasRatio) === null || _g === void 0 ? void 0 : _g.x, " / y ").concat((_h = this.model.mouseCanvasRatio) === null || _h === void 0 ? void 0 : _h.y, "</div>\n      </div>\n    ");
+    };
+    StatsView.prototype.initContainer = function () {
+        if (!this.container) return;
+        this.container.style.height = "150px";
+        this.container.style.width = "200px";
+        this.container.style.border = "1px solid black";
+        this.container.style.marginLeft = "10px";
+    };
+    return StatsView;
+}();
+exports.default = StatsView;
+
+},{}],6:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -300,7 +346,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":2}],6:[function(require,module,exports){
+},{"./2d":2}],7:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -311,6 +357,6 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":5}]},{},[6])
+},{"./app":6}]},{},[7])
 
 //# sourceMappingURL=bundle.js.map
