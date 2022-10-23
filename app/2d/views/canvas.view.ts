@@ -1,7 +1,7 @@
 import { IVec } from "../../geometry/vect";
 import CanvasModel from "../models/canvas.model";
 
-class CanvasView {
+class Canvas {
   model: CanvasModel;
   container: HTMLCanvasElement | null;
 
@@ -19,8 +19,9 @@ class CanvasView {
     this.clear();
     this.drawNet();
     // this.drawNet1();
-    this.drawAxis();
+    // this.drawAxis();
     this.drawMouse();
+    this.drawWalls();
   }
 
   clear() {
@@ -89,6 +90,8 @@ class CanvasView {
 
       iH++;
     }
+
+    ctx.globalAlpha = 0.2;
 
     ctx.stroke();
     ctx.restore();
@@ -167,6 +170,36 @@ class CanvasView {
     ctx.restore();
   }
 
+  drawWalls() {
+    let walls = this.model.walls;
+
+    walls?.map((wall) => {
+      console.log("this.container", this.container);
+      if (!this.container) return;
+
+      const ctx = this.container.getContext("2d");
+
+      if (!ctx) return;
+
+      ctx.save();
+      ctx.beginPath();
+
+      let from = this.getWorldCoordinates(wall.start.x, wall.start.y);
+      let to = this.getWorldCoordinates(wall.end.x, wall.end.y);
+
+      console.log("from", from, to);
+
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+
+      ctx.strokeStyle = "red";
+      ctx.lineWidth = 2;
+
+      ctx.stroke();
+      ctx.restore();
+    });
+  }
+
   //TODO: apply scale transformation here
   getWorldCoordinates(x: number, y: number): IVec {
     let _this = this;
@@ -218,4 +251,4 @@ class CanvasView {
   }
 }
 
-export default CanvasView;
+export default Canvas;

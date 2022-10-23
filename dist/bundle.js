@@ -8,8 +8,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_view_1 = __importDefault(require("../views/canvas.view"));
 var canvas_model_1 = __importDefault(require("../models/canvas.model"));
 var stats_view_1 = __importDefault(require("../views/stats.view"));
-var CanvasController = /** @class */function () {
-    function CanvasController() {
+var wall_model_1 = __importDefault(require("../models/wall.model"));
+var Canvas = /** @class */function () {
+    function Canvas() {
         this.model = new canvas_model_1.default();
         this.view = new canvas_view_1.default(this.model);
         this.stats = new stats_view_1.default(this.model);
@@ -20,28 +21,35 @@ var CanvasController = /** @class */function () {
             this.view.container.addEventListener("wheel", this.mouseWheel.bind(this));
         }
     }
-    CanvasController.prototype.mouseWheel = function (e) {
-        var scale = this.model.scale.amount + -Math.sign(e.deltaY) * 0.1;
-        scale = Math.min(Math.max(0.5, scale), 2);
-        this.model.scale.limitReached = Math.abs(scale - 0.5) < Number.EPSILON || Math.abs(scale - 2) < Number.EPSILON;
-        if (!this.model.scale.limitReached) {
-            this.model.scale.amount = scale;
-            var _el = document.querySelector("#editor");
-            if (_el) {
-                var w = _el.width,
-                    h = _el.height;
-                var mltpr = 0.1;
-                this.model.offset.x += w * (Math.sign(e.deltaY) * mltpr) * ((e.offsetX - this.model.offset.x) / _el.width);
-                this.model.offset.y += h * (Math.sign(e.deltaY) * mltpr) * ((e.offsetY - this.model.offset.y) / _el.height);
+    Canvas.prototype.mouseWheel = function (e) {
+        this.stats.render();
+        this.view.draw();
+    };
+    Canvas.prototype.mouseDown = function (e) {
+        this.model.clicked = true;
+        if (!this.model.mouse) return;
+        if (this.model.actionMode === "wall") {
+            if (!this.model.actionObject) {
+                var _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
+                if (this.model.config.net.bind) {
+                    _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
+                    _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
+                }
+                this.model.actionObject = this.model.addWall({
+                    x: _mouse.x,
+                    y: _mouse.y
+                }, {
+                    x: _mouse.x,
+                    y: _mouse.y
+                });
+            } else {
+                this.model.actionObject = null;
             }
         }
         this.stats.render();
         this.view.draw();
     };
-    CanvasController.prototype.mouseDown = function (e) {
-        this.model.clicked = true;
-    };
-    CanvasController.prototype.mouseMove = function (e) {
+    Canvas.prototype.mouseMove = function (e) {
         if (!this.model.mouse) {
             this.model.mouse = {
                 x: e.offsetX,
@@ -51,28 +59,56 @@ var CanvasController = /** @class */function () {
             this.model.mouse.x = e.offsetX;
             this.model.mouse.y = e.offsetY;
         }
-        if (this.model.clicked) {
-            if (this.model.offset) {
-                this.model.offset.x += e.movementX;
-                this.model.offset.y += e.movementY;
-            } else {
-                this.model.offset = {
-                    x: 0,
-                    y: 0
-                };
+        if (this.model.actionObject) {
+            if (this.model.actionObject instanceof wall_model_1.default) {
+                var _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
+                if (this.model.config.net.bind) {
+                    _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
+                    _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
+                }
+                this.model.actionObject.end.x = _mouse.x;
+                this.model.actionObject.end.y = _mouse.y;
             }
         }
         this.stats.render();
         this.view.draw();
     };
-    CanvasController.prototype.mouseUp = function (e) {
+    Canvas.prototype.mouseUp = function (e) {
         this.model.clicked = false;
     };
-    return CanvasController;
+    return Canvas;
 }();
-exports.default = CanvasController;
+exports.default = Canvas;
 
-},{"../models/canvas.model":3,"../views/canvas.view":4,"../views/stats.view":5}],2:[function(require,module,exports){
+},{"../models/canvas.model":4,"../models/wall.model":5,"../views/canvas.view":6,"../views/stats.view":8}],2:[function(require,module,exports){
+"use strict";
+
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var mode_view_1 = __importDefault(require("../views/mode.view"));
+var Mode = /** @class */function () {
+    function Mode(model) {
+        this.model = model;
+        this.view = new mode_view_1.default(this.model);
+        console.log(this.view);
+        if (this.view.container) {
+            this.view.container.addEventListener("click", this.mouseDown.bind(this));
+        }
+    }
+    Mode.prototype.mouseDown = function (e) {
+        var cT = e.target;
+        var value = cT.value;
+        if (value === "default" || value === "wall") {
+            this.model.actionMode = value;
+        }
+    };
+    return Mode;
+}();
+exports.default = Mode;
+
+},{"../views/mode.view":7}],3:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -80,20 +116,29 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_controller_1 = __importDefault(require("./controllers/canvas.controller"));
+var mode_controller_1 = __importDefault(require("./controllers/mode.controller"));
 var Controller = /** @class */function () {
     function Controller() {
         this.canvas = new canvas_controller_1.default();
+        this.mode = new mode_controller_1.default(this.canvas.model);
     }
     return Controller;
 }();
 exports.default = Controller;
 
-},{"./controllers/canvas.controller":1}],3:[function(require,module,exports){
+},{"./controllers/canvas.controller":1,"./controllers/mode.controller":2}],4:[function(require,module,exports){
 "use strict";
 
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var CanvasModel = /** @class */function () {
-    function CanvasModel() {
+var wall_model_1 = __importDefault(require("./wall.model"));
+var Canvas = /** @class */function () {
+    function Canvas() {
+        this._walls = [];
+        this.actionMode = "default";
+        this.actionObject = null;
         this.mouse = null;
         this.canvasSize = null;
         this.mouseCanvasRatio = null;
@@ -110,42 +155,74 @@ var CanvasModel = /** @class */function () {
                 show: true
             },
             net: {
+                bind: true,
                 show: true,
                 step: 20
             }
         };
     }
-    return CanvasModel;
+    Object.defineProperty(Canvas.prototype, "walls", {
+        get: function get() {
+            return this._walls;
+        },
+        set: function set(value) {
+            this._walls = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Canvas.prototype.addWall = function (start, end) {
+        var wall = new wall_model_1.default(start, end);
+        this.walls.push(wall);
+        this.walls = this.walls;
+        return wall;
+    };
+    return Canvas;
 }();
-exports.default = CanvasModel;
+exports.default = Canvas;
 
-},{}],4:[function(require,module,exports){
+},{"./wall.model":5}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var CanvasView = /** @class */function () {
-    function CanvasView(model) {
+var Wall = /** @class */function () {
+    function Wall(start, end) {
+        this.thickness = 1;
+        this.start = start;
+        this.end = end;
+    }
+    return Wall;
+}();
+exports.default = Wall;
+
+},{}],6:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Canvas = /** @class */function () {
+    function Canvas(model) {
         this.model = model;
         this.container = document.querySelector("#editor");
         this.init();
     }
-    CanvasView.prototype.init = function () {
+    Canvas.prototype.init = function () {
         this.initCanvasContainer();
     };
-    CanvasView.prototype.draw = function () {
+    Canvas.prototype.draw = function () {
         this.clear();
         this.drawNet();
         // this.drawNet1();
-        this.drawAxis();
+        // this.drawAxis();
         this.drawMouse();
+        this.drawWalls();
     };
-    CanvasView.prototype.clear = function () {
+    Canvas.prototype.clear = function () {
         var _a;
         var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
         if (!ctx || !this.model.mouse || !this.container) return;
         ctx.clearRect(0, 0, this.container.width, this.container.height);
     };
-    CanvasView.prototype.drawMouse = function () {
+    Canvas.prototype.drawMouse = function () {
         var _a;
         var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
         if (!ctx || !this.model.mouse) return;
@@ -156,7 +233,7 @@ var CanvasView = /** @class */function () {
         ctx.arc(this.model.mouse.x, this.model.mouse.y, 1, 0, 2 * Math.PI);
         ctx.restore();
     };
-    CanvasView.prototype.drawNet = function () {
+    Canvas.prototype.drawNet = function () {
         var _a;
         var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
         if (!ctx || !this.model.mouse || !this.container) return;
@@ -191,10 +268,11 @@ var CanvasView = /** @class */function () {
             ctx.lineTo(to.x, to.y);
             iH++;
         }
+        ctx.globalAlpha = 0.2;
         ctx.stroke();
         ctx.restore();
     };
-    CanvasView.prototype.drawNet1 = function () {
+    Canvas.prototype.drawNet1 = function () {
         var _a;
         var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
         if (!ctx || !this.model.mouse || !this.container) return;
@@ -229,7 +307,7 @@ var CanvasView = /** @class */function () {
         ctx.stroke();
         ctx.restore();
     };
-    CanvasView.prototype.drawAxis = function () {
+    Canvas.prototype.drawAxis = function () {
         var _a;
         var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
         if (!ctx || !this.model.mouse || !this.container) return;
@@ -250,8 +328,29 @@ var CanvasView = /** @class */function () {
         ctx.stroke();
         ctx.restore();
     };
+    Canvas.prototype.drawWalls = function () {
+        var _this_1 = this;
+        var walls = this.model.walls;
+        walls === null || walls === void 0 ? void 0 : walls.map(function (wall) {
+            console.log("this.container", _this_1.container);
+            if (!_this_1.container) return;
+            var ctx = _this_1.container.getContext("2d");
+            if (!ctx) return;
+            ctx.save();
+            ctx.beginPath();
+            var from = _this_1.getWorldCoordinates(wall.start.x, wall.start.y);
+            var to = _this_1.getWorldCoordinates(wall.end.x, wall.end.y);
+            console.log("from", from, to);
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+        });
+    };
     //TODO: apply scale transformation here
-    CanvasView.prototype.getWorldCoordinates = function (x, y) {
+    Canvas.prototype.getWorldCoordinates = function (x, y) {
         var _this = this;
         var translate = function (vec) {
             return {
@@ -279,7 +378,7 @@ var CanvasView = /** @class */function () {
     //     y: (y + this.model.offset.y)  * this.model.scale.amount,
     //   };
     // }
-    CanvasView.prototype.initCanvasContainer = function () {
+    Canvas.prototype.initCanvasContainer = function () {
         if (!this.container) return;
         this.container.style.height = "600px";
         this.container.style.width = "900px";
@@ -291,40 +390,53 @@ var CanvasView = /** @class */function () {
             x: 900
         };
     };
-    return CanvasView;
+    return Canvas;
 }();
-exports.default = CanvasView;
+exports.default = Canvas;
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var StatsView = /** @class */function () {
-    function StatsView(model) {
+var Mode = /** @class */function () {
+    function Mode(model) {
+        this.model = model;
+        this.container = document.querySelector("#mode");
+    }
+    return Mode;
+}();
+exports.default = Mode;
+
+},{}],8:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Stats = /** @class */function () {
+    function Stats(model) {
         this.model = model;
         this.container = document.querySelector("#stats");
         this.init();
     }
-    StatsView.prototype.init = function () {
+    Stats.prototype.init = function () {
         this.initContainer();
     };
-    StatsView.prototype.render = function () {
+    Stats.prototype.render = function () {
         var _a, _b, _c, _d, _e, _f, _g, _h;
         if (!this.container) return;
-        this.container.innerHTML = "\n      <div style=\"display: flex; flex-direction: column\">\n        <div>x - ".concat(Math.round(this.model.offset.x), " \n        / y - ").concat(Math.round(this.model.offset.y), "</div>\n        \n        <div>x - ").concat(Math.round((_b = (_a = this.model.mouse) === null || _a === void 0 ? void 0 : _a.x) !== null && _b !== void 0 ? _b : 0), " \n        / y - ").concat(Math.round((_d = (_c = this.model.mouse) === null || _c === void 0 ? void 0 : _c.y) !== null && _d !== void 0 ? _d : 0), "</div>\n        \n        <div>scale - ").concat(this.model.scale.amount, "</div>\n        <div>width - ").concat((_e = this.model.canvasSize) === null || _e === void 0 ? void 0 : _e.x, " / height - ").concat((_f = this.model.canvasSize) === null || _f === void 0 ? void 0 : _f.y, " / </div>\n        <div>ratio x ").concat((_g = this.model.mouseCanvasRatio) === null || _g === void 0 ? void 0 : _g.x, " / y ").concat((_h = this.model.mouseCanvasRatio) === null || _h === void 0 ? void 0 : _h.y, "</div>\n      </div>\n    ");
+        this.container.innerHTML = "\n      <div style=\"display: flex; flex-direction: column\">\n        <div>x - ".concat(Math.round(this.model.offset.x), " \n        / y - ").concat(Math.round(this.model.offset.y), "</div>\n        \n        <div>x - ").concat(Math.round((_b = (_a = this.model.mouse) === null || _a === void 0 ? void 0 : _a.x) !== null && _b !== void 0 ? _b : 0), " \n        / y - ").concat(Math.round((_d = (_c = this.model.mouse) === null || _c === void 0 ? void 0 : _c.y) !== null && _d !== void 0 ? _d : 0), "</div>\n        \n        <div>scale - ").concat(this.model.scale.amount, "</div>\n        <div>width - ").concat((_e = this.model.canvasSize) === null || _e === void 0 ? void 0 : _e.x, " / height - ").concat((_f = this.model.canvasSize) === null || _f === void 0 ? void 0 : _f.y, " / </div>\n        <div>ratio x ").concat((_g = this.model.mouseCanvasRatio) === null || _g === void 0 ? void 0 : _g.x, " / y ").concat((_h = this.model.mouseCanvasRatio) === null || _h === void 0 ? void 0 : _h.y, "</div>\n        <div>mode is ").concat(this.model.actionMode, "</div>\n      </div>\n    ");
     };
-    StatsView.prototype.initContainer = function () {
+    Stats.prototype.initContainer = function () {
         if (!this.container) return;
         this.container.style.height = "150px";
         this.container.style.width = "200px";
         this.container.style.border = "1px solid black";
         this.container.style.marginLeft = "10px";
     };
-    return StatsView;
+    return Stats;
 }();
-exports.default = StatsView;
+exports.default = Stats;
 
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -341,7 +453,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":2}],7:[function(require,module,exports){
+},{"./2d":3}],10:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -352,6 +464,6 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":6}]},{},[7])
+},{"./app":9}]},{},[10])
 
 //# sourceMappingURL=bundle.js.map

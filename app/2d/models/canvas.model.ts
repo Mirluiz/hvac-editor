@@ -1,6 +1,13 @@
 import { IVec } from "../../geometry/vect";
+import Wall from "./wall.model";
+import Pipe from "./pipe.model";
 
-class CanvasModel {
+class Canvas {
+  private _walls: Array<Wall> = [];
+
+  actionMode: "default" | "wall" = "default";
+  actionObject: Wall | Pipe | null = null;
+
   mouse: IVec | null = null;
   canvasSize: IVec | null = null;
   mouseCanvasRatio: IVec | null = null;
@@ -21,10 +28,28 @@ class CanvasModel {
       show: true,
     },
     net: {
+      bind: true,
       show: true,
       step: 20,
     },
   };
+
+  get walls(): Array<Wall> {
+    return this._walls;
+  }
+
+  set walls(value: Array<Wall>) {
+    this._walls = value;
+  }
+
+  addWall(start: IVec, end: IVec) {
+    let wall = new Wall(start, end);
+
+    this.walls.push(wall);
+    this.walls = this.walls;
+
+    return wall;
+  }
 }
 
 interface IConfig {
@@ -32,9 +57,10 @@ interface IConfig {
     show: boolean;
   };
   net: {
+    bind: boolean;
     show: boolean;
     step: 15 | 20 | 50;
   };
 }
 
-export default CanvasModel;
+export default Canvas;

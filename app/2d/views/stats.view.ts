@@ -1,6 +1,6 @@
 import CanvasModel from "../models/canvas.model";
 
-class StatsView {
+class Stats {
   model: CanvasModel;
   container: HTMLElement | null;
 
@@ -32,6 +32,7 @@ class StatsView {
         <div>ratio x ${this.model.mouseCanvasRatio?.x} / y ${
       this.model.mouseCanvasRatio?.y
     }</div>
+        <div>mode is ${this.model.actionMode}</div>
       </div>
     `;
   }
@@ -46,4 +47,4 @@ class StatsView {
   }
 }
 
-export default StatsView;
+export default Stats;
