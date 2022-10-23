@@ -27,40 +27,32 @@ class CanvasController {
   }
 
   mouseWheel(e: WheelEvent) {
-    this.model.scale.amount += -Math.sign(e.deltaY) * 0.01;
-    this.model.scale.amount = Math.min(
-      Math.max(0.5, this.model.scale.amount),
-      4
-    );
-    this.model.scale.coord = {
-      x: e.offsetX,
-      y: e.offsetY,
-    };
+    let scale = this.model.scale.amount + -Math.sign(e.deltaY) * 0.1;
+    scale = Math.min(Math.max(0.5, scale), 2);
 
-    let _el: HTMLCanvasElement | null = document.querySelector("#editor");
-    let w, h;
+    this.model.scale.limitReached =
+      Math.abs(scale - 0.5) < Number.EPSILON ||
+      Math.abs(scale - 2) < Number.EPSILON;
 
-    if (_el) {
-      w = _el.width / this.model.scale.amount;
-      h = _el.height / this.model.scale.amount;
+    if (!this.model.scale.limitReached) {
+      this.model.scale.amount = scale;
 
-      console.log(
-        "w ",
-        w,
-        w * (Math.sign(e.deltaY) * 0.01),
-        _el.width / this.model.scale.amount
-      );
+      let _el: HTMLCanvasElement | null = document.querySelector("#editor");
 
-      this.model.mouseCanvasRatio = {
-        x: e.offsetX / _el.width,
-        y: e.offsetY / _el.height,
-      };
+      if (_el) {
+        let w = _el.width,
+          h = _el.height;
 
-      if (this.model.scale.amount > 0.5 && this.model.scale.amount < 4) {
+        let mltpr = 0.1;
+
         this.model.offset.x +=
-          w * (Math.sign(e.deltaY) * 0.01) * (e.offsetX / _el.width);
+          w *
+          (Math.sign(e.deltaY) * mltpr) *
+          ((e.offsetX - this.model.offset.x) / _el.width);
         this.model.offset.y +=
-          h * (Math.sign(e.deltaY) * 0.01) * (e.offsetY / _el.height);
+          h *
+          (Math.sign(e.deltaY) * mltpr) *
+          ((e.offsetY - this.model.offset.y) / _el.height);
       }
     }
 

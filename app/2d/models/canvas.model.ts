@@ -7,9 +7,11 @@ class CanvasModel {
   scale: {
     amount: number;
     coord: IVec | null;
+    limitReached: boolean;
   } = {
     amount: 1,
     coord: null,
+    limitReached: false,
   };
   clicked: boolean = false;
   keyboard: string | null = null;

@@ -17,8 +17,8 @@ class CanvasView {
 
   draw() {
     this.clear();
-    // this.drawNet();
-    this.drawNet1();
+    this.drawNet();
+    // this.drawNet1();
     this.drawAxis();
     this.drawMouse();
   }
@@ -186,8 +186,9 @@ class CanvasView {
     };
 
     let t = { x, y };
-    t = translate(t);
     t = scale(t);
+    // t = rotation(t); TODO order is scaling rotation translation
+    t = translate(t);
 
     return t;
   }

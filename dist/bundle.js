@@ -21,25 +21,18 @@ var CanvasController = /** @class */function () {
         }
     }
     CanvasController.prototype.mouseWheel = function (e) {
-        this.model.scale.amount += -Math.sign(e.deltaY) * 0.01;
-        this.model.scale.amount = Math.min(Math.max(0.5, this.model.scale.amount), 4);
-        this.model.scale.coord = {
-            x: e.offsetX,
-            y: e.offsetY
-        };
-        var _el = document.querySelector("#editor");
-        var w, h;
-        if (_el) {
-            w = _el.width / this.model.scale.amount;
-            h = _el.height / this.model.scale.amount;
-            console.log("w ", w, w * (Math.sign(e.deltaY) * 0.01), _el.width / this.model.scale.amount);
-            this.model.mouseCanvasRatio = {
-                x: e.offsetX / _el.width,
-                y: e.offsetY / _el.height
-            };
-            if (this.model.scale.amount > 0.5 && this.model.scale.amount < 4) {
-                this.model.offset.x += w * (Math.sign(e.deltaY) * 0.01) * (e.offsetX / _el.width);
-                this.model.offset.y += h * (Math.sign(e.deltaY) * 0.01) * (e.offsetY / _el.height);
+        var scale = this.model.scale.amount + -Math.sign(e.deltaY) * 0.1;
+        scale = Math.min(Math.max(0.5, scale), 2);
+        this.model.scale.limitReached = Math.abs(scale - 0.5) < Number.EPSILON || Math.abs(scale - 2) < Number.EPSILON;
+        if (!this.model.scale.limitReached) {
+            this.model.scale.amount = scale;
+            var _el = document.querySelector("#editor");
+            if (_el) {
+                var w = _el.width,
+                    h = _el.height;
+                var mltpr = 0.1;
+                this.model.offset.x += w * (Math.sign(e.deltaY) * mltpr) * ((e.offsetX - this.model.offset.x) / _el.width);
+                this.model.offset.y += h * (Math.sign(e.deltaY) * mltpr) * ((e.offsetY - this.model.offset.y) / _el.height);
             }
         }
         this.stats.render();
@@ -106,7 +99,8 @@ var CanvasModel = /** @class */function () {
         this.mouseCanvasRatio = null;
         this.scale = {
             amount: 1,
-            coord: null
+            coord: null,
+            limitReached: false
         };
         this.clicked = false;
         this.keyboard = null;
@@ -140,8 +134,8 @@ var CanvasView = /** @class */function () {
     };
     CanvasView.prototype.draw = function () {
         this.clear();
-        // this.drawNet();
-        this.drawNet1();
+        this.drawNet();
+        // this.drawNet1();
         this.drawAxis();
         this.drawMouse();
     };
@@ -272,8 +266,9 @@ var CanvasView = /** @class */function () {
             };
         };
         var t = { x: x, y: y };
-        t = translate(t);
         t = scale(t);
+        // t = rotation(t); TODO order is scaling rotation translation
+        t = translate(t);
         return t;
     };
     //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
