@@ -22,7 +22,12 @@ class Mode {
     let cT = e.target as HTMLInputElement;
     let value = cT.value;
 
-    if (value === "default" || value === "wall" || value === "pipe") {
+    if (
+      value === "default" ||
+      value === "wall" ||
+      value === "pipe" ||
+      value === "valve"
+    ) {
       this.model.actionMode = value;
     }
   }

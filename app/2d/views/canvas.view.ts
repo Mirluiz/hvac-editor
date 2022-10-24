@@ -1,5 +1,6 @@
-import { IVec } from "../../geometry/vect";
+import { IVec, Vector } from "../../geometry/vect";
 import CanvasModel from "../models/canvas.model";
+import Valve from "../models/heating/valve.model";
 
 class Canvas {
   model: CanvasModel;
@@ -23,6 +24,8 @@ class Canvas {
     this.drawMouse();
     this.drawWalls();
     this.drawPipes();
+    this.drawValves();
+    this.drawPlacingObjects();
   }
 
   clear() {
@@ -62,17 +65,17 @@ class Canvas {
     let step = this.model.config.net.step * this.model.scale.amount;
     let h = this.container.height;
     let w = this.container.width;
-    let netOffset: IVec = {
-      x: this.model.offset.x % step,
-      y: this.model.offset.y % step,
-    };
+    let netOffset: IVec = new Vector(
+      this.model.offset.x % step,
+      this.model.offset.y % step
+    );
 
     //x
     let iV = 0;
     let maxV = w / step;
     while (iV <= maxV) {
-      let from: IVec = { x: step * iV + netOffset.x, y: 0 };
-      let to: IVec = { x: step * iV + netOffset.x, y: h };
+      let from: IVec = new Vector(step * iV + netOffset.x, 0);
+      let to: IVec = new Vector(step * iV + netOffset.x, h);
 
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
@@ -83,8 +86,8 @@ class Canvas {
     let iH = 0;
     let maxH = h / step;
     while (iH <= maxH) {
-      let from: IVec = { x: 0, y: step * iH + netOffset.y };
-      let to: IVec = { x: w, y: step * iH + netOffset.y };
+      let from: IVec = new Vector(0, step * iH + netOffset.y);
+      let to: IVec = new Vector(w, step * iH + netOffset.y);
 
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
@@ -226,6 +229,40 @@ class Canvas {
       ctx.stroke();
       ctx.restore();
     });
+  }
+
+  drawValves() {
+    let valves = this.model.valves;
+
+    valves?.map((valve) => {
+      this.drawValve(valve);
+    });
+  }
+
+  drawValve(valve: Valve) {
+    if (!this.container) return;
+
+    const ctx = this.container.getContext("2d");
+
+    if (!ctx) return;
+
+    ctx.save();
+    ctx.beginPath();
+
+    let c = this.getWorldCoordinates(valve.center.x, valve.center.y);
+
+    ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
+
+    ctx.fillStyle = "black";
+
+    ctx.fill();
+    ctx.restore();
+  }
+
+  drawPlacingObjects() {
+    if (this.model.placingObject instanceof Valve) {
+      this.drawValve(this.model.placingObject);
+    }
   }
 
   //TODO: apply scale transformation here

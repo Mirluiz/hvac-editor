@@ -18,12 +18,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var line_model_1 = __importDefault(require("../geometry/line.model"));
-var Wall = /** @class */ (function (_super) {
-    __extends(Wall, _super);
-    function Wall(start, end) {
-        return _super.call(this, start, end) || this;
+var arc_model_1 = __importDefault(require("../geometry/arc.model"));
+var Valve = /** @class */ (function (_super) {
+    __extends(Valve, _super);
+    function Valve(center) {
+        return _super.call(this, center) || this;
     }
-    return Wall;
-}(line_model_1.default));
-exports.default = Wall;
+    return Valve;
+}(arc_model_1.default));
+exports.default = Valve;

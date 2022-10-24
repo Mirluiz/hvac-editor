@@ -1,13 +1,16 @@
-import { IVec } from "../../geometry/vect";
+import { IVec, Vector } from "../../geometry/vect";
 import Wall from "./architecture/wall.model";
 import Pipe from "./heating/pipe.model";
+import Valve from "./heating/valve.model";
 
 class Canvas {
   private _walls: Array<Wall> = [];
   private _pipes: Array<Pipe> = [];
+  private _valves: Array<Valve> = [];
 
-  actionMode: "default" | "wall" | "pipe" = "pipe";
+  actionMode: "default" | "wall" | "pipe" | "valve" = "pipe";
   actionObject: Wall | Pipe | null = null;
+  placingObject: Valve | null = null;
 
   mouse: IVec | null = null;
   canvasSize: IVec | null = null;
@@ -23,7 +26,7 @@ class Canvas {
   };
   clicked: boolean = false;
   keyboard: string | null = null;
-  offset: IVec = { x: 0, y: 0 };
+  offset: Vector = new Vector(0, 0);
   config: IConfig = {
     axis: {
       show: true,
@@ -51,6 +54,14 @@ class Canvas {
     this._pipes = value;
   }
 
+  get valves(): Array<Valve> {
+    return this._valves;
+  }
+
+  set valves(value: Array<Valve>) {
+    this._valves = value;
+  }
+
   addWall(start: IVec, end: IVec) {
     let wall = new Wall(start, end);
 
@@ -73,6 +84,18 @@ class Canvas {
     this.pipes = this.pipes;
 
     return pipe;
+  }
+
+  addValve(center: IVec) {
+    let valve = new Valve(center);
+
+    valve.color = "red";
+    valve.width = 2;
+
+    this.valves.push(valve);
+    this.valves = this.valves;
+
+    return valve;
   }
 }
 
