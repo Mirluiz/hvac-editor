@@ -1,6 +1,7 @@
 import { IVec } from "../../../geometry/vect";
+import Main from "../main.model";
 
-class Line {
+class Line extends Main {
   thickness: number = 1;
   start: IVec;
   end: IVec;
@@ -9,6 +10,8 @@ class Line {
   width: number = 1;
 
   constructor(start: IVec, end: IVec) {
+    super();
+
     this.start = start;
     this.end = end;
   }

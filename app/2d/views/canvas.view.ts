@@ -1,6 +1,8 @@
 import { IVec, Vector } from "../../geometry/vect";
 import CanvasModel from "../models/canvas.model";
 import Valve from "../models/heating/valve.model";
+import Line from "../models/geometry/line.model";
+import Pipe from "../models/heating/pipe.model";
 
 class Canvas {
   model: CanvasModel;
@@ -19,13 +21,12 @@ class Canvas {
   draw() {
     this.clear();
     this.drawNet();
-    // this.drawNet1();
-    // this.drawAxis();
     this.drawMouse();
     this.drawWalls();
     this.drawPipes();
     this.drawValves();
-    this.drawPlacingObjects();
+    this.drawTempObjects();
+    this.drawNearestObject();
   }
 
   clear() {
@@ -206,29 +207,31 @@ class Canvas {
     let pipes = this.model.pipes;
 
     pipes?.map((pipe) => {
-      if (!this.container) return;
-
-      const ctx = this.container.getContext("2d");
-
-      if (!ctx) return;
-
-      ctx.save();
-      ctx.beginPath();
-
-      let from = this.getWorldCoordinates(pipe.start.x, pipe.start.y);
-      let to = this.getWorldCoordinates(pipe.end.x, pipe.end.y);
-
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(to.x, to.y);
-
-      console.log("pipe.color", pipe.color);
-
-      ctx.strokeStyle = pipe.color;
-      ctx.lineWidth = pipe.width;
-
-      ctx.stroke();
-      ctx.restore();
+      this.drawLine(pipe);
     });
+  }
+
+  drawLine(line: Line) {
+    if (!this.container) return;
+
+    const ctx = this.container.getContext("2d");
+
+    if (!ctx) return;
+
+    ctx.save();
+    ctx.beginPath();
+
+    let from = this.getWorldCoordinates(line.start.x, line.start.y);
+    let to = this.getWorldCoordinates(line.end.x, line.end.y);
+
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+
+    ctx.strokeStyle = line.color;
+    ctx.lineWidth = line.width;
+
+    ctx.stroke();
+    ctx.restore();
   }
 
   drawValves() {
@@ -259,9 +262,28 @@ class Canvas {
     ctx.restore();
   }
 
-  drawPlacingObjects() {
+  drawTempObjects() {
     if (this.model.placingObject instanceof Valve) {
       this.drawValve(this.model.placingObject);
+    }
+
+    if (this.model.actionObject instanceof Pipe) {
+      this.drawLine(this.model.actionObject);
+    }
+  }
+
+  drawNearestObject() {
+    if (this.model.actionObject instanceof Pipe) {
+      if (this.model.nearestObject) {
+        let line = new Line(
+          this.model.actionObject.end,
+          this.model.nearestObject
+        );
+
+        line.color = "green";
+
+        this.drawLine(line);
+      }
     }
   }
 
@@ -269,21 +291,21 @@ class Canvas {
   getWorldCoordinates(x: number, y: number): IVec {
     let _this = this;
 
-    let translate = function (vec: IVec): IVec {
-      return {
-        x: vec.x + _this.model.offset.x,
-        y: vec.y + _this.model.offset.y,
-      };
-    }.bind(this);
-
-    let scale = function (vec: IVec): IVec {
-      return {
-        x: vec.x * _this.model.scale.amount,
-        y: vec.y * _this.model.scale.amount,
-      };
+    let scale = function (vec: IVec): Vector {
+      return new Vector(
+        vec.x * _this.model.scale.amount,
+        vec.y * _this.model.scale.amount
+      );
     };
 
-    let t = { x, y };
+    let translate = function (vec: IVec): Vector {
+      return new Vector(
+        vec.x + _this.model.offset.x,
+        vec.y + _this.model.offset.y
+      );
+    }.bind(this);
+
+    let t = new Vector(x, y);
     t = scale(t);
     // t = rotation(t); TODO order is scaling rotation translation
     t = translate(t);

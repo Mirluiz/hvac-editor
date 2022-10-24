@@ -1,6 +1,7 @@
 import { IVec } from "../../../geometry/vect";
+import Main from "../main.model";
 
-class Arc {
+class Arc extends Main {
   radius: number = 5;
   center: IVec;
 
@@ -8,6 +9,8 @@ class Arc {
   width: number = 1;
 
   constructor(center: IVec) {
+    super();
+
     this.center = center;
   }
 }

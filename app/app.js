@@ -8,7 +8,9 @@ var App = /** @class */ (function () {
     function App() {
         this._2d = new _2d_1.default();
     }
-    App.prototype.run = function () { };
+    App.prototype.run = function () {
+        window.app = this;
+    };
     return App;
 }());
 exports.default = App;

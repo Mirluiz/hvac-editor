@@ -1,4 +1,4 @@
-import { IVec, Vector } from "../../geometry/vect";
+import { ICoord, IVec, Vector } from "../../geometry/vect";
 import Wall from "./architecture/wall.model";
 import Pipe from "./heating/pipe.model";
 import Valve from "./heating/valve.model";
@@ -12,12 +12,14 @@ class Canvas {
   actionObject: Wall | Pipe | null = null;
   placingObject: Valve | null = null;
 
-  mouse: IVec | null = null;
-  canvasSize: IVec | null = null;
-  mouseCanvasRatio: IVec | null = null;
+  nearestObject: IVec | null = null;
+
+  mouse: ICoord | null = null;
+  canvasSize: ICoord | null = null;
+  mouseCanvasRatio: ICoord | null = null;
   scale: {
     amount: number;
-    coord: IVec | null;
+    coord: ICoord | null;
     limitReached: boolean;
   } = {
     amount: 1,
@@ -26,7 +28,7 @@ class Canvas {
   };
   clicked: boolean = false;
   keyboard: string | null = null;
-  offset: Vector = new Vector(0, 0);
+  offset: ICoord = { x: 0, y: 0 };
   config: IConfig = {
     axis: {
       show: true,

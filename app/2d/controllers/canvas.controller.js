@@ -6,7 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_view_1 = __importDefault(require("../views/canvas.view"));
 var canvas_model_1 = __importDefault(require("../models/canvas.model"));
 var stats_view_1 = __importDefault(require("../views/stats.view"));
-var line_model_1 = __importDefault(require("../models/geometry/line.model"));
+var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
+var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
+var vect_1 = require("../../geometry/vect");
 var Canvas = /** @class */ (function () {
     function Canvas() {
         this.model = new canvas_model_1.default();
@@ -28,7 +30,7 @@ var Canvas = /** @class */ (function () {
         if (!this.model.mouse)
             return;
         if (!this.model.actionObject) {
-            var _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
+            var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
             if (this.model.config.net.bind) {
                 _mouse.x =
                     Math.round(_mouse.x / this.model.config.net.step) *
@@ -39,22 +41,13 @@ var Canvas = /** @class */ (function () {
             }
             switch (this.model.actionMode) {
                 case "wall":
-                    this.model.actionObject = this.model.addWall({
-                        x: _mouse.x,
-                        y: _mouse.y,
-                    }, {
-                        x: _mouse.x,
-                        y: _mouse.y,
-                    });
+                    this.model.actionObject = this.model.addWall(new vect_1.Vector(_mouse.x, _mouse.y), new vect_1.Vector(_mouse.x, _mouse.y));
                     break;
                 case "pipe":
-                    this.model.actionObject = this.model.addPipe({
-                        x: _mouse.x,
-                        y: _mouse.y,
-                    }, {
-                        x: _mouse.x,
-                        y: _mouse.y,
-                    });
+                    this.model.actionObject = this.model.addPipe(new vect_1.Vector(_mouse.x, _mouse.y), new vect_1.Vector(_mouse.x, _mouse.y));
+                    break;
+                case "valve":
+                    this.model.placingObject = new valve_model_1.default(new vect_1.Vector(_mouse.x, _mouse.y));
                     break;
             }
         }
@@ -76,8 +69,8 @@ var Canvas = /** @class */ (function () {
             this.model.mouse.y = e.offsetY;
         }
         if (this.model.actionObject) {
-            if (this.model.actionObject instanceof line_model_1.default) {
-                var _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
+            if (this.model.actionObject instanceof pipe_model_1.default) {
+                var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
                 if (this.model.config.net.bind) {
                     _mouse.x =
                         Math.round(_mouse.x / this.model.config.net.step) *
@@ -88,6 +81,23 @@ var Canvas = /** @class */ (function () {
                 }
                 this.model.actionObject.end.x = _mouse.x;
                 this.model.actionObject.end.y = _mouse.y;
+                var _ = this.model.actionObject.getNearestPipe(this.model.pipes);
+                console.log("_", _);
+            }
+        }
+        if (this.model.placingObject) {
+            if (this.model.placingObject instanceof valve_model_1.default) {
+                var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+                if (this.model.config.net.bind) {
+                    _mouse.x =
+                        Math.round(_mouse.x / this.model.config.net.step) *
+                            this.model.config.net.step;
+                    _mouse.y =
+                        Math.round(_mouse.y / this.model.config.net.step) *
+                            this.model.config.net.step;
+                }
+                this.model.placingObject.center.x = _mouse.x;
+                this.model.placingObject.center.y = _mouse.y;
             }
         }
         this.stats.render();

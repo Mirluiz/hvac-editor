@@ -1,5 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../geometry/vect");
+var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
+var line_model_1 = __importDefault(require("../models/geometry/line.model"));
+var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
 var Canvas = /** @class */ (function () {
     function Canvas(model) {
         this.model = model;
@@ -17,6 +24,9 @@ var Canvas = /** @class */ (function () {
         this.drawMouse();
         this.drawWalls();
         this.drawPipes();
+        this.drawValves();
+        this.drawPlacingObjects();
+        this.drawNearestObject();
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -50,16 +60,13 @@ var Canvas = /** @class */ (function () {
         var step = this.model.config.net.step * this.model.scale.amount;
         var h = this.container.height;
         var w = this.container.width;
-        var netOffset = {
-            x: this.model.offset.x % step,
-            y: this.model.offset.y % step,
-        };
+        var netOffset = new vect_1.Vector(this.model.offset.x % step, this.model.offset.y % step);
         //x
         var iV = 0;
         var maxV = w / step;
         while (iV <= maxV) {
-            var from = { x: step * iV + netOffset.x, y: 0 };
-            var to = { x: step * iV + netOffset.x, y: h };
+            var from = new vect_1.Vector(step * iV + netOffset.x, 0);
+            var to = new vect_1.Vector(step * iV + netOffset.x, h);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             iV++;
@@ -68,8 +75,8 @@ var Canvas = /** @class */ (function () {
         var iH = 0;
         var maxH = h / step;
         while (iH <= maxH) {
-            var from = { x: 0, y: step * iH + netOffset.y };
-            var to = { x: w, y: step * iH + netOffset.y };
+            var from = new vect_1.Vector(0, step * iH + netOffset.y);
+            var to = new vect_1.Vector(w, step * iH + netOffset.y);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             iH++;
@@ -164,40 +171,71 @@ var Canvas = /** @class */ (function () {
         var _this_1 = this;
         var pipes = this.model.pipes;
         pipes === null || pipes === void 0 ? void 0 : pipes.map(function (pipe) {
-            if (!_this_1.container)
-                return;
-            var ctx = _this_1.container.getContext("2d");
-            if (!ctx)
-                return;
-            ctx.save();
-            ctx.beginPath();
-            var from = _this_1.getWorldCoordinates(pipe.start.x, pipe.start.y);
-            var to = _this_1.getWorldCoordinates(pipe.end.x, pipe.end.y);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            console.log("pipe.color", pipe.color);
-            ctx.strokeStyle = pipe.color;
-            ctx.lineWidth = pipe.width;
-            ctx.stroke();
-            ctx.restore();
+            _this_1.drawLine(pipe);
         });
+    };
+    Canvas.prototype.drawLine = function (line) {
+        if (!this.container)
+            return;
+        var ctx = this.container.getContext("2d");
+        if (!ctx)
+            return;
+        ctx.save();
+        ctx.beginPath();
+        var from = this.getWorldCoordinates(line.start.x, line.start.y);
+        var to = this.getWorldCoordinates(line.end.x, line.end.y);
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.strokeStyle = line.color;
+        ctx.lineWidth = line.width;
+        ctx.stroke();
+        ctx.restore();
+    };
+    Canvas.prototype.drawValves = function () {
+        var _this_1 = this;
+        var valves = this.model.valves;
+        valves === null || valves === void 0 ? void 0 : valves.map(function (valve) {
+            _this_1.drawValve(valve);
+        });
+    };
+    Canvas.prototype.drawValve = function (valve) {
+        if (!this.container)
+            return;
+        var ctx = this.container.getContext("2d");
+        if (!ctx)
+            return;
+        ctx.save();
+        ctx.beginPath();
+        var c = this.getWorldCoordinates(valve.center.x, valve.center.y);
+        ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = "black";
+        ctx.fill();
+        ctx.restore();
+    };
+    Canvas.prototype.drawPlacingObjects = function () {
+        if (this.model.placingObject instanceof valve_model_1.default) {
+            this.drawValve(this.model.placingObject);
+        }
+    };
+    Canvas.prototype.drawNearestObject = function () {
+        if (this.model.actionObject instanceof pipe_model_1.default) {
+            if (this.model.nearestObject) {
+                var line = new line_model_1.default(this.model.actionObject.end, this.model.nearestObject);
+                line.color = "green";
+                this.drawLine(line);
+            }
+        }
     };
     //TODO: apply scale transformation here
     Canvas.prototype.getWorldCoordinates = function (x, y) {
         var _this = this;
-        var translate = function (vec) {
-            return {
-                x: vec.x + _this.model.offset.x,
-                y: vec.y + _this.model.offset.y,
-            };
-        }.bind(this);
         var scale = function (vec) {
-            return {
-                x: vec.x * _this.model.scale.amount,
-                y: vec.y * _this.model.scale.amount,
-            };
+            return new vect_1.Vector(vec.x * _this.model.scale.amount, vec.y * _this.model.scale.amount);
         };
-        var t = { x: x, y: y };
+        var translate = function (vec) {
+            return new vect_1.Vector(vec.x + _this.model.offset.x, vec.y + _this.model.offset.y);
+        }.bind(this);
+        var t = new vect_1.Vector(x, y);
         t = scale(t);
         // t = rotation(t); TODO order is scaling rotation translation
         t = translate(t);

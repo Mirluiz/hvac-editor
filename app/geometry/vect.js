@@ -6,8 +6,25 @@ var Vector = /** @class */ (function () {
         this.x = x;
         this.y = y;
     }
-    Vector.prototype.distanceTo = function (b) {
+    Vector.prototype.distanceTo = function (v) {
+        var _v = new Vector(this.x - v.x, this.y - v.y);
+        return _v.length;
+    };
+    Vector.prototype.distanceToLine = function (l) {
         return 1;
+    };
+    Object.defineProperty(Vector.prototype, "length", {
+        get: function () {
+            return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Vector.prototype.projection = function () {
+        return new Vector(this.x, this.y);
+    };
+    Vector.prototype.sub = function (a) {
+        return new Vector(this.x - a.x, this.y - a.y);
     };
     return Vector;
 }());

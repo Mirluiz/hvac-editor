@@ -3,15 +3,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var vect_1 = require("../../geometry/vect");
 var wall_model_1 = __importDefault(require("./architecture/wall.model"));
 var pipe_model_1 = __importDefault(require("./heating/pipe.model"));
+var valve_model_1 = __importDefault(require("./heating/valve.model"));
 var Canvas = /** @class */ (function () {
     function Canvas() {
         this._walls = [];
         this._pipes = [];
+        this._valves = [];
         this.actionMode = "pipe";
         this.actionObject = null;
+        this.placingObject = null;
+        this.nearestObject = null;
         this.mouse = null;
         this.canvasSize = null;
         this.mouseCanvasRatio = null;
@@ -22,7 +25,7 @@ var Canvas = /** @class */ (function () {
         };
         this.clicked = false;
         this.keyboard = null;
-        this.offset = new vect_1.Vector(0, 0);
+        this.offset = { x: 0, y: 0 };
         this.config = {
             axis: {
                 show: true,
@@ -54,6 +57,16 @@ var Canvas = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Canvas.prototype, "valves", {
+        get: function () {
+            return this._valves;
+        },
+        set: function (value) {
+            this._valves = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Canvas.prototype.addWall = function (start, end) {
         var wall = new wall_model_1.default(start, end);
         wall.color = "black";
@@ -70,7 +83,14 @@ var Canvas = /** @class */ (function () {
         this.pipes = this.pipes;
         return pipe;
     };
-    Canvas.prototype.addValve = function (center) { };
+    Canvas.prototype.addValve = function (center) {
+        var valve = new valve_model_1.default(center);
+        valve.color = "red";
+        valve.width = 2;
+        this.valves.push(valve);
+        this.valves = this.valves;
+        return valve;
+    };
     return Canvas;
 }());
 exports.default = Canvas;

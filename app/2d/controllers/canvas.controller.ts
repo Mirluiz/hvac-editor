@@ -6,6 +6,7 @@ import Pipe from "../models/heating/pipe.model";
 import Line from "../models/geometry/line.model";
 import Valve from "../models/heating/valve.model";
 import { Vector } from "../../geometry/vect";
+import PipeModel from "../models/heating/pipe.model";
 
 class Canvas {
   view: CanvasView;
@@ -41,9 +42,9 @@ class Canvas {
 
     if (!this.model.mouse) return;
 
-    if (!this.model.actionObject) {
-      let _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
+    let _mouse = new Vector(this.model.mouse.x, this.model.mouse.y);
 
+    if (!this.model.actionObject) {
       if (this.model.config.net.bind) {
         _mouse.x =
           Math.round(_mouse.x / this.model.config.net.step) *
@@ -56,33 +57,58 @@ class Canvas {
       switch (this.model.actionMode) {
         case "wall":
           this.model.actionObject = this.model.addWall(
-            {
-              x: _mouse.x,
-              y: _mouse.y,
-            },
-            {
-              x: _mouse.x,
-              y: _mouse.y,
-            }
+            new Vector(_mouse.x, _mouse.y),
+            new Vector(_mouse.x, _mouse.y)
           );
           break;
         case "pipe":
-          this.model.actionObject = this.model.addPipe(
-            {
-              x: _mouse.x,
-              y: _mouse.y,
-            },
-            {
-              x: _mouse.x,
-              y: _mouse.y,
-            }
+          this.model.actionObject = new Pipe(
+            new Vector(_mouse.x, _mouse.y),
+            new Vector(_mouse.x, _mouse.y)
           );
           break;
+      }
+    } else {
+      switch (this.model.actionMode) {
+        case "wall":
+          this.model.addWall(
+            this.model.actionObject.start,
+            this.model.actionObject.end
+          );
+          break;
+        case "pipe":
+          this.model.addPipe(
+            this.model.actionObject.start,
+            this.model.actionObject.end
+          );
+          break;
+      }
+
+      this.model.actionObject = null;
+    }
+
+    if (!this.model.placingObject) {
+      if (this.model.config.net.bind) {
+        _mouse.x =
+          Math.round(_mouse.x / this.model.config.net.step) *
+          this.model.config.net.step;
+        _mouse.y =
+          Math.round(_mouse.y / this.model.config.net.step) *
+          this.model.config.net.step;
+      }
+
+      switch (this.model.actionMode) {
         case "valve":
           this.model.placingObject = new Valve(new Vector(_mouse.x, _mouse.y));
           break;
       }
     } else {
+      switch (this.model.actionMode) {
+        case "valve":
+          this.model.addValve(this.model.placingObject.center);
+          break;
+      }
+
       this.model.actionObject = null;
     }
 
@@ -102,8 +128,8 @@ class Canvas {
     }
 
     if (this.model.actionObject) {
-      if (this.model.actionObject instanceof Line) {
-        let _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
+      if (this.model.actionObject instanceof Pipe) {
+        let _mouse = new Vector(this.model.mouse.x, this.model.mouse.y);
 
         if (this.model.config.net.bind) {
           _mouse.x =
@@ -115,6 +141,11 @@ class Canvas {
         }
         this.model.actionObject.end.x = _mouse.x;
         this.model.actionObject.end.y = _mouse.y;
+
+        this.model.actionObject.getNearestCoordinateOnPipe(
+          new Vector(this.model.mouse.x, this.model.mouse.y),
+          this.model.pipes[0]
+        );
       }
     }
 

@@ -1,10 +1,17 @@
-import {default as _2DController} from "./2d";
+import { default as _2DController } from "./2d";
 
-class App {
-  _2d: _2DController = new _2DController()
-
-
-  run() {}
+declare global {
+  interface Window {
+    app: App;
+  }
 }
 
-export default App
+class App {
+  _2d: _2DController = new _2DController();
+
+  run() {
+    window.app = this;
+  }
+}
+
+export default App;

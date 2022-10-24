@@ -16,7 +16,10 @@ var Mode = /** @class */ (function () {
     Mode.prototype.mouseDown = function (e) {
         var cT = e.target;
         var value = cT.value;
-        if (value === "default" || value === "wall" || value === "pipe") {
+        if (value === "default" ||
+            value === "wall" ||
+            value === "pipe" ||
+            value === "valve") {
             this.model.actionMode = value;
         }
     };

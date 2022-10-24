@@ -25,8 +25,18 @@ var Pipe = /** @class */ (function (_super) {
         return _super.call(this, start, end) || this;
     }
     Pipe.prototype.getNearestPipe = function (pipes) {
-        var isTail = false;
-        pipes.map(function (pipe) { });
+        var _this = this;
+        var pipe = pipes.find(function (pipe) {
+            if (pipe._id === _this._id)
+                return;
+            var start = pipe.start.distanceTo && pipe.start.distanceTo(_this.end);
+            var end = pipe.end.distanceTo && pipe.end.distanceTo(_this.end);
+            return (start && start < 30) || (end && end < 30);
+        });
+        return pipe;
+    };
+    Pipe.prototype.getNearestCoordinateOnPipe = function (point, pipe) {
+        var _pipe = new Pipe(pipe.start.sub(pipe.start), pipe.end.sub(pipe.start));
     };
     return Pipe;
 }(line_model_1.default));
