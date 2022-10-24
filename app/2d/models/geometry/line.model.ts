@@ -6,7 +6,7 @@ class Line extends Main {
   start: IVec;
   end: IVec;
 
-  color: string = "#fff";
+  color: string = "#000";
   width: number = 1;
 
   constructor(start: IVec, end: IVec) {

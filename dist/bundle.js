@@ -31,17 +31,20 @@ var Canvas = /** @class */function () {
         this.model.clicked = true;
         if (!this.model.mouse) return;
         var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        if (this.model.config.net.bind) {
+            _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
+            _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
+        }
         if (!this.model.actionObject) {
-            if (this.model.config.net.bind) {
-                _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
-                _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
-            }
             switch (this.model.actionMode) {
                 case "wall":
                     this.model.actionObject = this.model.addWall(new vect_1.Vector(_mouse.x, _mouse.y), new vect_1.Vector(_mouse.x, _mouse.y));
                     break;
                 case "pipe":
-                    this.model.actionObject = new pipe_model_1.default(new vect_1.Vector(_mouse.x, _mouse.y), new vect_1.Vector(_mouse.x, _mouse.y));
+                    var p = new pipe_model_1.default(new vect_1.Vector(_mouse.x, _mouse.y), new vect_1.Vector(_mouse.x, _mouse.y));
+                    p.color = "red";
+                    p.width = 5;
+                    this.model.actionObject = p;
                     break;
             }
         } else {
@@ -54,6 +57,10 @@ var Canvas = /** @class */function () {
                     break;
             }
             this.model.actionObject = null;
+            var p = new pipe_model_1.default(new vect_1.Vector(_mouse.x, _mouse.y), new vect_1.Vector(_mouse.x, _mouse.y));
+            p.color = "red";
+            p.width = 5;
+            this.model.actionObject = p;
         }
         if (!this.model.placingObject) {
             if (this.model.config.net.bind) {
@@ -62,7 +69,8 @@ var Canvas = /** @class */function () {
             }
             switch (this.model.actionMode) {
                 case "valve":
-                    this.model.placingObject = new valve_model_1.default(new vect_1.Vector(_mouse.x, _mouse.y));
+                    var v = new valve_model_1.default(new vect_1.Vector(_mouse.x, _mouse.y));
+                    this.model.placingObject = v;
                     break;
             }
         } else {
@@ -95,7 +103,10 @@ var Canvas = /** @class */function () {
                 }
                 this.model.actionObject.end.x = _mouse.x;
                 this.model.actionObject.end.y = _mouse.y;
-                this.model.actionObject.getNearestCoordinateOnPipe(new vect_1.Vector(this.model.mouse.x, this.model.mouse.y), this.model.pipes[0]);
+                // this.model.actionObject.getNearestCoordinateOnPipe(
+                //   new Vector(this.model.mouse.x, this.model.mouse.y),
+                //   this.model.pipes[0]
+                // );
             }
         }
         if (this.model.placingObject) {
@@ -284,7 +295,7 @@ var Canvas = /** @class */function () {
     Canvas.prototype.addPipe = function (start, end) {
         var pipe = new pipe_model_1.default(start, end);
         pipe.color = "red";
-        pipe.width = 2;
+        pipe.width = 5;
         this.pipes.push(pipe);
         this.pipes = this.pipes;
         return pipe;
@@ -376,7 +387,7 @@ var Line = /** @class */function (_super) {
     function Line(start, end) {
         var _this = _super.call(this) || this;
         _this.thickness = 1;
-        _this.color = "#fff";
+        _this.color = "#000";
         _this.width = 1;
         _this.start = start;
         _this.end = end;

@@ -80,7 +80,7 @@ class Canvas {
     let pipe = new Pipe(start, end);
 
     pipe.color = "red";
-    pipe.width = 2;
+    pipe.width = 5;
 
     this.pipes.push(pipe);
     this.pipes = this.pipes;
