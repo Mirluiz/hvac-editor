@@ -1,8 +1,9 @@
 import CanvasView from "../views/canvas.view";
 import CanvasModel from "../models/canvas.model";
 import StatsView from "../views/stats.view";
-import ModeView from "../views/mode.view";
-import Wall from "../models/wall.model";
+import Wall from "../models/architecture/wall.model";
+import Pipe from "../models/heating/pipe.model";
+import Line from "../models/geometry/line.model";
 
 class Canvas {
   view: CanvasView;
@@ -38,32 +39,46 @@ class Canvas {
 
     if (!this.model.mouse) return;
 
-    if (this.model.actionMode === "wall") {
-      if (!this.model.actionObject) {
-        let _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
+    if (!this.model.actionObject) {
+      let _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
 
-        if (this.model.config.net.bind) {
-          _mouse.x =
-            Math.round(_mouse.x / this.model.config.net.step) *
-            this.model.config.net.step;
-          _mouse.y =
-            Math.round(_mouse.y / this.model.config.net.step) *
-            this.model.config.net.step;
-        }
-
-        this.model.actionObject = this.model.addWall(
-          {
-            x: _mouse.x,
-            y: _mouse.y,
-          },
-          {
-            x: _mouse.x,
-            y: _mouse.y,
-          }
-        );
-      } else {
-        this.model.actionObject = null;
+      if (this.model.config.net.bind) {
+        _mouse.x =
+          Math.round(_mouse.x / this.model.config.net.step) *
+          this.model.config.net.step;
+        _mouse.y =
+          Math.round(_mouse.y / this.model.config.net.step) *
+          this.model.config.net.step;
       }
+
+      switch (this.model.actionMode) {
+        case "wall":
+          this.model.actionObject = this.model.addWall(
+            {
+              x: _mouse.x,
+              y: _mouse.y,
+            },
+            {
+              x: _mouse.x,
+              y: _mouse.y,
+            }
+          );
+          break;
+        case "pipe":
+          this.model.actionObject = this.model.addPipe(
+            {
+              x: _mouse.x,
+              y: _mouse.y,
+            },
+            {
+              x: _mouse.x,
+              y: _mouse.y,
+            }
+          );
+          break;
+      }
+    } else {
+      this.model.actionObject = null;
     }
 
     this.stats.render();
@@ -82,7 +97,7 @@ class Canvas {
     }
 
     if (this.model.actionObject) {
-      if (this.model.actionObject instanceof Wall) {
+      if (this.model.actionObject instanceof Line) {
         let _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
 
         if (this.model.config.net.bind) {
@@ -93,7 +108,6 @@ class Canvas {
             Math.round(_mouse.y / this.model.config.net.step) *
             this.model.config.net.step;
         }
-
         this.model.actionObject.end.x = _mouse.x;
         this.model.actionObject.end.y = _mouse.y;
       }

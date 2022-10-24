@@ -1,11 +1,12 @@
 import { IVec } from "../../geometry/vect";
-import Wall from "./wall.model";
-import Pipe from "./pipe.model";
+import Wall from "./architecture/wall.model";
+import Pipe from "./heating/pipe.model";
 
 class Canvas {
   private _walls: Array<Wall> = [];
+  private _pipes: Array<Pipe> = [];
 
-  actionMode: "default" | "wall" = "default";
+  actionMode: "default" | "wall" | "pipe" = "pipe";
   actionObject: Wall | Pipe | null = null;
 
   mouse: IVec | null = null;
@@ -42,13 +43,36 @@ class Canvas {
     this._walls = value;
   }
 
+  get pipes(): Array<Pipe> {
+    return this._pipes;
+  }
+
+  set pipes(value: Array<Pipe>) {
+    this._pipes = value;
+  }
+
   addWall(start: IVec, end: IVec) {
     let wall = new Wall(start, end);
+
+    wall.color = "black";
+    wall.width = 5;
 
     this.walls.push(wall);
     this.walls = this.walls;
 
     return wall;
+  }
+
+  addPipe(start: IVec, end: IVec) {
+    let pipe = new Pipe(start, end);
+
+    pipe.color = "red";
+    pipe.width = 2;
+
+    this.pipes.push(pipe);
+    this.pipes = this.pipes;
+
+    return pipe;
   }
 }
 

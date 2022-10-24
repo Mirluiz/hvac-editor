@@ -22,6 +22,7 @@ class Canvas {
     // this.drawAxis();
     this.drawMouse();
     this.drawWalls();
+    this.drawPipes();
   }
 
   clear() {
@@ -174,7 +175,6 @@ class Canvas {
     let walls = this.model.walls;
 
     walls?.map((wall) => {
-      console.log("this.container", this.container);
       if (!this.container) return;
 
       const ctx = this.container.getContext("2d");
@@ -187,13 +187,41 @@ class Canvas {
       let from = this.getWorldCoordinates(wall.start.x, wall.start.y);
       let to = this.getWorldCoordinates(wall.end.x, wall.end.y);
 
-      console.log("from", from, to);
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+
+      console.log("wall.color", wall.color);
+      ctx.strokeStyle = wall.color;
+      ctx.lineWidth = wall.width;
+
+      ctx.stroke();
+      ctx.restore();
+    });
+  }
+
+  drawPipes() {
+    let pipes = this.model.pipes;
+
+    pipes?.map((pipe) => {
+      if (!this.container) return;
+
+      const ctx = this.container.getContext("2d");
+
+      if (!ctx) return;
+
+      ctx.save();
+      ctx.beginPath();
+
+      let from = this.getWorldCoordinates(pipe.start.x, pipe.start.y);
+      let to = this.getWorldCoordinates(pipe.end.x, pipe.end.y);
 
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
 
-      ctx.strokeStyle = "red";
-      ctx.lineWidth = 2;
+      console.log("pipe.color", pipe.color);
+
+      ctx.strokeStyle = pipe.color;
+      ctx.lineWidth = pipe.width;
 
       ctx.stroke();
       ctx.restore();

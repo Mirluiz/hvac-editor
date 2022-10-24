@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_view_1 = __importDefault(require("../views/canvas.view"));
 var canvas_model_1 = __importDefault(require("../models/canvas.model"));
 var stats_view_1 = __importDefault(require("../views/stats.view"));
-var wall_model_1 = __importDefault(require("../models/wall.model"));
+var line_model_1 = __importDefault(require("../models/geometry/line.model"));
 var Canvas = /** @class */function () {
     function Canvas() {
         this.model = new canvas_model_1.default();
@@ -28,23 +28,34 @@ var Canvas = /** @class */function () {
     Canvas.prototype.mouseDown = function (e) {
         this.model.clicked = true;
         if (!this.model.mouse) return;
-        if (this.model.actionMode === "wall") {
-            if (!this.model.actionObject) {
-                var _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
-                if (this.model.config.net.bind) {
-                    _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
-                    _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
-                }
-                this.model.actionObject = this.model.addWall({
-                    x: _mouse.x,
-                    y: _mouse.y
-                }, {
-                    x: _mouse.x,
-                    y: _mouse.y
-                });
-            } else {
-                this.model.actionObject = null;
+        if (!this.model.actionObject) {
+            var _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
+            if (this.model.config.net.bind) {
+                _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
+                _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
             }
+            switch (this.model.actionMode) {
+                case "wall":
+                    this.model.actionObject = this.model.addWall({
+                        x: _mouse.x,
+                        y: _mouse.y
+                    }, {
+                        x: _mouse.x,
+                        y: _mouse.y
+                    });
+                    break;
+                case "pipe":
+                    this.model.actionObject = this.model.addPipe({
+                        x: _mouse.x,
+                        y: _mouse.y
+                    }, {
+                        x: _mouse.x,
+                        y: _mouse.y
+                    });
+                    break;
+            }
+        } else {
+            this.model.actionObject = null;
         }
         this.stats.render();
         this.view.draw();
@@ -60,7 +71,7 @@ var Canvas = /** @class */function () {
             this.model.mouse.y = e.offsetY;
         }
         if (this.model.actionObject) {
-            if (this.model.actionObject instanceof wall_model_1.default) {
+            if (this.model.actionObject instanceof line_model_1.default) {
                 var _mouse = { x: this.model.mouse.x, y: this.model.mouse.y };
                 if (this.model.config.net.bind) {
                     _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
@@ -80,7 +91,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../models/canvas.model":4,"../models/wall.model":5,"../views/canvas.view":6,"../views/stats.view":8}],2:[function(require,module,exports){
+},{"../models/canvas.model":5,"../models/geometry/line.model":6,"../views/canvas.view":8,"../views/stats.view":10}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -100,7 +111,7 @@ var Mode = /** @class */function () {
     Mode.prototype.mouseDown = function (e) {
         var cT = e.target;
         var value = cT.value;
-        if (value === "default" || value === "wall") {
+        if (value === "default" || value === "wall" || value === "pipe") {
             this.model.actionMode = value;
         }
     };
@@ -108,7 +119,7 @@ var Mode = /** @class */function () {
 }();
 exports.default = Mode;
 
-},{"../views/mode.view":7}],3:[function(require,module,exports){
+},{"../views/mode.view":9}],3:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -129,15 +140,54 @@ exports.default = Controller;
 },{"./controllers/canvas.controller":1,"./controllers/mode.controller":2}],4:[function(require,module,exports){
 "use strict";
 
+var __extends = undefined && undefined.__extends || function () {
+    var _extendStatics = function extendStatics(d, b) {
+        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
+            d.__proto__ = b;
+        } || function (d, b) {
+            for (var p in b) {
+                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+            }
+        };
+        return _extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        _extendStatics(d, b);
+        function __() {
+            this.constructor = d;
+        }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+}();
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var wall_model_1 = __importDefault(require("./wall.model"));
+var line_model_1 = __importDefault(require("../geometry/line.model"));
+var Wall = /** @class */function (_super) {
+    __extends(Wall, _super);
+    function Wall(start, end) {
+        return _super.call(this, start, end) || this;
+    }
+    return Wall;
+}(line_model_1.default);
+exports.default = Wall;
+
+},{"../geometry/line.model":6}],5:[function(require,module,exports){
+"use strict";
+
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var wall_model_1 = __importDefault(require("./architecture/wall.model"));
+var pipe_model_1 = __importDefault(require("./heating/pipe.model"));
 var Canvas = /** @class */function () {
     function Canvas() {
         this._walls = [];
-        this.actionMode = "default";
+        this._pipes = [];
+        this.actionMode = "pipe";
         this.actionObject = null;
         this.mouse = null;
         this.canvasSize = null;
@@ -171,31 +221,90 @@ var Canvas = /** @class */function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Canvas.prototype, "pipes", {
+        get: function get() {
+            return this._pipes;
+        },
+        set: function set(value) {
+            this._pipes = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Canvas.prototype.addWall = function (start, end) {
         var wall = new wall_model_1.default(start, end);
+        wall.color = "black";
+        wall.width = 5;
         this.walls.push(wall);
         this.walls = this.walls;
         return wall;
+    };
+    Canvas.prototype.addPipe = function (start, end) {
+        var pipe = new pipe_model_1.default(start, end);
+        pipe.color = "red";
+        pipe.width = 2;
+        this.pipes.push(pipe);
+        this.pipes = this.pipes;
+        return pipe;
     };
     return Canvas;
 }();
 exports.default = Canvas;
 
-},{"./wall.model":5}],5:[function(require,module,exports){
+},{"./architecture/wall.model":4,"./heating/pipe.model":7}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Wall = /** @class */function () {
-    function Wall(start, end) {
+var Line = /** @class */function () {
+    function Line(start, end) {
         this.thickness = 1;
+        this.color = "#fff";
+        this.width = 1;
         this.start = start;
         this.end = end;
     }
-    return Wall;
+    return Line;
 }();
-exports.default = Wall;
+exports.default = Line;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
+"use strict";
+
+var __extends = undefined && undefined.__extends || function () {
+    var _extendStatics = function extendStatics(d, b) {
+        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
+            d.__proto__ = b;
+        } || function (d, b) {
+            for (var p in b) {
+                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+            }
+        };
+        return _extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        _extendStatics(d, b);
+        function __() {
+            this.constructor = d;
+        }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+}();
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var line_model_1 = __importDefault(require("../geometry/line.model"));
+var Pipe = /** @class */function (_super) {
+    __extends(Pipe, _super);
+    function Pipe(start, end) {
+        return _super.call(this, start, end) || this;
+    }
+    return Pipe;
+}(line_model_1.default);
+exports.default = Pipe;
+
+},{"../geometry/line.model":6}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -215,6 +324,7 @@ var Canvas = /** @class */function () {
         // this.drawAxis();
         this.drawMouse();
         this.drawWalls();
+        this.drawPipes();
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -332,7 +442,6 @@ var Canvas = /** @class */function () {
         var _this_1 = this;
         var walls = this.model.walls;
         walls === null || walls === void 0 ? void 0 : walls.map(function (wall) {
-            console.log("this.container", _this_1.container);
             if (!_this_1.container) return;
             var ctx = _this_1.container.getContext("2d");
             if (!ctx) return;
@@ -340,11 +449,31 @@ var Canvas = /** @class */function () {
             ctx.beginPath();
             var from = _this_1.getWorldCoordinates(wall.start.x, wall.start.y);
             var to = _this_1.getWorldCoordinates(wall.end.x, wall.end.y);
-            console.log("from", from, to);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 2;
+            console.log("wall.color", wall.color);
+            ctx.strokeStyle = wall.color;
+            ctx.lineWidth = wall.width;
+            ctx.stroke();
+            ctx.restore();
+        });
+    };
+    Canvas.prototype.drawPipes = function () {
+        var _this_1 = this;
+        var pipes = this.model.pipes;
+        pipes === null || pipes === void 0 ? void 0 : pipes.map(function (pipe) {
+            if (!_this_1.container) return;
+            var ctx = _this_1.container.getContext("2d");
+            if (!ctx) return;
+            ctx.save();
+            ctx.beginPath();
+            var from = _this_1.getWorldCoordinates(pipe.start.x, pipe.start.y);
+            var to = _this_1.getWorldCoordinates(pipe.end.x, pipe.end.y);
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            console.log("pipe.color", pipe.color);
+            ctx.strokeStyle = pipe.color;
+            ctx.lineWidth = pipe.width;
             ctx.stroke();
             ctx.restore();
         });
@@ -394,7 +523,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -407,7 +536,7 @@ var Mode = /** @class */function () {
 }();
 exports.default = Mode;
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -436,7 +565,7 @@ var Stats = /** @class */function () {
 }();
 exports.default = Stats;
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -453,7 +582,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":3}],10:[function(require,module,exports){
+},{"./2d":3}],12:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -464,6 +593,6 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":9}]},{},[10])
+},{"./app":11}]},{},[12])
 
 //# sourceMappingURL=bundle.js.map
