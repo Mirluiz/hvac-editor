@@ -3,28 +3,40 @@ import CanvasModel from "../models/canvas.model";
 import Valve from "../models/heating/valve.model";
 import Line from "../models/geometry/line.model";
 import Pipe from "../models/heating/pipe.model";
+import PipeView from "./pipe.view";
+import ValveView from "./valve.view";
 
 class Canvas {
   model: CanvasModel;
   container: HTMLCanvasElement | null;
+  pipe: PipeView | null = null;
+  valve: ValveView | null = null;
 
   constructor(model: CanvasModel) {
     this.model = model;
     this.container = document.querySelector("#editor");
+
     this.init();
   }
 
   init() {
     this.initCanvasContainer();
+
+    const ctx = this.container?.getContext("2d");
+
+    if (ctx) {
+      this.pipe = new PipeView(this, this.model, ctx);
+      this.valve = new ValveView(this, this.model, ctx);
+    }
   }
 
   draw() {
     this.clear();
     this.drawNet();
-    this.drawMouse();
     this.drawWalls();
-    this.drawPipes();
-    this.drawValves();
+
+    this.pipe?.draw();
+    this.valve?.draw();
   }
 
   clear() {
@@ -199,65 +211,6 @@ class Canvas {
       ctx.stroke();
       ctx.restore();
     });
-  }
-
-  drawPipes() {
-    let pipes = this.model.pipes;
-
-    pipes?.map((pipe) => {
-      this.drawLine(pipe);
-    });
-  }
-
-  drawLine(line: Line) {
-    if (!this.container) return;
-
-    const ctx = this.container.getContext("2d");
-
-    if (!ctx) return;
-
-    ctx.save();
-    ctx.beginPath();
-
-    let from = this.getWorldCoordinates(line.start.x, line.start.y);
-    let to = this.getWorldCoordinates(line.end.x, line.end.y);
-
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
-
-    ctx.strokeStyle = line.color;
-    ctx.lineWidth = line.width;
-
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  drawValves() {
-    let valves = this.model.valves;
-
-    valves?.map((valve) => {
-      this.drawValve(valve);
-    });
-  }
-
-  drawValve(valve: Valve) {
-    if (!this.container) return;
-
-    const ctx = this.container.getContext("2d");
-
-    if (!ctx) return;
-
-    ctx.save();
-    ctx.beginPath();
-
-    let c = this.getWorldCoordinates(valve.center.x, valve.center.y);
-
-    ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
-
-    ctx.fillStyle = "black";
-
-    ctx.fill();
-    ctx.restore();
   }
 
   //TODO: apply scale transformation here

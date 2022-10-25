@@ -1,8 +1,8 @@
-import { ICoord, IVec, Vector } from "../../../geometry/vect";
+import { IVec } from "../../../geometry/vect";
 import Line from "../geometry/line.model";
 
 class Pipe extends Line {
-  temp: boolean = false;
+  ghost: boolean = false;
   type: "supply" | "return" = "supply";
 
   constructor(start: IVec, end: IVec) {

@@ -76,19 +76,26 @@ class Canvas {
     this.pipes.push(pipe);
     this.pipes = this.pipes;
 
-    return pipe;
+    return this.pipes[this.pipes.length - 1];
   }
 
-  addValve(center: IVec) {
-    let valve = new Valve(center);
-
-    valve.color = "red";
-    valve.width = 2;
-
-    this.valves.push(valve);
+  addValve(v: Valve) {
+    this.valves.push(v);
     this.valves = this.valves;
 
-    return valve;
+    return this.valves[this.valves.length - 1];
+  }
+
+  pipeValves(pipe: Pipe) {
+    this.valves.find((v) => {
+      console.log(
+        "v",
+        v,
+        pipe,
+        v.pipes.find((p) => p.id === pipe.id)
+      );
+    });
+    return this.valves.find((v) => v.pipes.find((p) => p.id === pipe.id));
   }
 }
 

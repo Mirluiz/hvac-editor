@@ -50,6 +50,9 @@ var Line = /** @class */ (function (_super) {
         get: function () {
             return this._color;
         },
+        set: function (color) {
+            this._color = color;
+        },
         enumerable: false,
         configurable: true
     });

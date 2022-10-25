@@ -10,6 +10,7 @@ var canvas_model_1 = __importDefault(require("../models/canvas.model"));
 var stats_view_1 = __importDefault(require("../views/stats.view"));
 var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
 var vect_1 = require("../../geometry/vect");
+var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
 var Canvas = /** @class */function () {
     function Canvas() {
         this.model = new canvas_model_1.default();
@@ -72,26 +73,33 @@ var Canvas = /** @class */function () {
         this.model.clicked = false;
     };
     Canvas.prototype.keyUp = function (e) {
-        console.log("e", e.code, e);
         if (e.key === "Escape") {
-            console.log("----");
             this.model.actionMode = null; // Todo: future reset place here;
             this.reset();
         }
     };
     Canvas.prototype.pipeLaying = function (coord) {
         var lastPipe = this.model.pipes[this.model.pipes.length - 1];
+        var lastPipeValve = this.model.pipeValves(lastPipe);
         if (!this.model.actionMode) {
-            console.log("----");
             this.model.actionMode = "pipeLaying";
             var p = new pipe_model_1.default(new vect_1.Vector(coord.x, coord.y), new vect_1.Vector(coord.x, coord.y));
-            p.temp = true;
+            p.ghost = true;
+            p.width = 5;
             this.model.addPipe(p);
         } else {
             if (lastPipe) {
-                lastPipe.temp = false;
+                lastPipe.ghost = false;
+                if (lastPipeValve) lastPipeValve.ghost = false;
                 var p = new pipe_model_1.default(lastPipe.end, coord);
-                p.temp = true;
+                p.ghost = true;
+                p.width = 5;
+                var v = new valve_model_1.default(lastPipe.end);
+                v.ghost = true;
+                v.color = "black";
+                v.pipes.push({ id: p.id, entry: "start" });
+                v.pipes.push({ id: lastPipe.id, entry: "end" });
+                this.model.addValve(v);
                 this.model.addPipe(p);
             } else console.warn("something wrong");
         }
@@ -102,7 +110,6 @@ var Canvas = /** @class */function () {
                 var lastPipe = this.model.pipes[this.model.pipes.length - 1];
                 lastPipe.end.x = _mouse.x;
                 lastPipe.end.y = _mouse.y;
-                console.log("lastPipe", lastPipe);
                 break;
             case "wallLaying":
                 break;
@@ -110,7 +117,10 @@ var Canvas = /** @class */function () {
     };
     Canvas.prototype.reset = function () {
         this.model.pipes = this.model.pipes.filter(function (p) {
-            return !p.temp;
+            return !p.ghost;
+        });
+        this.model.valves = this.model.valves.filter(function (v) {
+            return !v.ghost;
         });
         this.stats.render();
         this.view.draw();
@@ -119,7 +129,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":14,"../models/canvas.model":4,"../models/heating/pipe.model":7,"../views/canvas.view":10,"../views/stats.view":12}],2:[function(require,module,exports){
+},{"../../geometry/vect":16,"../models/canvas.model":4,"../models/heating/pipe.model":7,"../models/heating/valve.model":8,"../views/canvas.view":10,"../views/stats.view":13}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -168,11 +178,7 @@ exports.default = Controller;
 },{"./controllers/canvas.controller":1,"./controllers/mode.controller":2}],4:[function(require,module,exports){
 "use strict";
 
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var valve_model_1 = __importDefault(require("./heating/valve.model"));
 var Canvas = /** @class */function () {
     function Canvas() {
         this._walls = [];
@@ -243,21 +249,30 @@ var Canvas = /** @class */function () {
     Canvas.prototype.addPipe = function (pipe) {
         this.pipes.push(pipe);
         this.pipes = this.pipes;
-        return pipe;
+        return this.pipes[this.pipes.length - 1];
     };
-    Canvas.prototype.addValve = function (center) {
-        var valve = new valve_model_1.default(center);
-        valve.color = "red";
-        valve.width = 2;
-        this.valves.push(valve);
+    Canvas.prototype.addValve = function (v) {
+        this.valves.push(v);
         this.valves = this.valves;
-        return valve;
+        return this.valves[this.valves.length - 1];
+    };
+    Canvas.prototype.pipeValves = function (pipe) {
+        this.valves.find(function (v) {
+            console.log("v", v, pipe, v.pipes.find(function (p) {
+                return p.id === pipe.id;
+            }));
+        });
+        return this.valves.find(function (v) {
+            return v.pipes.find(function (p) {
+                return p.id === pipe.id;
+            });
+        });
     };
     return Canvas;
 }();
 exports.default = Canvas;
 
-},{"./heating/valve.model":8}],5:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -400,7 +415,7 @@ var Pipe = /** @class */function (_super) {
     __extends(Pipe, _super);
     function Pipe(start, end) {
         var _this = _super.call(this, start, end) || this;
-        _this.temp = false;
+        _this.ghost = false;
         _this.type = "supply";
         return _this;
     }
@@ -446,7 +461,10 @@ var arc_model_1 = __importDefault(require("../geometry/arc.model"));
 var Valve = /** @class */function (_super) {
     __extends(Valve, _super);
     function Valve(center) {
-        return _super.call(this, center) || this;
+        var _this = _super.call(this, center) || this;
+        _this.ghost = false;
+        _this.pipes = [];
+        return _this;
     }
     return Valve;
 }(arc_model_1.default);
@@ -459,33 +477,46 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("../../utils");
 var Main = /** @class */function () {
     function Main() {
-        this._id = (0, utils_1.uuid)();
+        this.id = (0, utils_1.uuid)();
     }
     return Main;
 }();
 exports.default = Main;
 
-},{"../../utils":16}],10:[function(require,module,exports){
+},{"../../utils":18}],10:[function(require,module,exports){
 "use strict";
 
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
+var pipe_view_1 = __importDefault(require("./pipe.view"));
+var valve_view_1 = __importDefault(require("./valve.view"));
 var Canvas = /** @class */function () {
     function Canvas(model) {
+        this.pipe = null;
+        this.valve = null;
         this.model = model;
         this.container = document.querySelector("#editor");
         this.init();
     }
     Canvas.prototype.init = function () {
+        var _a;
         this.initCanvasContainer();
+        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
+        if (ctx) {
+            this.pipe = new pipe_view_1.default(this, this.model, ctx);
+            this.valve = new valve_view_1.default(this, this.model, ctx);
+        }
     };
     Canvas.prototype.draw = function () {
+        var _a, _b;
         this.clear();
         this.drawNet();
-        this.drawMouse();
         this.drawWalls();
-        this.drawPipes();
-        this.drawValves();
+        (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.draw();
+        (_b = this.valve) === null || _b === void 0 ? void 0 : _b.draw();
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -616,47 +647,6 @@ var Canvas = /** @class */function () {
             ctx.restore();
         });
     };
-    Canvas.prototype.drawPipes = function () {
-        var _this_1 = this;
-        var pipes = this.model.pipes;
-        pipes === null || pipes === void 0 ? void 0 : pipes.map(function (pipe) {
-            _this_1.drawLine(pipe);
-        });
-    };
-    Canvas.prototype.drawLine = function (line) {
-        if (!this.container) return;
-        var ctx = this.container.getContext("2d");
-        if (!ctx) return;
-        ctx.save();
-        ctx.beginPath();
-        var from = this.getWorldCoordinates(line.start.x, line.start.y);
-        var to = this.getWorldCoordinates(line.end.x, line.end.y);
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
-        ctx.strokeStyle = line.color;
-        ctx.lineWidth = line.width;
-        ctx.stroke();
-        ctx.restore();
-    };
-    Canvas.prototype.drawValves = function () {
-        var _this_1 = this;
-        var valves = this.model.valves;
-        valves === null || valves === void 0 ? void 0 : valves.map(function (valve) {
-            _this_1.drawValve(valve);
-        });
-    };
-    Canvas.prototype.drawValve = function (valve) {
-        if (!this.container) return;
-        var ctx = this.container.getContext("2d");
-        if (!ctx) return;
-        ctx.save();
-        ctx.beginPath();
-        var c = this.getWorldCoordinates(valve.center.x, valve.center.y);
-        ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
-        ctx.fillStyle = "black";
-        ctx.fill();
-        ctx.restore();
-    };
     //TODO: apply scale transformation here
     Canvas.prototype.getWorldCoordinates = function (x, y) {
         var _this = this;
@@ -696,7 +686,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":14}],11:[function(require,module,exports){
+},{"../../geometry/vect":16,"./pipe.view":12,"./valve.view":14}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -710,6 +700,41 @@ var Mode = /** @class */function () {
 exports.default = Mode;
 
 },{}],12:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Pipe = /** @class */function () {
+    function Pipe(view, model, ctx) {
+        this.canvas = view;
+        this.ctx = ctx;
+    }
+    Pipe.prototype.drawPipes = function () {
+        var _this = this;
+        this.canvas.model.pipes.map(function (p) {
+            _this.drawPipe(p);
+        });
+    };
+    Pipe.prototype.drawPipe = function (pipe) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        var from = this.canvas.getWorldCoordinates(pipe.start.x, pipe.start.y);
+        var to = this.canvas.getWorldCoordinates(pipe.end.x, pipe.end.y);
+        this.ctx.moveTo(from.x, from.y);
+        this.ctx.lineTo(to.x, to.y);
+        this.ctx.strokeStyle = pipe.color;
+        this.ctx.lineWidth = pipe.width;
+        this.ctx.stroke();
+        this.ctx.restore();
+    };
+    Pipe.prototype.draw = function () {
+        this.drawPipes();
+        // this.drawGhost();
+    };
+    return Pipe;
+}();
+exports.default = Pipe;
+
+},{}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -738,7 +763,38 @@ var Stats = /** @class */function () {
 }();
 exports.default = Stats;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Valve = /** @class */function () {
+    function Valve(view, model, ctx) {
+        this.canvas = view;
+        this.ctx = ctx;
+    }
+    Valve.prototype.drawValves = function () {
+        var _this = this;
+        this.canvas.model.valves.map(function (v) {
+            _this.drawValve(v);
+        });
+    };
+    Valve.prototype.drawValve = function (valve) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        var c = this.canvas.getWorldCoordinates(valve.center.x, valve.center.y);
+        this.ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
+        this.ctx.fillStyle = valve.color;
+        this.ctx.fill();
+        this.ctx.restore();
+    };
+    Valve.prototype.draw = function () {
+        this.drawValves();
+    };
+    return Valve;
+}();
+exports.default = Valve;
+
+},{}],15:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -757,7 +813,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":3}],14:[function(require,module,exports){
+},{"./2d":3}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -794,7 +850,7 @@ var Vector = /** @class */function () {
 }();
 exports.Vector = Vector;
 
-},{}],15:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -805,7 +861,7 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":13}],16:[function(require,module,exports){
+},{"./app":15}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -819,6 +875,6 @@ var uuid = function uuid() {
 };
 exports.uuid = uuid;
 
-},{}]},{},[15])
+},{}]},{},[17])
 
 //# sourceMappingURL=bundle.js.map

@@ -8,6 +8,7 @@ var canvas_model_1 = __importDefault(require("../models/canvas.model"));
 var stats_view_1 = __importDefault(require("../views/stats.view"));
 var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
 var vect_1 = require("../../geometry/vect");
+var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
 var Canvas = /** @class */ (function () {
     function Canvas() {
         this.model = new canvas_model_1.default();
@@ -80,9 +81,7 @@ var Canvas = /** @class */ (function () {
         this.model.clicked = false;
     };
     Canvas.prototype.keyUp = function (e) {
-        console.log("e", e.code, e);
         if (e.key === "Escape") {
-            console.log("----");
             this.model.actionMode = null; // Todo: future reset place here;
             this.reset();
         }
@@ -90,17 +89,22 @@ var Canvas = /** @class */ (function () {
     Canvas.prototype.pipeLaying = function (coord) {
         var lastPipe = this.model.pipes[this.model.pipes.length - 1];
         if (!this.model.actionMode) {
-            console.log("----");
             this.model.actionMode = "pipeLaying";
             var p = new pipe_model_1.default(new vect_1.Vector(coord.x, coord.y), new vect_1.Vector(coord.x, coord.y));
-            p.temp = true;
+            p.ghost = true;
+            p.width = 5;
             this.model.addPipe(p);
         }
         else {
             if (lastPipe) {
-                lastPipe.temp = false;
+                lastPipe.ghost = false;
                 var p = new pipe_model_1.default(lastPipe.end, coord);
-                p.temp = true;
+                p.ghost = true;
+                p.width = 5;
+                var v = new valve_model_1.default(lastPipe.end);
+                v.ghost = true;
+                v.pipes.push({ id: lastPipe.id, entry: "end" });
+                v.pipes.push({ id: lastPipe.id, entry: "end" });
                 this.model.addPipe(p);
             }
             else
@@ -113,14 +117,13 @@ var Canvas = /** @class */ (function () {
                 var lastPipe = this.model.pipes[this.model.pipes.length - 1];
                 lastPipe.end.x = _mouse.x;
                 lastPipe.end.y = _mouse.y;
-                console.log("lastPipe", lastPipe);
                 break;
             case "wallLaying":
                 break;
         }
     };
     Canvas.prototype.reset = function () {
-        this.model.pipes = this.model.pipes.filter(function (p) { return !p.temp; });
+        this.model.pipes = this.model.pipes.filter(function (p) { return !p.ghost; });
         this.stats.render();
         this.view.draw();
     };

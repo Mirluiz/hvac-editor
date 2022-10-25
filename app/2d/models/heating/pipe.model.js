@@ -23,7 +23,7 @@ var Pipe = /** @class */ (function (_super) {
     __extends(Pipe, _super);
     function Pipe(start, end) {
         var _this = _super.call(this, start, end) || this;
-        _this.temp = false;
+        _this.ghost = false;
         _this.type = "supply";
         return _this;
     }

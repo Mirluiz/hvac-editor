@@ -22,7 +22,10 @@ var arc_model_1 = __importDefault(require("../geometry/arc.model"));
 var Valve = /** @class */ (function (_super) {
     __extends(Valve, _super);
     function Valve(center) {
-        return _super.call(this, center) || this;
+        var _this = _super.call(this, center) || this;
+        _this.ghost = false;
+        _this.pipes = [];
+        return _this;
     }
     return Valve;
 }(arc_model_1.default));

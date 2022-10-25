@@ -1,10 +1,10 @@
 import { uuid } from "../../utils";
 
 class Main {
-  _id: string;
+  id: string;
 
   constructor() {
-    this._id = uuid();
+    this.id = uuid();
   }
 }
 

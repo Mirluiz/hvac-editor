@@ -1,12 +1,9 @@
 import CanvasView from "../views/canvas.view";
 import CanvasModel from "../models/canvas.model";
 import StatsView from "../views/stats.view";
-import Wall from "../models/architecture/wall.model";
 import Pipe from "../models/heating/pipe.model";
-import Line from "../models/geometry/line.model";
-import Valve from "../models/heating/valve.model";
 import { IVec, Vector } from "../../geometry/vect";
-import PipeModel from "../models/heating/pipe.model";
+import Valve from "../models/heating/valve.model";
 
 class Canvas {
   view: CanvasView;
@@ -103,9 +100,7 @@ class Canvas {
   }
 
   keyUp(e: KeyboardEvent) {
-    console.log("e", e.code, e);
     if (e.key === "Escape") {
-      console.log("----");
       this.model.actionMode = null; // Todo: future reset place here;
       this.reset();
     }
@@ -113,24 +108,35 @@ class Canvas {
 
   pipeLaying(coord: IVec) {
     let lastPipe = this.model.pipes[this.model.pipes.length - 1];
+    let lastPipeValve = this.model.pipeValves(lastPipe);
 
     if (!this.model.actionMode) {
-      console.log("----");
       this.model.actionMode = "pipeLaying";
 
       let p = new Pipe(
         new Vector(coord.x, coord.y),
         new Vector(coord.x, coord.y)
       );
-      p.temp = true;
+      p.ghost = true;
+      p.width = 5;
 
       this.model.addPipe(p);
     } else {
       if (lastPipe) {
-        lastPipe.temp = false;
+        lastPipe.ghost = false;
+        if (lastPipeValve) lastPipeValve.ghost = false;
 
         let p = new Pipe(lastPipe.end, coord);
-        p.temp = true;
+        p.ghost = true;
+        p.width = 5;
+
+        let v = new Valve(lastPipe.end);
+        v.ghost = true;
+        v.color = "black";
+        v.pipes.push({ id: p.id, entry: "start" });
+        v.pipes.push({ id: lastPipe.id, entry: "end" });
+
+        this.model.addValve(v);
         this.model.addPipe(p);
       } else console.warn("something wrong");
     }
@@ -143,7 +149,6 @@ class Canvas {
         lastPipe.end.x = _mouse.x;
         lastPipe.end.y = _mouse.y;
 
-        console.log("lastPipe", lastPipe);
         break;
       case "wallLaying":
         break;
@@ -151,7 +156,8 @@ class Canvas {
   }
 
   reset() {
-    this.model.pipes = this.model.pipes.filter((p) => !p.temp);
+    this.model.pipes = this.model.pipes.filter((p) => !p.ghost);
+    this.model.valves = this.model.valves.filter((v) => !v.ghost);
 
     this.stats.render();
     this.view.draw();

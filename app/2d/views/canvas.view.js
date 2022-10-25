@@ -1,22 +1,37 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
+var pipe_view_1 = __importDefault(require("./pipe.view"));
+var valve_view_1 = __importDefault(require("./valve.view"));
 var Canvas = /** @class */ (function () {
     function Canvas(model) {
+        this.pipe = null;
+        this.valve = null;
         this.model = model;
         this.container = document.querySelector("#editor");
         this.init();
     }
     Canvas.prototype.init = function () {
+        var _a;
         this.initCanvasContainer();
+        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
+        if (ctx) {
+            this.pipe = new pipe_view_1.default(this, this.model, ctx);
+            this.valve = new valve_view_1.default(this, this.model, ctx);
+        }
     };
     Canvas.prototype.draw = function () {
         this.clear();
         this.drawNet();
-        this.drawMouse();
+        // this.drawMouse();
         this.drawWalls();
-        this.drawPipes();
-        this.drawValves();
+        if (this.pipe) {
+            this.pipe.draw();
+            this.pipe.draw();
+        }
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -156,51 +171,6 @@ var Canvas = /** @class */ (function () {
             ctx.stroke();
             ctx.restore();
         });
-    };
-    Canvas.prototype.drawPipes = function () {
-        var _this_1 = this;
-        var pipes = this.model.pipes;
-        pipes === null || pipes === void 0 ? void 0 : pipes.map(function (pipe) {
-            _this_1.drawLine(pipe);
-        });
-    };
-    Canvas.prototype.drawLine = function (line) {
-        if (!this.container)
-            return;
-        var ctx = this.container.getContext("2d");
-        if (!ctx)
-            return;
-        ctx.save();
-        ctx.beginPath();
-        var from = this.getWorldCoordinates(line.start.x, line.start.y);
-        var to = this.getWorldCoordinates(line.end.x, line.end.y);
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
-        ctx.strokeStyle = line.color;
-        ctx.lineWidth = line.width;
-        ctx.stroke();
-        ctx.restore();
-    };
-    Canvas.prototype.drawValves = function () {
-        var _this_1 = this;
-        var valves = this.model.valves;
-        valves === null || valves === void 0 ? void 0 : valves.map(function (valve) {
-            _this_1.drawValve(valve);
-        });
-    };
-    Canvas.prototype.drawValve = function (valve) {
-        if (!this.container)
-            return;
-        var ctx = this.container.getContext("2d");
-        if (!ctx)
-            return;
-        ctx.save();
-        ctx.beginPath();
-        var c = this.getWorldCoordinates(valve.center.x, valve.center.y);
-        ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
-        ctx.fillStyle = "black";
-        ctx.fill();
-        ctx.restore();
     };
     //TODO: apply scale transformation here
     Canvas.prototype.getWorldCoordinates = function (x, y) {
