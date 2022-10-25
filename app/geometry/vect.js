@@ -23,8 +23,11 @@ var Vector = /** @class */ (function () {
     Vector.prototype.projection = function () {
         return new Vector(this.x, this.y);
     };
-    Vector.prototype.sub = function (a) {
-        return new Vector(this.x - a.x, this.y - a.y);
+    Vector.prototype.sub = function (v) {
+        return new Vector(this.x - v.x, this.y - v.y);
+    };
+    Vector.prototype.angle = function (v) {
+        return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
     };
     return Vector;
 }());

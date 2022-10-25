@@ -22,22 +22,18 @@ var line_model_1 = __importDefault(require("../geometry/line.model"));
 var Pipe = /** @class */ (function (_super) {
     __extends(Pipe, _super);
     function Pipe(start, end) {
-        return _super.call(this, start, end) || this;
+        var _this = _super.call(this, start, end) || this;
+        _this.temp = false;
+        _this.type = "supply";
+        return _this;
     }
-    Pipe.prototype.getNearestPipe = function (pipes) {
-        var _this = this;
-        var pipe = pipes.find(function (pipe) {
-            if (pipe._id === _this._id)
-                return;
-            var start = pipe.start.distanceTo && pipe.start.distanceTo(_this.end);
-            var end = pipe.end.distanceTo && pipe.end.distanceTo(_this.end);
-            return (start && start < 30) || (end && end < 30);
-        });
-        return pipe;
-    };
-    Pipe.prototype.getNearestCoordinateOnPipe = function (point, pipe) {
-        var _pipe = new Pipe(pipe.start.sub(pipe.start), pipe.end.sub(pipe.start));
-    };
+    Object.defineProperty(Pipe.prototype, "color", {
+        get: function () {
+            return this.type === "supply" ? "red" : "blue";
+        },
+        enumerable: false,
+        configurable: true
+    });
     return Pipe;
 }(line_model_1.default));
 exports.default = Pipe;

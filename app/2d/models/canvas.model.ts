@@ -8,9 +8,10 @@ class Canvas {
   private _pipes: Array<Pipe> = [];
   private _valves: Array<Valve> = [];
 
-  actionMode: "default" | "wall" | "pipe" | "valve" = "pipe";
-  actionObject: Wall | Pipe | null = null;
-  placingObject: Valve | null = null;
+  actionMode: "pipeLaying" | "wallLaying" | null = null;
+  mode: "default" | "wall" | "pipe" | "valve" = "pipe";
+  // actionObject: Wall | Pipe | null = null;
+  // placingObject: Valve | null = null;
 
   nearestObject: IVec | null = null;
 
@@ -64,24 +65,14 @@ class Canvas {
     this._valves = value;
   }
 
-  addWall(start: IVec, end: IVec) {
-    let wall = new Wall(start, end);
-
-    wall.color = "black";
-    wall.width = 5;
-
+  addWall(wall: Wall) {
     this.walls.push(wall);
     this.walls = this.walls;
 
     return wall;
   }
 
-  addPipe(start: IVec, end: IVec) {
-    let pipe = new Pipe(start, end);
-
-    pipe.color = "red";
-    pipe.width = 5;
-
+  addPipe(pipe: Pipe) {
     this.pipes.push(pipe);
     this.pipes = this.pipes;
 

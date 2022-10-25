@@ -28,7 +28,7 @@ class Mode {
       value === "pipe" ||
       value === "valve"
     ) {
-      this.model.actionMode = value;
+      this.model.mode = value;
     }
   }
 }

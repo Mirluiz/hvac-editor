@@ -3,17 +3,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var wall_model_1 = __importDefault(require("./architecture/wall.model"));
-var pipe_model_1 = __importDefault(require("./heating/pipe.model"));
 var valve_model_1 = __importDefault(require("./heating/valve.model"));
 var Canvas = /** @class */ (function () {
     function Canvas() {
         this._walls = [];
         this._pipes = [];
         this._valves = [];
-        this.actionMode = "pipe";
-        this.actionObject = null;
-        this.placingObject = null;
+        this.actionMode = null;
+        this.mode = "pipe";
+        // actionObject: Wall | Pipe | null = null;
+        // placingObject: Valve | null = null;
         this.nearestObject = null;
         this.mouse = null;
         this.canvasSize = null;
@@ -67,18 +66,12 @@ var Canvas = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Canvas.prototype.addWall = function (start, end) {
-        var wall = new wall_model_1.default(start, end);
-        wall.color = "black";
-        wall.width = 5;
+    Canvas.prototype.addWall = function (wall) {
         this.walls.push(wall);
         this.walls = this.walls;
         return wall;
     };
-    Canvas.prototype.addPipe = function (start, end) {
-        var pipe = new pipe_model_1.default(start, end);
-        pipe.color = "red";
-        pipe.width = 2;
+    Canvas.prototype.addPipe = function (pipe) {
         this.pipes.push(pipe);
         this.pipes = this.pipes;
         return pipe;

@@ -7,7 +7,6 @@ var canvas_view_1 = __importDefault(require("../views/canvas.view"));
 var canvas_model_1 = __importDefault(require("../models/canvas.model"));
 var stats_view_1 = __importDefault(require("../views/stats.view"));
 var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
-var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
 var vect_1 = require("../../geometry/vect");
 var Canvas = /** @class */ (function () {
     function Canvas() {
@@ -19,6 +18,7 @@ var Canvas = /** @class */ (function () {
             this.view.container.addEventListener("mousedown", this.mouseDown.bind(this));
             this.view.container.addEventListener("mouseup", this.mouseUp.bind(this));
             this.view.container.addEventListener("wheel", this.mouseWheel.bind(this));
+            document.addEventListener("keyup", this.keyUp.bind(this));
         }
     }
     Canvas.prototype.mouseWheel = function (e) {
@@ -29,30 +29,25 @@ var Canvas = /** @class */ (function () {
         this.model.clicked = true;
         if (!this.model.mouse)
             return;
-        if (!this.model.actionObject) {
-            var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
-            if (this.model.config.net.bind) {
-                _mouse.x =
-                    Math.round(_mouse.x / this.model.config.net.step) *
-                        this.model.config.net.step;
-                _mouse.y =
-                    Math.round(_mouse.y / this.model.config.net.step) *
-                        this.model.config.net.step;
-            }
-            switch (this.model.actionMode) {
-                case "wall":
-                    this.model.actionObject = this.model.addWall(new vect_1.Vector(_mouse.x, _mouse.y), new vect_1.Vector(_mouse.x, _mouse.y));
-                    break;
-                case "pipe":
-                    this.model.actionObject = this.model.addPipe(new vect_1.Vector(_mouse.x, _mouse.y), new vect_1.Vector(_mouse.x, _mouse.y));
-                    break;
-                case "valve":
-                    this.model.placingObject = new valve_model_1.default(new vect_1.Vector(_mouse.x, _mouse.y));
-                    break;
-            }
+        var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        if (this.model.config.net.bind) {
+            _mouse.x =
+                Math.round(_mouse.x / this.model.config.net.step) *
+                    this.model.config.net.step;
+            _mouse.y =
+                Math.round(_mouse.y / this.model.config.net.step) *
+                    this.model.config.net.step;
         }
-        else {
-            this.model.actionObject = null;
+        switch (this.model.mode) {
+            case "default":
+                break;
+            case "wall":
+                break;
+            case "pipe":
+                this.pipeLaying(_mouse);
+                break;
+            case "valve":
+                break;
         }
         this.stats.render();
         this.view.draw();
@@ -68,43 +63,66 @@ var Canvas = /** @class */ (function () {
             this.model.mouse.x = e.offsetX;
             this.model.mouse.y = e.offsetY;
         }
-        if (this.model.actionObject) {
-            if (this.model.actionObject instanceof pipe_model_1.default) {
-                var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
-                if (this.model.config.net.bind) {
-                    _mouse.x =
-                        Math.round(_mouse.x / this.model.config.net.step) *
-                            this.model.config.net.step;
-                    _mouse.y =
-                        Math.round(_mouse.y / this.model.config.net.step) *
-                            this.model.config.net.step;
-                }
-                this.model.actionObject.end.x = _mouse.x;
-                this.model.actionObject.end.y = _mouse.y;
-                var _ = this.model.actionObject.getNearestPipe(this.model.pipes);
-                console.log("_", _);
-            }
+        var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        if (this.model.config.net.bind) {
+            _mouse.x =
+                Math.round(_mouse.x / this.model.config.net.step) *
+                    this.model.config.net.step;
+            _mouse.y =
+                Math.round(_mouse.y / this.model.config.net.step) *
+                    this.model.config.net.step;
         }
-        if (this.model.placingObject) {
-            if (this.model.placingObject instanceof valve_model_1.default) {
-                var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
-                if (this.model.config.net.bind) {
-                    _mouse.x =
-                        Math.round(_mouse.x / this.model.config.net.step) *
-                            this.model.config.net.step;
-                    _mouse.y =
-                        Math.round(_mouse.y / this.model.config.net.step) *
-                            this.model.config.net.step;
-                }
-                this.model.placingObject.center.x = _mouse.x;
-                this.model.placingObject.center.y = _mouse.y;
-            }
-        }
+        this.actionModeUpdate(_mouse);
         this.stats.render();
         this.view.draw();
     };
     Canvas.prototype.mouseUp = function (e) {
         this.model.clicked = false;
+    };
+    Canvas.prototype.keyUp = function (e) {
+        console.log("e", e.code, e);
+        if (e.key === "Escape") {
+            console.log("----");
+            this.model.actionMode = null; // Todo: future reset place here;
+            this.reset();
+        }
+    };
+    Canvas.prototype.pipeLaying = function (coord) {
+        var lastPipe = this.model.pipes[this.model.pipes.length - 1];
+        if (!this.model.actionMode) {
+            console.log("----");
+            this.model.actionMode = "pipeLaying";
+            var p = new pipe_model_1.default(new vect_1.Vector(coord.x, coord.y), new vect_1.Vector(coord.x, coord.y));
+            p.temp = true;
+            this.model.addPipe(p);
+        }
+        else {
+            if (lastPipe) {
+                lastPipe.temp = false;
+                var p = new pipe_model_1.default(lastPipe.end, coord);
+                p.temp = true;
+                this.model.addPipe(p);
+            }
+            else
+                console.warn("something wrong");
+        }
+    };
+    Canvas.prototype.actionModeUpdate = function (_mouse) {
+        switch (this.model.actionMode) {
+            case "pipeLaying":
+                var lastPipe = this.model.pipes[this.model.pipes.length - 1];
+                lastPipe.end.x = _mouse.x;
+                lastPipe.end.y = _mouse.y;
+                console.log("lastPipe", lastPipe);
+                break;
+            case "wallLaying":
+                break;
+        }
+    };
+    Canvas.prototype.reset = function () {
+        this.model.pipes = this.model.pipes.filter(function (p) { return !p.temp; });
+        this.stats.render();
+        this.view.draw();
     };
     return Canvas;
 }());

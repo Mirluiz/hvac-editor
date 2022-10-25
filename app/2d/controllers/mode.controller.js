@@ -20,7 +20,7 @@ var Mode = /** @class */ (function () {
             value === "wall" ||
             value === "pipe" ||
             value === "valve") {
-            this.model.actionMode = value;
+            this.model.mode = value;
         }
     };
     return Mode;

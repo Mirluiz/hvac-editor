@@ -25,8 +25,6 @@ class Canvas {
     this.drawWalls();
     this.drawPipes();
     this.drawValves();
-    this.drawTempObjects();
-    this.drawNearestObject();
   }
 
   clear() {
@@ -260,31 +258,6 @@ class Canvas {
 
     ctx.fill();
     ctx.restore();
-  }
-
-  drawTempObjects() {
-    if (this.model.placingObject instanceof Valve) {
-      this.drawValve(this.model.placingObject);
-    }
-
-    if (this.model.actionObject instanceof Pipe) {
-      this.drawLine(this.model.actionObject);
-    }
-  }
-
-  drawNearestObject() {
-    if (this.model.actionObject instanceof Pipe) {
-      if (this.model.nearestObject) {
-        let line = new Line(
-          this.model.actionObject.end,
-          this.model.nearestObject
-        );
-
-        line.color = "green";
-
-        this.drawLine(line);
-      }
-    }
   }
 
   //TODO: apply scale transformation here

@@ -1,12 +1,6 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
-var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
-var line_model_1 = __importDefault(require("../models/geometry/line.model"));
-var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
 var Canvas = /** @class */ (function () {
     function Canvas(model) {
         this.model = model;
@@ -19,14 +13,10 @@ var Canvas = /** @class */ (function () {
     Canvas.prototype.draw = function () {
         this.clear();
         this.drawNet();
-        // this.drawNet1();
-        // this.drawAxis();
         this.drawMouse();
         this.drawWalls();
         this.drawPipes();
         this.drawValves();
-        this.drawPlacingObjects();
-        this.drawNearestObject();
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -211,20 +201,6 @@ var Canvas = /** @class */ (function () {
         ctx.fillStyle = "black";
         ctx.fill();
         ctx.restore();
-    };
-    Canvas.prototype.drawPlacingObjects = function () {
-        if (this.model.placingObject instanceof valve_model_1.default) {
-            this.drawValve(this.model.placingObject);
-        }
-    };
-    Canvas.prototype.drawNearestObject = function () {
-        if (this.model.actionObject instanceof pipe_model_1.default) {
-            if (this.model.nearestObject) {
-                var line = new line_model_1.default(this.model.actionObject.end, this.model.nearestObject);
-                line.color = "green";
-                this.drawLine(line);
-            }
-        }
     };
     //TODO: apply scale transformation here
     Canvas.prototype.getWorldCoordinates = function (x, y) {
