@@ -1,19 +1,22 @@
 import CanvasView from "../views/canvas.view";
 import CanvasModel from "../models/canvas.model";
 import StatsView from "../views/stats.view";
-import Pipe from "../models/heating/pipe.model";
 import { IVec, Vector } from "../../geometry/vect";
-import Valve from "../models/heating/valve.model";
+import PipeController from "./pipe.controller";
+import Overlap from "../overlap.model";
 
 class Canvas {
   view: CanvasView;
   stats: StatsView;
   model: CanvasModel;
+  pipe: PipeController;
 
   constructor() {
     this.model = new CanvasModel();
     this.view = new CanvasView(this.model);
     this.stats = new StatsView(this.model);
+
+    this.pipe = new PipeController(this.model);
 
     if (this.view.container) {
       this.view.container.addEventListener(
@@ -57,7 +60,7 @@ class Canvas {
       case "wall":
         break;
       case "pipe":
-        this.pipeLaying(_mouse);
+        this.pipe.mouseDown(_mouse);
         break;
       case "valve":
         break;
@@ -89,7 +92,7 @@ class Canvas {
         this.model.config.net.step;
     }
 
-    this.actionModeUpdate(_mouse);
+    this.model.overlap.update(_mouse);
 
     this.stats.render();
     this.view.draw();
@@ -103,55 +106,6 @@ class Canvas {
     if (e.key === "Escape") {
       this.model.actionMode = null; // Todo: future reset place here;
       this.reset();
-    }
-  }
-
-  pipeLaying(coord: IVec) {
-    let lastPipe = this.model.pipes[this.model.pipes.length - 1];
-    let lastPipeValve = this.model.pipeValves(lastPipe);
-
-    if (!this.model.actionMode) {
-      this.model.actionMode = "pipeLaying";
-
-      let p = new Pipe(
-        new Vector(coord.x, coord.y),
-        new Vector(coord.x, coord.y)
-      );
-      p.ghost = true;
-      p.width = 5;
-
-      this.model.addPipe(p);
-    } else {
-      if (lastPipe) {
-        lastPipe.ghost = false;
-        if (lastPipeValve) lastPipeValve.ghost = false;
-
-        let p = new Pipe(lastPipe.end, coord);
-        p.ghost = true;
-        p.width = 5;
-
-        let v = new Valve(lastPipe.end);
-        v.ghost = true;
-        v.color = "black";
-        v.pipes.push({ id: p.id, entry: "start" });
-        v.pipes.push({ id: lastPipe.id, entry: "end" });
-
-        this.model.addValve(v);
-        this.model.addPipe(p);
-      } else console.warn("something wrong");
-    }
-  }
-
-  actionModeUpdate(_mouse: IVec) {
-    switch (this.model.actionMode) {
-      case "pipeLaying":
-        let lastPipe = this.model.pipes[this.model.pipes.length - 1];
-        lastPipe.end.x = _mouse.x;
-        lastPipe.end.y = _mouse.y;
-
-        break;
-      case "wallLaying":
-        break;
     }
   }
 

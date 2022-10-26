@@ -8,14 +8,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_view_1 = __importDefault(require("../views/canvas.view"));
 var canvas_model_1 = __importDefault(require("../models/canvas.model"));
 var stats_view_1 = __importDefault(require("../views/stats.view"));
-var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
 var vect_1 = require("../../geometry/vect");
-var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
+var pipe_controller_1 = __importDefault(require("./pipe.controller"));
 var Canvas = /** @class */function () {
     function Canvas() {
         this.model = new canvas_model_1.default();
         this.view = new canvas_view_1.default(this.model);
         this.stats = new stats_view_1.default(this.model);
+        this.pipe = new pipe_controller_1.default(this.model);
         if (this.view.container) {
             this.view.container.addEventListener("mousemove", this.mouseMove.bind(this));
             this.view.container.addEventListener("mousedown", this.mouseDown.bind(this));
@@ -42,7 +42,7 @@ var Canvas = /** @class */function () {
             case "wall":
                 break;
             case "pipe":
-                this.pipeLaying(_mouse);
+                this.pipe.mouseDown(_mouse);
                 break;
             case "valve":
                 break;
@@ -65,7 +65,7 @@ var Canvas = /** @class */function () {
             _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
             _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
         }
-        this.actionModeUpdate(_mouse);
+        this.model.overlap.update(_mouse);
         this.stats.render();
         this.view.draw();
     };
@@ -76,43 +76,6 @@ var Canvas = /** @class */function () {
         if (e.key === "Escape") {
             this.model.actionMode = null; // Todo: future reset place here;
             this.reset();
-        }
-    };
-    Canvas.prototype.pipeLaying = function (coord) {
-        var lastPipe = this.model.pipes[this.model.pipes.length - 1];
-        var lastPipeValve = this.model.pipeValves(lastPipe);
-        if (!this.model.actionMode) {
-            this.model.actionMode = "pipeLaying";
-            var p = new pipe_model_1.default(new vect_1.Vector(coord.x, coord.y), new vect_1.Vector(coord.x, coord.y));
-            p.ghost = true;
-            p.width = 5;
-            this.model.addPipe(p);
-        } else {
-            if (lastPipe) {
-                lastPipe.ghost = false;
-                if (lastPipeValve) lastPipeValve.ghost = false;
-                var p = new pipe_model_1.default(lastPipe.end, coord);
-                p.ghost = true;
-                p.width = 5;
-                var v = new valve_model_1.default(lastPipe.end);
-                v.ghost = true;
-                v.color = "black";
-                v.pipes.push({ id: p.id, entry: "start" });
-                v.pipes.push({ id: lastPipe.id, entry: "end" });
-                this.model.addValve(v);
-                this.model.addPipe(p);
-            } else console.warn("something wrong");
-        }
-    };
-    Canvas.prototype.actionModeUpdate = function (_mouse) {
-        switch (this.model.actionMode) {
-            case "pipeLaying":
-                var lastPipe = this.model.pipes[this.model.pipes.length - 1];
-                lastPipe.end.x = _mouse.x;
-                lastPipe.end.y = _mouse.y;
-                break;
-            case "wallLaying":
-                break;
         }
     };
     Canvas.prototype.reset = function () {
@@ -129,7 +92,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":16,"../models/canvas.model":4,"../models/heating/pipe.model":7,"../models/heating/valve.model":8,"../views/canvas.view":10,"../views/stats.view":13}],2:[function(require,module,exports){
+},{"../../geometry/vect":16,"../models/canvas.model":5,"../views/canvas.view":10,"../views/stats.view":13,"./pipe.controller":3}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -160,6 +123,32 @@ exports.default = Mode;
 },{"../views/mode.view":11}],3:[function(require,module,exports){
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+var Pipe = /** @class */function () {
+    function Pipe(model) {
+        this.model = model;
+    }
+    Pipe.prototype.mouseMove = function () {};
+    Pipe.prototype.mouseDown = function (coord) {
+        // this.model.update(coord);
+    };
+    Pipe.prototype.mouseUp = function () {
+        // let p = new PipeGhostModel(
+        //   new Vector(coord.x, coord.y),
+        //   new Vector(coord.x, coord.y)
+        // );
+        //
+        // p.width = 5;
+        //
+        // this.model.addPipe(p);
+    };
+    return Pipe;
+}();
+exports.default = Pipe;
+
+},{}],4:[function(require,module,exports){
+"use strict";
+
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
@@ -175,20 +164,27 @@ var Controller = /** @class */function () {
 }();
 exports.default = Controller;
 
-},{"./controllers/canvas.controller":1,"./controllers/mode.controller":2}],4:[function(require,module,exports){
+},{"./controllers/canvas.controller":1,"./controllers/mode.controller":2}],5:[function(require,module,exports){
 "use strict";
 
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../geometry/vect");
+var pipe_model_1 = __importDefault(require("./heating/pipe.model"));
+var overlap_model_1 = __importDefault(require("../overlap.model"));
 var Canvas = /** @class */function () {
+    // actionObject: Wall | Pipe | null = null;
+    // placingObject: Valve | null = null;
     function Canvas() {
         this._walls = [];
         this._pipes = [];
         this._valves = [];
         this.actionMode = null;
         this.mode = "pipe";
-        // actionObject: Wall | Pipe | null = null;
-        // placingObject: Valve | null = null;
         this.nearestObject = null;
+        this.hoveredObjects = [];
         this.mouse = null;
         this.canvasSize = null;
         this.mouseCanvasRatio = null;
@@ -210,6 +206,13 @@ var Canvas = /** @class */function () {
                 step: 20
             }
         };
+        this.overlap = new overlap_model_1.default(this);
+        // let p = new Pipe(new Vector(60, 60), new Vector(560, 60));
+        // p.type = "supply";
+        // p.width = 5;
+        this.pipes.push(new pipe_model_1.default(new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
+        this.pipes.push(new pipe_model_1.default(new vect_1.Vector(40, 200), new vect_1.Vector(100, 260)));
+        this.pipes.push(new pipe_model_1.default(new vect_1.Vector(40, 380), new vect_1.Vector(100, 320)));
     }
     Object.defineProperty(Canvas.prototype, "walls", {
         get: function get() {
@@ -256,65 +259,16 @@ var Canvas = /** @class */function () {
         this.valves = this.valves;
         return this.valves[this.valves.length - 1];
     };
-    Canvas.prototype.pipeValves = function (pipe) {
-        this.valves.find(function (v) {
-            console.log("v", v, pipe, v.pipes.find(function (p) {
-                return p.id === pipe.id;
-            }));
-        });
-        return this.valves.find(function (v) {
-            return v.pipes.find(function (p) {
-                return p.id === pipe.id;
-            });
+    Canvas.prototype.getPipeByID = function (id) {
+        return this.pipes.find(function (p) {
+            return p.id === id;
         });
     };
     return Canvas;
 }();
 exports.default = Canvas;
 
-},{}],5:[function(require,module,exports){
-"use strict";
-
-var __extends = undefined && undefined.__extends || function () {
-    var _extendStatics = function extendStatics(d, b) {
-        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
-            d.__proto__ = b;
-        } || function (d, b) {
-            for (var p in b) {
-                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
-            }
-        };
-        return _extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        _extendStatics(d, b);
-        function __() {
-            this.constructor = d;
-        }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-}();
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var main_model_1 = __importDefault(require("../main.model"));
-var Arc = /** @class */function (_super) {
-    __extends(Arc, _super);
-    function Arc(center) {
-        var _this = _super.call(this) || this;
-        _this.radius = 5;
-        _this.color = "#fff";
-        _this.width = 1;
-        _this.center = center;
-        return _this;
-    }
-    return Arc;
-}(main_model_1.default);
-exports.default = Arc;
-
-},{"../main.model":9}],6:[function(require,module,exports){
+},{"../../geometry/vect":16,"../overlap.model":9,"./heating/pipe.model":7}],6:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -383,7 +337,7 @@ var Line = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Line;
 
-},{"../main.model":9}],7:[function(require,module,exports){
+},{"../main.model":8}],7:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -426,51 +380,14 @@ var Pipe = /** @class */function (_super) {
         enumerable: false,
         configurable: true
     });
+    Pipe.prototype.toOrigin = function () {
+        return this.end.sub(this.start);
+    };
     return Pipe;
 }(line_model_1.default);
 exports.default = Pipe;
 
 },{"../geometry/line.model":6}],8:[function(require,module,exports){
-"use strict";
-
-var __extends = undefined && undefined.__extends || function () {
-    var _extendStatics = function extendStatics(d, b) {
-        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
-            d.__proto__ = b;
-        } || function (d, b) {
-            for (var p in b) {
-                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
-            }
-        };
-        return _extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        _extendStatics(d, b);
-        function __() {
-            this.constructor = d;
-        }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-}();
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var arc_model_1 = __importDefault(require("../geometry/arc.model"));
-var Valve = /** @class */function (_super) {
-    __extends(Valve, _super);
-    function Valve(center) {
-        var _this = _super.call(this, center) || this;
-        _this.ghost = false;
-        _this.pipes = [];
-        return _this;
-    }
-    return Valve;
-}(arc_model_1.default);
-exports.default = Valve;
-
-},{"../geometry/arc.model":5}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -483,7 +400,82 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":18}],10:[function(require,module,exports){
+},{"../../utils":18}],9:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Overlap = /** @class */function () {
+    function Overlap(model) {
+        this.mouse = null;
+        this.netBoundMouse = null;
+        this.walls = [];
+        this.pipes = [];
+        this.valves = [];
+        this.list = [];
+        this.netBoundList = [];
+        this.model = model;
+    }
+    Overlap.prototype.update = function (mouse) {
+        this.mouse = mouse;
+        // console.log('---')
+        // if (!this.model.mouse) return;
+        this.wallsOverlap();
+        this.pipeOverlap();
+        this.updateList();
+        // this.updateNetBoundList();
+    };
+    Overlap.prototype.wallsOverlap = function () {
+        this.model.walls.map(function () {});
+    };
+    Overlap.prototype.pipeOverlap = function () {
+        var _this = this;
+        this.pipes = [];
+        this.model.pipes.map(function (pipe) {
+            if (!_this.mouse) return;
+            var _p = null;
+            // if (pipe.start.sub(this.mouse).length < 40) {
+            //   _p = {
+            //     type: "pipe",
+            //     id: pipe.id,
+            //     part: "start",
+            //     partCoordinate: new Vector(pipe.start.x, pipe.start.y),
+            //   };
+            // }
+            //
+            // if (!_p && pipe.end.sub(this.mouse).length < 40) {
+            //   _p = {
+            //     type: "pipe",
+            //     id: pipe.id,
+            //     part: "end",
+            //     partCoordinate: new Vector(pipe.end.x, pipe.end.y),
+            //   };
+            // }
+            if (!_p) {
+                var l = _this.mouse.distanceToLine(pipe);
+                if (l < 40) {
+                    var normPipe = pipe.toOrigin().normalize();
+                    var projPipe = pipe.toOrigin().projection(_this.mouse.sub(pipe.start));
+                    _p = {
+                        type: "pipe",
+                        id: pipe.id,
+                        part: "body",
+                        partCoordinate: normPipe.multiply(projPipe).sum(pipe.start)
+                    };
+                }
+            }
+            if (_p) _this.pipes.push(_p);
+        });
+    };
+    Overlap.prototype.updateList = function () {
+        var _a;
+        this.list = [];
+        (_a = this.list).push.apply(_a, this.pipes);
+    };
+    return Overlap;
+}();
+exports.default = Overlap;
+
+},{}],10:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -726,9 +718,29 @@ var Pipe = /** @class */function () {
         this.ctx.stroke();
         this.ctx.restore();
     };
+    Pipe.prototype.drawOverLap = function (coordinate) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        var c = this.canvas.getWorldCoordinates(coordinate.x, coordinate.y);
+        this.ctx.arc(c.x, c.y, 5, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "black";
+        this.ctx.fill();
+        this.ctx.restore();
+    };
+    Pipe.prototype.drawOverLaps = function () {
+        var _this = this;
+        this.canvas.model.overlap.list.map(function (l) {
+            if (l) {
+                var _p = _this.canvas.model.getPipeByID(l.id);
+                if (_p && l.partCoordinate) {
+                    _this.drawOverLap(l.partCoordinate);
+                }
+            }
+        });
+    };
     Pipe.prototype.draw = function () {
         this.drawPipes();
-        // this.drawGhost();
+        this.drawOverLaps();
     };
     return Pipe;
 }();
@@ -813,7 +825,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":3}],16:[function(require,module,exports){
+},{"./2d":4}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -828,7 +840,19 @@ var Vector = /** @class */function () {
         return _v.length;
     };
     Vector.prototype.distanceToLine = function (l) {
-        return 1;
+        var lVec = l.end.sub(l.start);
+        var vec = this.sub(l.start);
+        var angle = vec.angle(lVec);
+        var p = lVec.product(vec);
+        var p1 = vec.product(vec);
+        var param = -1;
+        if (p !== 0) param = p1 / p;
+        if (param < 0) {
+            return vec.length;
+        } else if (param > 1) {
+            return lVec.sub(vec).length;
+        }
+        return Math.sin(angle) * vec.length;
     };
     Object.defineProperty(Vector.prototype, "length", {
         get: function get() {
@@ -837,14 +861,26 @@ var Vector = /** @class */function () {
         enumerable: false,
         configurable: true
     });
-    Vector.prototype.projection = function () {
-        return new Vector(this.x, this.y);
+    Vector.prototype.projection = function (b) {
+        return this.product(b) / Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
     };
     Vector.prototype.sub = function (v) {
         return new Vector(this.x - v.x, this.y - v.y);
     };
+    Vector.prototype.sum = function (v) {
+        return new Vector(this.x + v.x, this.y + v.y);
+    };
     Vector.prototype.angle = function (v) {
         return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
+    };
+    Vector.prototype.product = function (v) {
+        return this.x * v.x + this.y * v.y;
+    };
+    Vector.prototype.normalize = function () {
+        return new Vector(this.x / this.length, this.y / this.length);
+    };
+    Vector.prototype.multiply = function (a) {
+        return new Vector(this.x * a, this.y * a);
     };
     return Vector;
 }();
@@ -874,6 +910,9 @@ var uuid = function uuid() {
     });
 };
 exports.uuid = uuid;
+// export const isImplementInterface = <T>(object: T): object is T {
+//   return ;
+// }
 
 },{}]},{},[17])
 

@@ -1,5 +1,5 @@
-import { IVec, Vector } from "../../../geometry/vect";
-import Line from "../geometry/line.model";
+import Line from "../../geometry/line.model";
+import { IVec } from "../../../../geometry/vect";
 
 class Pipe extends Line {
   ghost: boolean = false;
@@ -11,10 +11,6 @@ class Pipe extends Line {
 
   get color() {
     return this.type === "supply" ? "red" : "blue";
-  }
-
-  toOrigin(): IVec {
-    return this.end.sub(this.start);
   }
 }
 

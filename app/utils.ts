@@ -5,3 +5,7 @@ export const uuid = (): string => {
     return v.toString(16);
   });
 };
+
+// export const isImplementInterface = <T>(object: T): object is T {
+//   return ;
+// }

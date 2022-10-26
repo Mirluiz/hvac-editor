@@ -14,41 +14,70 @@ export class Vector implements IVec {
     return _v.length;
   }
 
-  distanceToLine(l: Line) {
-    return 1;
+  distanceToLine(l: Line): number {
+    let lVec = l.end.sub(l.start);
+    let vec = this.sub(l.start);
+    let angle = vec.angle(lVec);
+
+    let p = lVec.product(vec);
+    let p1 = vec.product(vec);
+
+    let param = -1;
+
+    if (p !== 0) param = p1 / p;
+
+    if (param < 0) {
+      return vec.length;
+    } else if (param > 1) {
+      return lVec.sub(vec).length;
+    }
+
+    return Math.sin(angle) * vec.length;
   }
 
   get length() {
     return Math.sqrt(this.x ** 2 + this.y ** 2);
   }
 
-  projection() {
-    return new Vector(this.x, this.y);
+  projection(b: IVec) {
+    return this.product(b) / Math.sqrt(this.x ** 2 + this.y ** 2);
   }
 
-  sub(v: IVec) {
+  sub(v: IVec): Vector {
     return new Vector(this.x - v.x, this.y - v.y);
+  }
+
+  sum(v: IVec): Vector {
+    return new Vector(this.x + v.x, this.y + v.y);
   }
 
   angle(v: IVec) {
     return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
   }
 
-  // dot(a: IVec): number {
-  //   return a.x * this.x + a.y * this.y;
-  // }
-  //
-  // cross(a: IVec): number {
-  //   return 1;
-  // }
+  product(v: IVec): number {
+    return this.x * v.x + this.y * v.y;
+  }
+
+  normalize() {
+    return new Vector(this.x / this.length, this.y / this.length);
+  }
+
+  multiply(a: number) {
+    return new Vector(this.x * a, this.y * a);
+  }
 }
 
 export interface IVec extends ICoord {
   length: number;
   distanceTo: (v: IVec) => number;
-  sub: (v: IVec) => IVec;
+  sub: (v: IVec) => Vector;
+  sum: (v: IVec) => Vector;
   distanceToLine: (l: Line) => number;
   angle: (v: IVec) => number;
+  projection: (v: IVec) => number;
+  normalize: () => Vector;
+  multiply: (n: number) => Vector;
 }
 
 export interface ICoord {

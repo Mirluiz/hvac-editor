@@ -1,6 +1,7 @@
 import CanvasModel from "../models/canvas.model";
 import PipeModel from "../models/heating/pipe.model";
 import CanvasView from "./canvas.view";
+import { IVec } from "../../geometry/vect";
 
 class Pipe {
   canvas: CanvasView;
@@ -38,9 +39,34 @@ class Pipe {
     this.ctx.restore();
   }
 
+  drawOverLap(coordinate: IVec) {
+    this.ctx.save();
+    this.ctx.beginPath();
+
+    let c = this.canvas.getWorldCoordinates(coordinate.x, coordinate.y);
+
+    this.ctx.arc(c.x, c.y, 5, 0, 2 * Math.PI);
+
+    this.ctx.fillStyle = "black";
+
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  drawOverLaps() {
+    this.canvas.model.overlap.list.map((l) => {
+      if (l) {
+        let _p = this.canvas.model.getPipeByID(l.id);
+        if (_p && l.partCoordinate) {
+          this.drawOverLap(l.partCoordinate);
+        }
+      }
+    });
+  }
+
   draw() {
     this.drawPipes();
-    // this.drawGhost();
+    this.drawOverLaps();
   }
 }
 
