@@ -6,14 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_view_1 = __importDefault(require("../views/canvas.view"));
 var canvas_model_1 = __importDefault(require("../models/canvas.model"));
 var stats_view_1 = __importDefault(require("../views/stats.view"));
-var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
 var vect_1 = require("../../geometry/vect");
-var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
+var pipe_controller_1 = __importDefault(require("./pipe.controller"));
 var Canvas = /** @class */ (function () {
     function Canvas() {
         this.model = new canvas_model_1.default();
         this.view = new canvas_view_1.default(this.model);
         this.stats = new stats_view_1.default(this.model);
+        this.pipe = new pipe_controller_1.default(this.model);
         if (this.view.container) {
             this.view.container.addEventListener("mousemove", this.mouseMove.bind(this));
             this.view.container.addEventListener("mousedown", this.mouseDown.bind(this));
@@ -45,7 +45,7 @@ var Canvas = /** @class */ (function () {
             case "wall":
                 break;
             case "pipe":
-                this.pipeLaying(_mouse);
+                this.pipe.mouseDown(_mouse);
                 break;
             case "valve":
                 break;
@@ -73,7 +73,7 @@ var Canvas = /** @class */ (function () {
                 Math.round(_mouse.y / this.model.config.net.step) *
                     this.model.config.net.step;
         }
-        this.actionModeUpdate(_mouse);
+        this.model.overlap.update(_mouse);
         this.stats.render();
         this.view.draw();
     };
@@ -86,44 +86,9 @@ var Canvas = /** @class */ (function () {
             this.reset();
         }
     };
-    Canvas.prototype.pipeLaying = function (coord) {
-        var lastPipe = this.model.pipes[this.model.pipes.length - 1];
-        if (!this.model.actionMode) {
-            this.model.actionMode = "pipeLaying";
-            var p = new pipe_model_1.default(new vect_1.Vector(coord.x, coord.y), new vect_1.Vector(coord.x, coord.y));
-            p.ghost = true;
-            p.width = 5;
-            this.model.addPipe(p);
-        }
-        else {
-            if (lastPipe) {
-                lastPipe.ghost = false;
-                var p = new pipe_model_1.default(lastPipe.end, coord);
-                p.ghost = true;
-                p.width = 5;
-                var v = new valve_model_1.default(lastPipe.end);
-                v.ghost = true;
-                v.pipes.push({ id: lastPipe.id, entry: "end" });
-                v.pipes.push({ id: lastPipe.id, entry: "end" });
-                this.model.addPipe(p);
-            }
-            else
-                console.warn("something wrong");
-        }
-    };
-    Canvas.prototype.actionModeUpdate = function (_mouse) {
-        switch (this.model.actionMode) {
-            case "pipeLaying":
-                var lastPipe = this.model.pipes[this.model.pipes.length - 1];
-                lastPipe.end.x = _mouse.x;
-                lastPipe.end.y = _mouse.y;
-                break;
-            case "wallLaying":
-                break;
-        }
-    };
     Canvas.prototype.reset = function () {
         this.model.pipes = this.model.pipes.filter(function (p) { return !p.ghost; });
+        this.model.valves = this.model.valves.filter(function (v) { return !v.ghost; });
         this.stats.render();
         this.view.draw();
     };

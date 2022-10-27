@@ -24,14 +24,12 @@ var Canvas = /** @class */ (function () {
         }
     };
     Canvas.prototype.draw = function () {
+        var _a, _b;
         this.clear();
         this.drawNet();
-        // this.drawMouse();
         this.drawWalls();
-        if (this.pipe) {
-            this.pipe.draw();
-            this.pipe.draw();
-        }
+        (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.draw();
+        (_b = this.valve) === null || _b === void 0 ? void 0 : _b.draw();
     };
     Canvas.prototype.clear = function () {
         var _a;

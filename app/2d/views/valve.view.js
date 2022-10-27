@@ -17,7 +17,7 @@ var Valve = /** @class */ (function () {
         var c = this.canvas.getWorldCoordinates(valve.center.x, valve.center.y);
         this.ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
         this.ctx.fillStyle = valve.color;
-        this.ctx.stroke();
+        this.ctx.fill();
         this.ctx.restore();
     };
     Valve.prototype.draw = function () {

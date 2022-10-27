@@ -23,8 +23,6 @@ class Overlap {
 
   update(mouse: IVec) {
     this.mouse = mouse;
-    // console.log('---')
-    // if (!this.model.mouse) return;
 
     this.wallsOverlap();
     this.pipeOverlap();
@@ -39,41 +37,40 @@ class Overlap {
   pipeOverlap() {
     this.pipes = [];
 
+    let bind = this.model.config.overlap.bindDistance;
+
     this.model.pipes.map((pipe) => {
       if (!this.mouse) return;
 
       let _p: IOverlap | null = null;
 
-      // if (pipe.start.sub(this.mouse).length < 40) {
-      //   _p = {
-      //     type: "pipe",
-      //     id: pipe.id,
-      //     part: "start",
-      //     partCoordinate: new Vector(pipe.start.x, pipe.start.y),
-      //   };
-      // }
-      //
-      // if (!_p && pipe.end.sub(this.mouse).length < 40) {
-      //   _p = {
-      //     type: "pipe",
-      //     id: pipe.id,
-      //     part: "end",
-      //     partCoordinate: new Vector(pipe.end.x, pipe.end.y),
-      //   };
-      // }
+      if (pipe.start.sub(this.mouse).length <= bind) {
+        _p = {
+          type: "pipe",
+          id: pipe.id,
+          ioVector: new Vector(pipe.start.x, pipe.start.y),
+        };
+      }
+
+      if (!_p && pipe.end.sub(this.mouse).length <= bind) {
+        _p = {
+          type: "pipe",
+          id: pipe.id,
+          ioVector: new Vector(pipe.end.x, pipe.end.y),
+        };
+      }
 
       if (!_p) {
         let l = this.mouse.distanceToLine(pipe);
 
-        if (l < 40) {
+        if (l <= bind) {
           let normPipe = pipe.toOrigin().normalize();
           let projPipe = pipe.toOrigin().projection(this.mouse.sub(pipe.start));
 
           _p = {
             type: "pipe",
             id: pipe.id,
-            part: "body",
-            partCoordinate: normPipe.multiply(projPipe).sum(pipe.start),
+            ioVector: normPipe.multiply(projPipe).sum(pipe.start),
           };
         }
       }
@@ -92,8 +89,7 @@ class Overlap {
 interface IOverlap {
   id: string;
   type: "wall" | "pipe" | "valve";
-  part?: "start" | "end" | "body";
-  partCoordinate?: IVec;
+  ioVector?: IVec;
 }
 
 export interface IOverlapValve extends IOverlap {}

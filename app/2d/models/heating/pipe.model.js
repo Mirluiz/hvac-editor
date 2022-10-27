@@ -34,6 +34,9 @@ var Pipe = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Pipe.prototype.toOrigin = function () {
+        return this.end.sub(this.start);
+    };
     return Pipe;
 }(line_model_1.default));
 exports.default = Pipe;

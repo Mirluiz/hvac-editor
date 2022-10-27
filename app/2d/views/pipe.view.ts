@@ -57,8 +57,8 @@ class Pipe {
     this.canvas.model.overlap.list.map((l) => {
       if (l) {
         let _p = this.canvas.model.getPipeByID(l.id);
-        if (_p && l.partCoordinate) {
-          this.drawOverLap(l.partCoordinate);
+        if (_p && l.ioVector) {
+          this.drawOverLap(l.ioVector);
         }
       }
     });

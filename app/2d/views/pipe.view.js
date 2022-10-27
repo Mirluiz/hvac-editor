@@ -23,9 +23,29 @@ var Pipe = /** @class */ (function () {
         this.ctx.stroke();
         this.ctx.restore();
     };
+    Pipe.prototype.drawOverLap = function (coordinate) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        var c = this.canvas.getWorldCoordinates(coordinate.x, coordinate.y);
+        this.ctx.arc(c.x, c.y, 5, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "black";
+        this.ctx.fill();
+        this.ctx.restore();
+    };
+    Pipe.prototype.drawOverLaps = function () {
+        var _this = this;
+        this.canvas.model.overlap.list.map(function (l) {
+            if (l) {
+                var _p = _this.canvas.model.getPipeByID(l.id);
+                if (_p && l.partCoordinate) {
+                    _this.drawOverLap(l.partCoordinate);
+                }
+            }
+        });
+    };
     Pipe.prototype.draw = function () {
         this.drawPipes();
-        // this.drawGhost();
+        this.drawOverLaps();
     };
     return Pipe;
 }());

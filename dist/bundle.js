@@ -175,14 +175,14 @@ var vect_1 = require("../../geometry/vect");
 var pipe_model_1 = __importDefault(require("./heating/pipe.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
 var Canvas = /** @class */function () {
-    // actionObject: Wall | Pipe | null = null;
-    // placingObject: Valve | null = null;
     function Canvas() {
         this._walls = [];
         this._pipes = [];
         this._valves = [];
         this.actionMode = null;
         this.mode = "pipe";
+        this.actionObject = null;
+        this.placingObject = null;
         this.nearestObject = null;
         this.hoveredObjects = [];
         this.mouse = null;
@@ -204,15 +204,15 @@ var Canvas = /** @class */function () {
                 bind: true,
                 show: true,
                 step: 20
+            },
+            overlap: {
+                bindDistance: 0
             }
         };
         this.overlap = new overlap_model_1.default(this);
-        // let p = new Pipe(new Vector(60, 60), new Vector(560, 60));
-        // p.type = "supply";
-        // p.width = 5;
         this.pipes.push(new pipe_model_1.default(new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
-        this.pipes.push(new pipe_model_1.default(new vect_1.Vector(40, 200), new vect_1.Vector(100, 260)));
-        this.pipes.push(new pipe_model_1.default(new vect_1.Vector(40, 380), new vect_1.Vector(100, 320)));
+        // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
+        // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
     }
     Object.defineProperty(Canvas.prototype, "walls", {
         get: function get() {
@@ -404,6 +404,7 @@ exports.default = Main;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../geometry/vect");
 var Overlap = /** @class */function () {
     function Overlap(model) {
         this.mouse = null;
@@ -417,8 +418,6 @@ var Overlap = /** @class */function () {
     }
     Overlap.prototype.update = function (mouse) {
         this.mouse = mouse;
-        // console.log('---')
-        // if (!this.model.mouse) return;
         this.wallsOverlap();
         this.pipeOverlap();
         this.updateList();
@@ -430,36 +429,33 @@ var Overlap = /** @class */function () {
     Overlap.prototype.pipeOverlap = function () {
         var _this = this;
         this.pipes = [];
+        var bind = this.model.config.overlap.bindDistance;
         this.model.pipes.map(function (pipe) {
             if (!_this.mouse) return;
             var _p = null;
-            // if (pipe.start.sub(this.mouse).length < 40) {
-            //   _p = {
-            //     type: "pipe",
-            //     id: pipe.id,
-            //     part: "start",
-            //     partCoordinate: new Vector(pipe.start.x, pipe.start.y),
-            //   };
-            // }
-            //
-            // if (!_p && pipe.end.sub(this.mouse).length < 40) {
-            //   _p = {
-            //     type: "pipe",
-            //     id: pipe.id,
-            //     part: "end",
-            //     partCoordinate: new Vector(pipe.end.x, pipe.end.y),
-            //   };
-            // }
+            if (pipe.start.sub(_this.mouse).length <= bind) {
+                _p = {
+                    type: "pipe",
+                    id: pipe.id,
+                    ioVector: new vect_1.Vector(pipe.start.x, pipe.start.y)
+                };
+            }
+            if (!_p && pipe.end.sub(_this.mouse).length <= bind) {
+                _p = {
+                    type: "pipe",
+                    id: pipe.id,
+                    ioVector: new vect_1.Vector(pipe.end.x, pipe.end.y)
+                };
+            }
             if (!_p) {
                 var l = _this.mouse.distanceToLine(pipe);
-                if (l < 40) {
+                if (l <= bind) {
                     var normPipe = pipe.toOrigin().normalize();
                     var projPipe = pipe.toOrigin().projection(_this.mouse.sub(pipe.start));
                     _p = {
                         type: "pipe",
                         id: pipe.id,
-                        part: "body",
-                        partCoordinate: normPipe.multiply(projPipe).sum(pipe.start)
+                        ioVector: normPipe.multiply(projPipe).sum(pipe.start)
                     };
                 }
             }
@@ -475,7 +471,7 @@ var Overlap = /** @class */function () {
 }();
 exports.default = Overlap;
 
-},{}],10:[function(require,module,exports){
+},{"../geometry/vect":16}],10:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -732,8 +728,8 @@ var Pipe = /** @class */function () {
         this.canvas.model.overlap.list.map(function (l) {
             if (l) {
                 var _p = _this.canvas.model.getPipeByID(l.id);
-                if (_p && l.partCoordinate) {
-                    _this.drawOverLap(l.partCoordinate);
+                if (_p && l.ioVector) {
+                    _this.drawOverLap(l.ioVector);
                 }
             }
         });

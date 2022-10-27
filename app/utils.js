@@ -8,3 +8,6 @@ var uuid = function () {
     });
 };
 exports.uuid = uuid;
+// export const isImplementInterface = <T>(object: T): object is T {
+//   return ;
+// }

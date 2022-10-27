@@ -12,18 +12,15 @@ class Canvas {
 
   actionMode: "pipeLaying" | "wallLaying" | null = null;
   mode: "default" | "wall" | "pipe" | "valve" = "pipe";
-  // actionObject: Wall | Pipe | null = null;
-  // placingObject: Valve | null = null;
+  actionObject: Wall | Pipe | null = null;
+  placingObject: Valve | null = null;
 
   constructor() {
     this.overlap = new Overlap(this);
 
-    // let p = new Pipe(new Vector(60, 60), new Vector(560, 60));
-    // p.type = "supply";
-    // p.width = 5;
     this.pipes.push(new Pipe(new Vector(40, 100), new Vector(300, 100)));
-    this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
-    this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
+    // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
+    // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
   }
 
   nearestObject: IVec | null = null;
@@ -53,6 +50,9 @@ class Canvas {
       bind: true,
       show: true,
       step: 20,
+    },
+    overlap: {
+      bindDistance: 0,
     },
   };
 
@@ -114,6 +114,9 @@ interface IConfig {
     bind: boolean;
     show: boolean;
     step: 15 | 20 | 50;
+  };
+  overlap: {
+    bindDistance: 0 | 20;
   };
 }
 
