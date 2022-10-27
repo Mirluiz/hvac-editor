@@ -32,6 +32,7 @@ class Pipe {
       );
       this.model.addPipe(pipe);
       this.model.mergeController(pipe, pipe.start);
+      this.model.mergeController(pipe, pipe.end);
     }
 
     let ghostP = new PipeGhostModel(coord.clone(), coord.clone());

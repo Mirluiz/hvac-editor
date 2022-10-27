@@ -15,9 +15,12 @@ export class Vector implements IVec {
   }
 
   distanceToLine(l: Line): number {
+    let ret: number;
     let lVec = l.end.sub(l.start);
     let vec = this.sub(l.start);
     let angle = vec.angle(lVec);
+
+    if (vec.length === 0) console.warn("ops");
 
     let p = lVec.product(vec);
     let p1 = vec.product(vec);
@@ -27,12 +30,14 @@ export class Vector implements IVec {
     if (p !== 0) param = p1 / p;
 
     if (param < 0) {
-      return vec.length;
+      ret = Math.round(vec.length);
     } else if (param > 1) {
-      return lVec.sub(vec).length;
+      ret = Math.round(lVec.sub(vec).length);
+    } else {
+      ret = Math.round(Math.sin(angle) * vec.length);
     }
 
-    return Math.sin(angle) * vec.length;
+    return ret;
   }
 
   get length() {
@@ -70,6 +75,13 @@ export class Vector implements IVec {
   clone() {
     return new Vector(this.x, this.y);
   }
+
+  bindNet(step: number) {
+    return new Vector(
+      Math.round(this.x / step) * step,
+      Math.round(this.y / step) * step
+    );
+  }
 }
 
 export interface IVec extends ICoord {
@@ -84,6 +96,7 @@ export interface IVec extends ICoord {
   multiply: (n: number) => IVec;
   product: (v: IVec) => number;
   clone: () => IVec;
+  bindNet: (step: number) => IVec;
 }
 
 export interface ICoord {

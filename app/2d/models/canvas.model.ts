@@ -54,7 +54,7 @@ class Canvas {
       step: 20,
     },
     overlap: {
-      bindDistance: 0,
+      bindDistance: 10,
     },
   };
 
@@ -115,126 +115,53 @@ class Canvas {
     return this.pipes.find((p) => p.id === id);
   }
 
-  // update() {
-  //   let mergedPipes: Array<Pipe> = [];
-  //   let createdFittings: Array<Fitting> = [];
-  //
-  //   this.pipes.map((p) => {
-  //     this.pipes.map((_p) => {
-  //       if (_p.id === p.id) return;
-  //       let _ = this.pipeMerge(_p, p);
-  //       if (_) {
-  //         this.pipes = this.pipes.filter((__p) => __p.id !== p.id);
-  //
-  //         _.pipes.map((p) => {
-  //           mergedPipes.push(p);
-  //         });
-  //
-  //         _.fittings.map((f) => {
-  //           createdFittings.push(f);
-  //         });
-  //       }
-  //     });
-  //   });
-  //
-  //   if (mergedPipes.length > 0) mergedPipes.map((mP) => this.addPipe(mP));
-  //   if (createdFittings.length > 0) {
-  //     createdFittings.map((cF) => this.addFitting(cF));
-  //   }
-  // }
-
   mergeController(p: Pipe, end: IVec) {
     this.pipes.map((pipe) => {
       if (p.id === pipe.id) return;
 
-      if (end.distanceToLine(pipe) <= this.config.overlap.bindDistance) {
-        let normPipe = pipe.toOrigin().normalize();
-        let projPipe = pipe.toOrigin().projection(end.sub(pipe.start));
+      if (
+        pipe.start.sub(end).length <= this.config.overlap.bindDistance ||
+        pipe.end.sub(end).length <= this.config.overlap.bindDistance ||
+        end.distanceToLine(pipe) <= this.config.overlap.bindDistance
+      ) {
+        let pipePart: "start" | "end" | "body" = "body";
 
-        let mergePoint = normPipe.multiply(projPipe).sum(pipe.start);
+        if (pipe.start.sub(end).length <= this.config.overlap.bindDistance)
+          pipePart = "start";
+        if (pipe.end.sub(end).length <= this.config.overlap.bindDistance)
+          pipePart = "end";
 
-        let newP1 = new Pipe(
-          new Vector(0, 0).sum(pipe.start),
-          new Vector(mergePoint.x, mergePoint.y)
-        );
-        let newP2 = new Pipe(
-          new Vector(mergePoint.x, mergePoint.y),
-          new Vector(pipe.end.x, pipe.end.y)
-        );
+        let mergePoint;
 
-        this.addPipe(newP1);
-        this.addPipe(newP2);
-        this.pipes = this.pipes.filter((_p) => _p.id !== pipe.id);
+        if (pipePart === "start") {
+          mergePoint = pipe.start.clone();
+        } else if (pipePart === "end") {
+          mergePoint = pipe.end.clone();
+        } else {
+          let normPipe = pipe.toOrigin().normalize();
+          let projPipe = pipe.toOrigin().projection(end.sub(pipe.start));
+
+          mergePoint = normPipe.multiply(projPipe).sum(pipe.start);
+          mergePoint = mergePoint.bindNet(this.config.net.step);
+
+          let newP1 = new Pipe(
+            new Vector(0, 0).sum(pipe.start),
+            new Vector(mergePoint.x, mergePoint.y)
+          );
+          let newP2 = new Pipe(
+            new Vector(mergePoint.x, mergePoint.y),
+            new Vector(pipe.end.x, pipe.end.y)
+          );
+
+          this.addPipe(newP1);
+          this.addPipe(newP2);
+          this.pipes = this.pipes.filter((_p) => _p.id !== pipe.id);
+        }
 
         let newFitting = new Fitting(mergePoint);
         this.addFitting(newFitting);
       }
     });
-  }
-
-  pipeMerge(
-    pipe1: Pipe,
-    pipe2: Pipe
-  ): false | { pipes: Array<Pipe>; fittings: Array<Fitting> } {
-    if (pipe1.id === pipe2.id) return false;
-
-    let ret: { pipes: Array<Pipe>; fittings: Array<Fitting> } = {
-      pipes: [],
-      fittings: [],
-    };
-
-    let merged, mergePoint;
-
-    if (pipe1.start.distanceToLine(pipe2) <= this.config.overlap.bindDistance) {
-      let normPipe = pipe2.toOrigin().normalize();
-      let projPipe = pipe2.toOrigin().projection(pipe1.end.sub(pipe2.start));
-
-      mergePoint = normPipe.multiply(projPipe);
-
-      let newP1 = new Pipe(
-        new Vector(0, 0).sum(pipe2.start),
-        new Vector(mergePoint.x, mergePoint.y).sum(pipe2.start)
-      );
-      let newP2 = new Pipe(
-        new Vector(mergePoint.x, mergePoint.y).sum(pipe2.start),
-        new Vector(pipe2.end.x, pipe2.end.y).sum(pipe2.start)
-      );
-
-      ret.pipes.push(newP1);
-      ret.pipes.push(newP2);
-      mergePoint = mergePoint.sum(pipe2.start);
-
-      merged = true;
-    } else if (
-      pipe1.end.distanceToLine(pipe2) <= this.config.overlap.bindDistance
-    ) {
-      let normPipe = pipe2.toOrigin().normalize();
-      let projPipe = pipe2.toOrigin().projection(pipe1.end.sub(pipe2.start));
-
-      mergePoint = normPipe.multiply(projPipe);
-
-      let newP1 = new Pipe(
-        new Vector(0, 0).sum(pipe2.start),
-        new Vector(mergePoint.x, mergePoint.y).sum(pipe2.start)
-      );
-      let newP2 = new Pipe(
-        new Vector(mergePoint.x, mergePoint.y).sum(pipe2.start),
-        new Vector(pipe2.end.x, pipe2.end.y)
-      );
-
-      ret.pipes.push(newP1);
-      ret.pipes.push(newP2);
-      mergePoint = mergePoint.sum(pipe2.start);
-
-      merged = true;
-    }
-
-    if (merged && mergePoint) {
-      let newFitting = new Fitting(mergePoint);
-      ret.fittings.push(newFitting);
-    }
-
-    return ret;
   }
 
   deletePipe(id: string) {
@@ -252,7 +179,7 @@ interface IConfig {
     step: 15 | 20 | 50;
   };
   overlap: {
-    bindDistance: 0 | 20;
+    bindDistance: 10 | 20;
   };
 }
 

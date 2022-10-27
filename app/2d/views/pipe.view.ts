@@ -36,6 +36,13 @@ class Pipe {
     this.ctx.strokeStyle = pipe.color;
     this.ctx.lineWidth = pipe.width;
 
+    if (this.canvas.model.overlap.list.find((l) => l.id === pipe.id)) {
+      this.ctx.shadowOffsetX = 4;
+      this.ctx.shadowOffsetY = 4;
+      this.ctx.shadowBlur = 5;
+      this.ctx.shadowColor = "gray";
+    }
+
     this.ctx.stroke();
     this.ctx.restore();
   }
@@ -51,7 +58,7 @@ class Pipe {
     this.ctx.lineTo(to.x, to.y);
 
     this.ctx.strokeStyle = pipe.color;
-    this.ctx.lineWidth = pipe.width;
+    this.ctx.lineWidth = pipe.width * 2;
 
     this.ctx.stroke();
     this.ctx.restore();
