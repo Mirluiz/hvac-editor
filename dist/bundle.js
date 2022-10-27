@@ -65,12 +65,40 @@ var Canvas = /** @class */function () {
             _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
             _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
         }
+        switch (this.model.mode) {
+            case "default":
+                break;
+            case "wall":
+                break;
+            case "pipe":
+                this.pipe.mouseMove(_mouse);
+                break;
+            case "valve":
+                break;
+        }
         this.model.overlap.update(_mouse);
         this.stats.render();
         this.view.draw();
     };
     Canvas.prototype.mouseUp = function (e) {
         this.model.clicked = false;
+        if (!this.model.mouse) return;
+        var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        if (this.model.config.net.bind) {
+            _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
+            _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
+        }
+        switch (this.model.mode) {
+            case "default":
+                break;
+            case "wall":
+                break;
+            case "pipe":
+                this.pipe.mouseUp(_mouse);
+                break;
+            case "valve":
+                break;
+        }
     };
     Canvas.prototype.keyUp = function (e) {
         if (e.key === "Escape") {
@@ -79,12 +107,7 @@ var Canvas = /** @class */function () {
         }
     };
     Canvas.prototype.reset = function () {
-        this.model.pipes = this.model.pipes.filter(function (p) {
-            return !p.ghost;
-        });
-        this.model.valves = this.model.valves.filter(function (v) {
-            return !v.ghost;
-        });
+        this.model.actionObject = null;
         this.stats.render();
         this.view.draw();
     };
@@ -92,7 +115,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":16,"../models/canvas.model":5,"../views/canvas.view":10,"../views/stats.view":13,"./pipe.controller":3}],2:[function(require,module,exports){
+},{"../../geometry/vect":20,"../models/canvas.model":5,"../views/canvas.view":13,"../views/stats.view":17,"./pipe.controller":3}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -120,33 +143,43 @@ var Mode = /** @class */function () {
 }();
 exports.default = Mode;
 
-},{"../views/mode.view":11}],3:[function(require,module,exports){
+},{"../views/mode.view":15}],3:[function(require,module,exports){
 "use strict";
 
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var pipe_model_1 = __importDefault(require("../models/ghost/heating/pipe.model"));
+var pipe_model_2 = __importDefault(require("../models/heating/pipe.model"));
 var Pipe = /** @class */function () {
     function Pipe(model) {
         this.model = model;
     }
-    Pipe.prototype.mouseMove = function () {};
+    Pipe.prototype.mouseMove = function (coord) {
+        if (this.model.actionObject && this.model.actionObject instanceof pipe_model_1.default) {
+            this.model.actionObject.end.x = coord.x;
+            this.model.actionObject.end.y = coord.y;
+        }
+    };
     Pipe.prototype.mouseDown = function (coord) {
-        // this.model.update(coord);
+        if (!this.model.actionObject) {
+            this.model.actionMode = "pipeLaying";
+        }
+        if (this.model.actionObject instanceof pipe_model_1.default) {
+            var pipe = new pipe_model_2.default(this.model.actionObject.start.clone(), this.model.actionObject.end.clone());
+            this.model.addPipe(pipe);
+            this.model.mergeController(pipe, pipe.start);
+        }
+        var ghostP = new pipe_model_1.default(coord.clone(), coord.clone());
+        this.model.actionObject = ghostP;
     };
-    Pipe.prototype.mouseUp = function () {
-        // let p = new PipeGhostModel(
-        //   new Vector(coord.x, coord.y),
-        //   new Vector(coord.x, coord.y)
-        // );
-        //
-        // p.width = 5;
-        //
-        // this.model.addPipe(p);
-    };
+    Pipe.prototype.mouseUp = function (coord) {};
     return Pipe;
 }();
 exports.default = Pipe;
 
-},{}],4:[function(require,module,exports){
+},{"../models/ghost/heating/pipe.model":8,"../models/heating/pipe.model":10}],4:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -174,13 +207,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var pipe_model_1 = __importDefault(require("./heating/pipe.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
+var fitting_model_1 = __importDefault(require("./heating/fitting.model"));
 var Canvas = /** @class */function () {
     function Canvas() {
         this._walls = [];
         this._pipes = [];
         this._valves = [];
-        this.actionMode = null;
+        this._fittings = [];
         this.mode = "pipe";
+        this.actionMode = null;
         this.actionObject = null;
         this.placingObject = null;
         this.nearestObject = null;
@@ -244,6 +279,16 @@ var Canvas = /** @class */function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Canvas.prototype, "fittings", {
+        get: function get() {
+            return this._fittings;
+        },
+        set: function set(value) {
+            this._fittings = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Canvas.prototype.addWall = function (wall) {
         this.walls.push(wall);
         this.walls = this.walls;
@@ -254,21 +299,149 @@ var Canvas = /** @class */function () {
         this.pipes = this.pipes;
         return this.pipes[this.pipes.length - 1];
     };
-    Canvas.prototype.addValve = function (v) {
-        this.valves.push(v);
-        this.valves = this.valves;
-        return this.valves[this.valves.length - 1];
+    Canvas.prototype.addFitting = function (fitting) {
+        this.fittings.push(fitting);
+        this.fittings = this.fittings;
+        return this.fittings[this.fittings.length - 1];
     };
     Canvas.prototype.getPipeByID = function (id) {
         return this.pipes.find(function (p) {
             return p.id === id;
         });
     };
+    // update() {
+    //   let mergedPipes: Array<Pipe> = [];
+    //   let createdFittings: Array<Fitting> = [];
+    //
+    //   this.pipes.map((p) => {
+    //     this.pipes.map((_p) => {
+    //       if (_p.id === p.id) return;
+    //       let _ = this.pipeMerge(_p, p);
+    //       if (_) {
+    //         this.pipes = this.pipes.filter((__p) => __p.id !== p.id);
+    //
+    //         _.pipes.map((p) => {
+    //           mergedPipes.push(p);
+    //         });
+    //
+    //         _.fittings.map((f) => {
+    //           createdFittings.push(f);
+    //         });
+    //       }
+    //     });
+    //   });
+    //
+    //   if (mergedPipes.length > 0) mergedPipes.map((mP) => this.addPipe(mP));
+    //   if (createdFittings.length > 0) {
+    //     createdFittings.map((cF) => this.addFitting(cF));
+    //   }
+    // }
+    Canvas.prototype.mergeController = function (p, end) {
+        var _this = this;
+        this.pipes.map(function (pipe) {
+            if (p.id === pipe.id) return;
+            if (end.distanceToLine(pipe) <= _this.config.overlap.bindDistance) {
+                var normPipe = pipe.toOrigin().normalize();
+                var projPipe = pipe.toOrigin().projection(end.sub(pipe.start));
+                var mergePoint = normPipe.multiply(projPipe).sum(pipe.start);
+                var newP1 = new pipe_model_1.default(new vect_1.Vector(0, 0).sum(pipe.start), new vect_1.Vector(mergePoint.x, mergePoint.y));
+                var newP2 = new pipe_model_1.default(new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.end.x, pipe.end.y));
+                _this.addPipe(newP1);
+                _this.addPipe(newP2);
+                _this.pipes = _this.pipes.filter(function (_p) {
+                    return _p.id !== pipe.id;
+                });
+                var newFitting = new fitting_model_1.default(mergePoint);
+                _this.addFitting(newFitting);
+            }
+        });
+    };
+    Canvas.prototype.pipeMerge = function (pipe1, pipe2) {
+        if (pipe1.id === pipe2.id) return false;
+        var ret = {
+            pipes: [],
+            fittings: []
+        };
+        var merged, mergePoint;
+        if (pipe1.start.distanceToLine(pipe2) <= this.config.overlap.bindDistance) {
+            var normPipe = pipe2.toOrigin().normalize();
+            var projPipe = pipe2.toOrigin().projection(pipe1.end.sub(pipe2.start));
+            mergePoint = normPipe.multiply(projPipe);
+            var newP1 = new pipe_model_1.default(new vect_1.Vector(0, 0).sum(pipe2.start), new vect_1.Vector(mergePoint.x, mergePoint.y).sum(pipe2.start));
+            var newP2 = new pipe_model_1.default(new vect_1.Vector(mergePoint.x, mergePoint.y).sum(pipe2.start), new vect_1.Vector(pipe2.end.x, pipe2.end.y).sum(pipe2.start));
+            ret.pipes.push(newP1);
+            ret.pipes.push(newP2);
+            mergePoint = mergePoint.sum(pipe2.start);
+            merged = true;
+        } else if (pipe1.end.distanceToLine(pipe2) <= this.config.overlap.bindDistance) {
+            var normPipe = pipe2.toOrigin().normalize();
+            var projPipe = pipe2.toOrigin().projection(pipe1.end.sub(pipe2.start));
+            mergePoint = normPipe.multiply(projPipe);
+            var newP1 = new pipe_model_1.default(new vect_1.Vector(0, 0).sum(pipe2.start), new vect_1.Vector(mergePoint.x, mergePoint.y).sum(pipe2.start));
+            var newP2 = new pipe_model_1.default(new vect_1.Vector(mergePoint.x, mergePoint.y).sum(pipe2.start), new vect_1.Vector(pipe2.end.x, pipe2.end.y));
+            ret.pipes.push(newP1);
+            ret.pipes.push(newP2);
+            mergePoint = mergePoint.sum(pipe2.start);
+            merged = true;
+        }
+        if (merged && mergePoint) {
+            var newFitting = new fitting_model_1.default(mergePoint);
+            ret.fittings.push(newFitting);
+        }
+        return ret;
+    };
+    Canvas.prototype.deletePipe = function (id) {
+        this.pipes = this.pipes.filter(function (p) {
+            return p.id !== id;
+        });
+    };
     return Canvas;
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":16,"../overlap.model":9,"./heating/pipe.model":7}],6:[function(require,module,exports){
+},{"../../geometry/vect":20,"../overlap.model":12,"./heating/fitting.model":9,"./heating/pipe.model":10}],6:[function(require,module,exports){
+"use strict";
+
+var __extends = undefined && undefined.__extends || function () {
+    var _extendStatics = function extendStatics(d, b) {
+        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
+            d.__proto__ = b;
+        } || function (d, b) {
+            for (var p in b) {
+                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+            }
+        };
+        return _extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        _extendStatics(d, b);
+        function __() {
+            this.constructor = d;
+        }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+}();
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var main_model_1 = __importDefault(require("../main.model"));
+var Arc = /** @class */function (_super) {
+    __extends(Arc, _super);
+    function Arc(center) {
+        var _this = _super.call(this) || this;
+        _this.radius = 5;
+        _this.color = "#fff";
+        _this.width = 1;
+        _this.center = center;
+        return _this;
+    }
+    return Arc;
+}(main_model_1.default);
+exports.default = Arc;
+
+},{"../main.model":11}],7:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -337,7 +510,93 @@ var Line = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Line;
 
-},{"../main.model":8}],7:[function(require,module,exports){
+},{"../main.model":11}],8:[function(require,module,exports){
+"use strict";
+
+var __extends = undefined && undefined.__extends || function () {
+    var _extendStatics = function extendStatics(d, b) {
+        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
+            d.__proto__ = b;
+        } || function (d, b) {
+            for (var p in b) {
+                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+            }
+        };
+        return _extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        _extendStatics(d, b);
+        function __() {
+            this.constructor = d;
+        }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+}();
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var line_model_1 = __importDefault(require("../../geometry/line.model"));
+var Pipe = /** @class */function (_super) {
+    __extends(Pipe, _super);
+    function Pipe(start, end) {
+        var _this = _super.call(this, start, end) || this;
+        _this.type = "supply";
+        return _this;
+    }
+    Object.defineProperty(Pipe.prototype, "color", {
+        get: function get() {
+            return this.type === "supply" ? "red" : "blue";
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return Pipe;
+}(line_model_1.default);
+exports.default = Pipe;
+
+},{"../../geometry/line.model":7}],9:[function(require,module,exports){
+"use strict";
+
+var __extends = undefined && undefined.__extends || function () {
+    var _extendStatics = function extendStatics(d, b) {
+        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
+            d.__proto__ = b;
+        } || function (d, b) {
+            for (var p in b) {
+                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+            }
+        };
+        return _extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        _extendStatics(d, b);
+        function __() {
+            this.constructor = d;
+        }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+}();
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var arc_model_1 = __importDefault(require("../geometry/arc.model"));
+var Fitting = /** @class */function (_super) {
+    __extends(Fitting, _super);
+    function Fitting(center) {
+        var _this = _super.call(this, center) || this;
+        _this.pipes = [];
+        _this.color = "black";
+        return _this;
+    }
+    return Fitting;
+}(arc_model_1.default);
+exports.default = Fitting;
+
+},{"../geometry/arc.model":6}],10:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -387,7 +646,7 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../geometry/line.model":6}],8:[function(require,module,exports){
+},{"../geometry/line.model":7}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -400,7 +659,7 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":18}],9:[function(require,module,exports){
+},{"../../utils":22}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -471,7 +730,7 @@ var Overlap = /** @class */function () {
 }();
 exports.default = Overlap;
 
-},{"../geometry/vect":16}],10:[function(require,module,exports){
+},{"../geometry/vect":20}],13:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -481,10 +740,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var pipe_view_1 = __importDefault(require("./pipe.view"));
 var valve_view_1 = __importDefault(require("./valve.view"));
+var fitting_view_1 = __importDefault(require("./fitting.view"));
 var Canvas = /** @class */function () {
     function Canvas(model) {
         this.pipe = null;
         this.valve = null;
+        this.fitting = null;
         this.model = model;
         this.container = document.querySelector("#editor");
         this.init();
@@ -496,15 +757,17 @@ var Canvas = /** @class */function () {
         if (ctx) {
             this.pipe = new pipe_view_1.default(this, this.model, ctx);
             this.valve = new valve_view_1.default(this, this.model, ctx);
+            this.fitting = new fitting_view_1.default(this, this.model, ctx);
         }
     };
     Canvas.prototype.draw = function () {
-        var _a, _b;
+        var _a, _b, _c;
         this.clear();
         this.drawNet();
         this.drawWalls();
         (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.draw();
         (_b = this.valve) === null || _b === void 0 ? void 0 : _b.draw();
+        (_c = this.fitting) === null || _c === void 0 ? void 0 : _c.draw();
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -674,7 +937,38 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":16,"./pipe.view":12,"./valve.view":14}],11:[function(require,module,exports){
+},{"../../geometry/vect":20,"./fitting.view":14,"./pipe.view":16,"./valve.view":18}],14:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Fitting = /** @class */function () {
+    function Fitting(view, model, ctx) {
+        this.canvas = view;
+        this.ctx = ctx;
+    }
+    Fitting.prototype.drawFittings = function () {
+        var _this = this;
+        this.canvas.model.fittings.map(function (fitting) {
+            _this.drawFitting(fitting);
+        });
+    };
+    Fitting.prototype.drawFitting = function (fitting) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        var c = this.canvas.getWorldCoordinates(fitting.center.x, fitting.center.y);
+        this.ctx.arc(c.x, c.y, fitting.radius, 0, 2 * Math.PI);
+        this.ctx.fillStyle = fitting.color;
+        this.ctx.fill();
+        this.ctx.restore();
+    };
+    Fitting.prototype.draw = function () {
+        this.drawFittings();
+    };
+    return Fitting;
+}();
+exports.default = Fitting;
+
+},{}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -687,10 +981,14 @@ var Mode = /** @class */function () {
 }();
 exports.default = Mode;
 
-},{}],12:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var pipe_model_1 = __importDefault(require("../models/ghost/heating/pipe.model"));
 var Pipe = /** @class */function () {
     function Pipe(view, model, ctx) {
         this.canvas = view;
@@ -714,6 +1012,18 @@ var Pipe = /** @class */function () {
         this.ctx.stroke();
         this.ctx.restore();
     };
+    Pipe.prototype.drawGhost = function (pipe) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        var from = this.canvas.getWorldCoordinates(pipe.start.x, pipe.start.y);
+        var to = this.canvas.getWorldCoordinates(pipe.end.x, pipe.end.y);
+        this.ctx.moveTo(from.x, from.y);
+        this.ctx.lineTo(to.x, to.y);
+        this.ctx.strokeStyle = pipe.color;
+        this.ctx.lineWidth = pipe.width;
+        this.ctx.stroke();
+        this.ctx.restore();
+    };
     Pipe.prototype.drawOverLap = function (coordinate) {
         this.ctx.save();
         this.ctx.beginPath();
@@ -724,25 +1034,27 @@ var Pipe = /** @class */function () {
         this.ctx.restore();
     };
     Pipe.prototype.drawOverLaps = function () {
-        var _this = this;
-        this.canvas.model.overlap.list.map(function (l) {
-            if (l) {
-                var _p = _this.canvas.model.getPipeByID(l.id);
-                if (_p && l.ioVector) {
-                    _this.drawOverLap(l.ioVector);
-                }
-            }
-        });
+        // this.canvas.model.overlap.list.map((l) => {
+        //   if (l) {
+        //     let _p = this.canvas.model.getPipeByID(l.id);
+        //     if (_p && l.ioVector) {
+        //       this.drawOverLap(l.ioVector);
+        //     }
+        //   }
+        // });
     };
     Pipe.prototype.draw = function () {
         this.drawPipes();
         this.drawOverLaps();
+        if (this.canvas.model.actionObject && this.canvas.model.actionObject instanceof pipe_model_1.default) {
+            this.drawGhost(this.canvas.model.actionObject);
+        }
     };
     return Pipe;
 }();
 exports.default = Pipe;
 
-},{}],13:[function(require,module,exports){
+},{"../models/ghost/heating/pipe.model":8}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -756,14 +1068,14 @@ var Stats = /** @class */function () {
         this.initContainer();
     };
     Stats.prototype.render = function () {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         if (!this.container) return;
-        this.container.innerHTML = "\n      <div style=\"display: flex; flex-direction: column\">\n        <div>x - ".concat(Math.round(this.model.offset.x), " \n        / y - ").concat(Math.round(this.model.offset.y), "</div>\n        \n        <div>x - ").concat(Math.round((_b = (_a = this.model.mouse) === null || _a === void 0 ? void 0 : _a.x) !== null && _b !== void 0 ? _b : 0), " \n        / y - ").concat(Math.round((_d = (_c = this.model.mouse) === null || _c === void 0 ? void 0 : _c.y) !== null && _d !== void 0 ? _d : 0), "</div>\n        \n        <div>scale - ").concat(this.model.scale.amount, "</div>\n        <div>width - ").concat((_e = this.model.canvasSize) === null || _e === void 0 ? void 0 : _e.x, " / height - ").concat((_f = this.model.canvasSize) === null || _f === void 0 ? void 0 : _f.y, " / </div>\n        <div>ratio x ").concat((_g = this.model.mouseCanvasRatio) === null || _g === void 0 ? void 0 : _g.x, " / y ").concat((_h = this.model.mouseCanvasRatio) === null || _h === void 0 ? void 0 : _h.y, "</div>\n        <div>mode is ").concat(this.model.actionMode, "</div>\n      </div>\n    ");
+        this.container.innerHTML = "\n      <div style=\"display: flex; flex-direction: column\">\n        <div>x - ".concat(Math.round(this.model.offset.x), " \n        / y - ").concat(Math.round(this.model.offset.y), "</div>\n        \n        <div>x - ").concat(Math.round((_b = (_a = this.model.mouse) === null || _a === void 0 ? void 0 : _a.x) !== null && _b !== void 0 ? _b : 0), " \n        / y - ").concat(Math.round((_d = (_c = this.model.mouse) === null || _c === void 0 ? void 0 : _c.y) !== null && _d !== void 0 ? _d : 0), "</div>\n        \n        <div>scale - ").concat(this.model.scale.amount, "</div>\n        <div>width - ").concat((_e = this.model.canvasSize) === null || _e === void 0 ? void 0 : _e.x, " / height - ").concat((_f = this.model.canvasSize) === null || _f === void 0 ? void 0 : _f.y, " / </div>\n        <div>ratio x ").concat((_g = this.model.mouseCanvasRatio) === null || _g === void 0 ? void 0 : _g.x, " / y ").concat((_h = this.model.mouseCanvasRatio) === null || _h === void 0 ? void 0 : _h.y, "</div>\n        <div>mode is ").concat(this.model.actionMode, "</div>\n      </div>\n      \n      </div>\n        <div>fitting size is ").concat(this.model.fittings.length, "</div>\n        <div>pipes size is ").concat(this.model.pipes.length, "</div>\n      </div>\n      </div>\n        <div>hovered object ").concat((_j = this.model.getPipeByID(this.model.overlap.list.length > 0 && this.model.overlap.list[0].id ? this.model.overlap.list[0].id : "")) === null || _j === void 0 ? void 0 : _j.id, "</div>\n        <div>pipes size is ").concat(this.model.pipes.length, "</div>\n      </div>\n    ");
     };
     Stats.prototype.initContainer = function () {
         if (!this.container) return;
-        this.container.style.height = "150px";
-        this.container.style.width = "200px";
+        this.container.style.height = "450px";
+        this.container.style.width = "300px";
         this.container.style.border = "1px solid black";
         this.container.style.marginLeft = "10px";
     };
@@ -771,7 +1083,7 @@ var Stats = /** @class */function () {
 }();
 exports.default = Stats;
 
-},{}],14:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -802,7 +1114,7 @@ var Valve = /** @class */function () {
 }();
 exports.default = Valve;
 
-},{}],15:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -821,7 +1133,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":4}],16:[function(require,module,exports){
+},{"./2d":4}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -878,11 +1190,14 @@ var Vector = /** @class */function () {
     Vector.prototype.multiply = function (a) {
         return new Vector(this.x * a, this.y * a);
     };
+    Vector.prototype.clone = function () {
+        return new Vector(this.x, this.y);
+    };
     return Vector;
 }();
 exports.Vector = Vector;
 
-},{}],17:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -893,7 +1208,7 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":15}],18:[function(require,module,exports){
+},{"./app":19}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -910,6 +1225,6 @@ exports.uuid = uuid;
 //   return ;
 // }
 
-},{}]},{},[17])
+},{}]},{},[21])
 
 //# sourceMappingURL=bundle.js.map

@@ -66,18 +66,24 @@ export class Vector implements IVec {
   multiply(a: number) {
     return new Vector(this.x * a, this.y * a);
   }
+
+  clone() {
+    return new Vector(this.x, this.y);
+  }
 }
 
 export interface IVec extends ICoord {
   length: number;
   distanceTo: (v: IVec) => number;
-  sub: (v: IVec) => Vector;
-  sum: (v: IVec) => Vector;
+  sub: (v: IVec) => IVec;
+  sum: (v: IVec) => IVec;
   distanceToLine: (l: Line) => number;
   angle: (v: IVec) => number;
   projection: (v: IVec) => number;
   normalize: () => Vector;
-  multiply: (n: number) => Vector;
+  multiply: (n: number) => IVec;
+  product: (v: IVec) => number;
+  clone: () => IVec;
 }
 
 export interface ICoord {

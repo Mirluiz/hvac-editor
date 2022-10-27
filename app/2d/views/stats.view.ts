@@ -34,14 +34,29 @@ class Stats {
     }</div>
         <div>mode is ${this.model.actionMode}</div>
       </div>
+      
+      </div>
+        <div>fitting size is ${this.model.fittings.length}</div>
+        <div>pipes size is ${this.model.pipes.length}</div>
+      </div>
+      </div>
+        <div>hovered object ${
+          this.model.getPipeByID(
+            this.model.overlap.list.length > 0 && this.model.overlap.list[0].id
+              ? this.model.overlap.list[0].id
+              : ""
+          )?.id
+        }</div>
+        <div>pipes size is ${this.model.pipes.length}</div>
+      </div>
     `;
   }
 
   initContainer(): void {
     if (!this.container) return;
 
-    this.container.style.height = "150px";
-    this.container.style.width = "200px";
+    this.container.style.height = "450px";
+    this.container.style.width = "300px";
     this.container.style.border = "1px solid black";
     this.container.style.marginLeft = "10px";
   }

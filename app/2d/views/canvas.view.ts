@@ -5,12 +5,14 @@ import Line from "../models/geometry/line.model";
 import Pipe from "../models/heating/pipe.model";
 import PipeView from "./pipe.view";
 import ValveView from "./valve.view";
+import FittingView from "./fitting.view";
 
 class Canvas {
   model: CanvasModel;
   container: HTMLCanvasElement | null;
   pipe: PipeView | null = null;
   valve: ValveView | null = null;
+  fitting: FittingView | null = null;
 
   constructor(model: CanvasModel) {
     this.model = model;
@@ -27,6 +29,7 @@ class Canvas {
     if (ctx) {
       this.pipe = new PipeView(this, this.model, ctx);
       this.valve = new ValveView(this, this.model, ctx);
+      this.fitting = new FittingView(this, this.model, ctx);
     }
   }
 
@@ -37,6 +40,7 @@ class Canvas {
 
     this.pipe?.draw();
     this.valve?.draw();
+    this.fitting?.draw();
   }
 
   clear() {

@@ -10,22 +10,35 @@ class Pipe {
     this.model = model;
   }
 
-  mouseMove() {}
+  mouseMove(coord: IVec) {
+    if (
+      this.model.actionObject &&
+      this.model.actionObject instanceof PipeGhostModel
+    ) {
+      this.model.actionObject.end.x = coord.x;
+      this.model.actionObject.end.y = coord.y;
+    }
+  }
 
   mouseDown(coord: IVec) {
-    // this.model.update(coord);
+    if (!this.model.actionObject) {
+      this.model.actionMode = "pipeLaying";
+    }
+
+    if (this.model.actionObject instanceof PipeGhostModel) {
+      let pipe = new PipeModel(
+        this.model.actionObject.start.clone(),
+        this.model.actionObject.end.clone()
+      );
+      this.model.addPipe(pipe);
+      this.model.mergeController(pipe, pipe.start);
+    }
+
+    let ghostP = new PipeGhostModel(coord.clone(), coord.clone());
+    this.model.actionObject = ghostP;
   }
 
-  mouseUp() {
-    // let p = new PipeGhostModel(
-    //   new Vector(coord.x, coord.y),
-    //   new Vector(coord.x, coord.y)
-    // );
-    //
-    // p.width = 5;
-    //
-    // this.model.addPipe(p);
-  }
+  mouseUp(coord: IVec) {}
 }
 
 export default Pipe;
