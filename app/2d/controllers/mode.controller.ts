@@ -11,14 +11,19 @@ class Mode {
     this.model = model;
     this.view = new ModeView(this.model);
 
-    console.log(this.view);
-
     if (this.view.container) {
-      this.view.container.addEventListener("click", this.mouseDown.bind(this));
+      this.view.container.addEventListener("click", this.handleMode.bind(this));
+    }
+
+    if (this.view.subContainer) {
+      this.view.subContainer.addEventListener(
+        "click",
+        this.handleSubMode.bind(this)
+      );
     }
   }
 
-  mouseDown(e: Event) {
+  handleMode(e: Event) {
     let cT = e.target as HTMLInputElement;
     let value = cT.value;
 
@@ -29,6 +34,15 @@ class Mode {
       value === "valve"
     ) {
       this.model.mode = value;
+    }
+  }
+
+  handleSubMode(e: Event) {
+    let cT = e.target as HTMLInputElement;
+    let value = cT.value;
+
+    if (value === "supply" || value === "return") {
+      this.model.subMode = value;
     }
   }
 }

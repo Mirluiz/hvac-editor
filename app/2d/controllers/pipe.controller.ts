@@ -30,6 +30,7 @@ class Pipe {
         this.model.actionObject.start.clone(),
         this.model.actionObject.end.clone()
       );
+      pipe.type = this.model.subMode ?? "supply";
       this.model.addPipe(pipe);
       this.model.mergeController(pipe, pipe.start);
       this.model.mergeController(pipe, pipe.end);

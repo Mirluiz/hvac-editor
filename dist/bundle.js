@@ -127,16 +127,25 @@ var Mode = /** @class */function () {
     function Mode(model) {
         this.model = model;
         this.view = new mode_view_1.default(this.model);
-        console.log(this.view);
         if (this.view.container) {
-            this.view.container.addEventListener("click", this.mouseDown.bind(this));
+            this.view.container.addEventListener("click", this.handleMode.bind(this));
+        }
+        if (this.view.subContainer) {
+            this.view.subContainer.addEventListener("click", this.handleSubMode.bind(this));
         }
     }
-    Mode.prototype.mouseDown = function (e) {
+    Mode.prototype.handleMode = function (e) {
         var cT = e.target;
         var value = cT.value;
         if (value === "default" || value === "wall" || value === "pipe" || value === "valve") {
             this.model.mode = value;
+        }
+    };
+    Mode.prototype.handleSubMode = function (e) {
+        var cT = e.target;
+        var value = cT.value;
+        if (value === "supply" || value === "return") {
+            this.model.subMode = value;
         }
     };
     return Mode;
@@ -163,11 +172,13 @@ var Pipe = /** @class */function () {
         }
     };
     Pipe.prototype.mouseDown = function (coord) {
+        var _a;
         if (!this.model.actionObject) {
             this.model.actionMode = "pipeLaying";
         }
         if (this.model.actionObject instanceof pipe_model_1.default) {
             var pipe = new pipe_model_2.default(this.model.actionObject.start.clone(), this.model.actionObject.end.clone());
+            pipe.type = (_a = this.model.subMode) !== null && _a !== void 0 ? _a : "supply";
             this.model.addPipe(pipe);
             this.model.mergeController(pipe, pipe.start);
             this.model.mergeController(pipe, pipe.end);
@@ -216,6 +227,7 @@ var Canvas = /** @class */function () {
         this._valves = [];
         this._fittings = [];
         this.mode = "pipe";
+        this.subMode = null;
         this.actionMode = null;
         this.actionObject = null;
         this.placingObject = null;
@@ -316,8 +328,12 @@ var Canvas = /** @class */function () {
             if (p.id === pipe.id) return;
             if (pipe.start.sub(end).length <= _this.config.overlap.bindDistance || pipe.end.sub(end).length <= _this.config.overlap.bindDistance || end.distanceToLine(pipe) <= _this.config.overlap.bindDistance) {
                 var pipePart = "body";
-                if (pipe.start.sub(end).length <= _this.config.overlap.bindDistance) pipePart = "start";
-                if (pipe.end.sub(end).length <= _this.config.overlap.bindDistance) pipePart = "end";
+                if (pipe.start.sub(end).length <= _this.config.overlap.bindDistance) {
+                    pipePart = "start";
+                }
+                if (pipe.end.sub(end).length <= _this.config.overlap.bindDistance) {
+                    pipePart = "end";
+                }
                 var mergePoint = void 0;
                 if (pipePart === "start") {
                     mergePoint = pipe.start.clone();
@@ -330,6 +346,7 @@ var Canvas = /** @class */function () {
                     mergePoint = mergePoint.bindNet(_this.config.net.step);
                     var newP1 = new pipe_model_1.default(new vect_1.Vector(0, 0).sum(pipe.start), new vect_1.Vector(mergePoint.x, mergePoint.y));
                     var newP2 = new pipe_model_1.default(new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.end.x, pipe.end.y));
+                    end = mergePoint.clone();
                     _this.addPipe(newP1);
                     _this.addPipe(newP2);
                     _this.pipes = _this.pipes.filter(function (_p) {
@@ -925,6 +942,7 @@ var Mode = /** @class */function () {
     function Mode(model) {
         this.model = model;
         this.container = document.querySelector("#mode");
+        this.subContainer = document.querySelector("#subMode");
     }
     return Mode;
 }();

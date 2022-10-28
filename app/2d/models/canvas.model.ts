@@ -13,6 +13,7 @@ class Canvas {
   overlap: Overlap;
 
   mode: "default" | "wall" | "pipe" | "valve" = "pipe";
+  subMode: "supply" | "return" | null = null;
   actionMode: "pipeLaying" | "wallLaying" | null = null;
   actionObject: Wall | Pipe | null = null;
   placingObject: Valve | null = null;
@@ -126,10 +127,12 @@ class Canvas {
       ) {
         let pipePart: "start" | "end" | "body" = "body";
 
-        if (pipe.start.sub(end).length <= this.config.overlap.bindDistance)
+        if (pipe.start.sub(end).length <= this.config.overlap.bindDistance) {
           pipePart = "start";
-        if (pipe.end.sub(end).length <= this.config.overlap.bindDistance)
+        }
+        if (pipe.end.sub(end).length <= this.config.overlap.bindDistance) {
           pipePart = "end";
+        }
 
         let mergePoint;
 
@@ -152,6 +155,8 @@ class Canvas {
             new Vector(mergePoint.x, mergePoint.y),
             new Vector(pipe.end.x, pipe.end.y)
           );
+
+          end = mergePoint.clone();
 
           this.addPipe(newP1);
           this.addPipe(newP2);
