@@ -11,12 +11,12 @@ var Canvas = /** @class */ (function () {
         this._walls = [];
         this._pipes = [];
         this._valves = [];
-        this.actionMode = null;
+        this._fittings = [];
         this.mode = "pipe";
+        this.subMode = null;
+        this.actionMode = null;
         this.actionObject = null;
         this.placingObject = null;
-        this.nearestObject = null;
-        this.hoveredObjects = [];
         this.mouse = null;
         this.canvasSize = null;
         this.mouseCanvasRatio = null;
@@ -38,11 +38,11 @@ var Canvas = /** @class */ (function () {
                 step: 20,
             },
             overlap: {
-                bindDistance: 0,
+                bindDistance: 10,
             },
         };
         this.overlap = new overlap_model_1.default(this);
-        this.pipes.push(new pipe_model_1.default(new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
+        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
         // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
         // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
     }
@@ -76,6 +76,16 @@ var Canvas = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Canvas.prototype, "fittings", {
+        get: function () {
+            return this._fittings;
+        },
+        set: function (value) {
+            this._fittings = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Canvas.prototype.addWall = function (wall) {
         this.walls.push(wall);
         this.walls = this.walls;
@@ -86,13 +96,16 @@ var Canvas = /** @class */ (function () {
         this.pipes = this.pipes;
         return this.pipes[this.pipes.length - 1];
     };
-    Canvas.prototype.addValve = function (v) {
-        this.valves.push(v);
-        this.valves = this.valves;
-        return this.valves[this.valves.length - 1];
+    Canvas.prototype.addFitting = function (fitting) {
+        this.fittings.push(fitting);
+        this.fittings = this.fittings;
+        return this.fittings[this.fittings.length - 1];
     };
     Canvas.prototype.getPipeByID = function (id) {
         return this.pipes.find(function (p) { return p.id === id; });
+    };
+    Canvas.prototype.deletePipe = function (id) {
+        this.pipes = this.pipes.filter(function (p) { return p.id !== id; });
     };
     return Canvas;
 }());

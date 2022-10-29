@@ -6,10 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var pipe_view_1 = __importDefault(require("./pipe.view"));
 var valve_view_1 = __importDefault(require("./valve.view"));
+var fitting_view_1 = __importDefault(require("./fitting.view"));
 var Canvas = /** @class */ (function () {
     function Canvas(model) {
         this.pipe = null;
         this.valve = null;
+        this.fitting = null;
         this.model = model;
         this.container = document.querySelector("#editor");
         this.init();
@@ -21,15 +23,17 @@ var Canvas = /** @class */ (function () {
         if (ctx) {
             this.pipe = new pipe_view_1.default(this, this.model, ctx);
             this.valve = new valve_view_1.default(this, this.model, ctx);
+            this.fitting = new fitting_view_1.default(this, this.model, ctx);
         }
     };
     Canvas.prototype.draw = function () {
-        var _a, _b;
+        var _a, _b, _c;
         this.clear();
         this.drawNet();
         this.drawWalls();
         (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.draw();
         (_b = this.valve) === null || _b === void 0 ? void 0 : _b.draw();
+        (_c = this.fitting) === null || _c === void 0 ? void 0 : _c.draw();
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -159,11 +163,10 @@ var Canvas = /** @class */ (function () {
                 return;
             ctx.save();
             ctx.beginPath();
-            var from = _this_1.getWorldCoordinates(wall.start.x, wall.start.y);
-            var to = _this_1.getWorldCoordinates(wall.end.x, wall.end.y);
+            var from = _this_1.getWorldCoordinates(wall.from.x, wall.from.y);
+            var to = _this_1.getWorldCoordinates(wall.from.x, wall.from.y);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
-            console.log("wall.color", wall.color);
             ctx.strokeStyle = wall.color;
             ctx.lineWidth = wall.width;
             ctx.stroke();

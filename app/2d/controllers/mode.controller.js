@@ -8,12 +8,14 @@ var Mode = /** @class */ (function () {
     function Mode(model) {
         this.model = model;
         this.view = new mode_view_1.default(this.model);
-        console.log(this.view);
         if (this.view.container) {
-            this.view.container.addEventListener("click", this.mouseDown.bind(this));
+            this.view.container.addEventListener("click", this.handleMode.bind(this));
+        }
+        if (this.view.subContainer) {
+            this.view.subContainer.addEventListener("click", this.handleSubMode.bind(this));
         }
     }
-    Mode.prototype.mouseDown = function (e) {
+    Mode.prototype.handleMode = function (e) {
         var cT = e.target;
         var value = cT.value;
         if (value === "default" ||
@@ -21,6 +23,13 @@ var Mode = /** @class */ (function () {
             value === "pipe" ||
             value === "valve") {
             this.model.mode = value;
+        }
+    };
+    Mode.prototype.handleSubMode = function (e) {
+        var cT = e.target;
+        var value = cT.value;
+        if (value === "supply" || value === "return") {
+            this.model.subMode = value;
         }
     };
     return Mode;

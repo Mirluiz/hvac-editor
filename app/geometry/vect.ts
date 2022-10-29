@@ -16,8 +16,8 @@ export class Vector implements IVec {
 
   distanceToLine(l: Line): number {
     let ret: number;
-    let lVec = l.end.sub(l.start);
-    let vec = this.sub(l.start);
+    let lVec = l.to.vec.sub(l.from.vec);
+    let vec = this.sub(l.from.vec);
     let angle = vec.angle(lVec);
 
     if (vec.length === 0) console.warn("ops");

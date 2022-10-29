@@ -202,13 +202,12 @@ class Canvas {
       ctx.save();
       ctx.beginPath();
 
-      let from = this.getWorldCoordinates(wall.start.x, wall.start.y);
-      let to = this.getWorldCoordinates(wall.end.x, wall.end.y);
+      let from = this.getWorldCoordinates(wall.from.x, wall.from.y);
+      let to = this.getWorldCoordinates(wall.from.x, wall.from.y);
 
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
 
-      console.log("wall.color", wall.color);
       ctx.strokeStyle = wall.color;
       ctx.lineWidth = wall.width;
 

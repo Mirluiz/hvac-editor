@@ -21,9 +21,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var line_model_1 = __importDefault(require("../geometry/line.model"));
 var Wall = /** @class */ (function (_super) {
     __extends(Wall, _super);
-    function Wall(start, end) {
-        return _super.call(this, start, end) || this;
+    function Wall(from, to) {
+        return _super.call(this, from, to) || this;
     }
+    Object.defineProperty(Wall.prototype, "color", {
+        get: function () {
+            return "grey";
+        },
+        enumerable: false,
+        configurable: true
+    });
     return Wall;
 }(line_model_1.default));
 exports.default = Wall;

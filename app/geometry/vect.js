@@ -11,21 +11,27 @@ var Vector = /** @class */ (function () {
         return _v.length;
     };
     Vector.prototype.distanceToLine = function (l) {
-        var lVec = l.end.sub(l.start);
-        var vec = this.sub(l.start);
+        var ret;
+        var lVec = l.to.vec.sub(l.from.vec);
+        var vec = this.sub(l.from.vec);
         var angle = vec.angle(lVec);
+        if (vec.length === 0)
+            console.warn("ops");
         var p = lVec.product(vec);
         var p1 = vec.product(vec);
         var param = -1;
         if (p !== 0)
             param = p1 / p;
         if (param < 0) {
-            return vec.length;
+            ret = Math.round(vec.length);
         }
         else if (param > 1) {
-            return lVec.sub(vec).length;
+            ret = Math.round(lVec.sub(vec).length);
         }
-        return Math.sin(angle) * vec.length;
+        else {
+            ret = Math.round(Math.sin(angle) * vec.length);
+        }
+        return ret;
     };
     Object.defineProperty(Vector.prototype, "length", {
         get: function () {
@@ -54,6 +60,12 @@ var Vector = /** @class */ (function () {
     };
     Vector.prototype.multiply = function (a) {
         return new Vector(this.x * a, this.y * a);
+    };
+    Vector.prototype.clone = function () {
+        return new Vector(this.x, this.y);
+    };
+    Vector.prototype.bindNet = function (step) {
+        return new Vector(Math.round(this.x / step) * step, Math.round(this.y / step) * step);
     };
     return Vector;
 }());

@@ -21,41 +21,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var main_model_1 = __importDefault(require("../main.model"));
 var Line = /** @class */ (function (_super) {
     __extends(Line, _super);
-    function Line(start, end) {
+    function Line(from, to) {
         var _this = _super.call(this) || this;
-        _this.thickness = 1;
-        _this._color = "#000";
         _this.width = 1;
-        _this.start = start;
-        _this.end = end;
+        _this.from = from;
+        _this.to = to;
         return _this;
     }
-    Object.defineProperty(Line.prototype, "color", {
-        // getNearest(pipes: Array<Pipe>) {
-        //   let pipe = pipes.find((pipe) => {
-        //     if (pipe._id === this._id) return;
-        //
-        //     let start = pipe.start.distanceTo(this.end);
-        //     let end = pipe.end.distanceTo(this.end);
-        //
-        //     return (start && start < 30) || (end && end < 30);
-        //   });
-        //
-        //   return pipe;
-        // }
-        //
-        // getNearestCoordinateOnPipe(coord: IVec, pipe: Pipe) {
-        //   let _coord = coord.sub(pipe.start);
-        // }
-        get: function () {
-            return this._color;
-        },
-        set: function (color) {
-            this._color = color;
-        },
-        enumerable: false,
-        configurable: true
-    });
     return Line;
 }(main_model_1.default));
 exports.default = Line;

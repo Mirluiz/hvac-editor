@@ -30,29 +30,31 @@ var Overlap = /** @class */ (function () {
             if (!_this.mouse)
                 return;
             var _p = null;
-            if (pipe.start.sub(_this.mouse).length < bind) {
+            if (pipe.from.vec.sub(_this.mouse).length <= bind) {
                 _p = {
                     type: "pipe",
                     id: pipe.id,
-                    ioVector: new vect_1.Vector(pipe.start.x, pipe.start.y),
+                    ioVector: new vect_1.Vector(pipe.from.vec.x, pipe.from.vec.y),
                 };
             }
-            if (!_p && pipe.end.sub(_this.mouse).length < bind) {
+            if (!_p && pipe.to.vec.sub(_this.mouse).length <= bind) {
                 _p = {
                     type: "pipe",
                     id: pipe.id,
-                    ioVector: new vect_1.Vector(pipe.end.x, pipe.end.y),
+                    ioVector: new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y),
                 };
             }
             if (!_p) {
                 var l = _this.mouse.distanceToLine(pipe);
-                if (l < bind) {
+                if (l <= bind) {
                     var normPipe = pipe.toOrigin().normalize();
-                    var projPipe = pipe.toOrigin().projection(_this.mouse.sub(pipe.start));
+                    var projPipe = pipe
+                        .toOrigin()
+                        .projection(_this.mouse.sub(pipe.from.vec));
                     _p = {
                         type: "pipe",
                         id: pipe.id,
-                        ioVector: normPipe.multiply(projPipe).sum(pipe.start),
+                        ioVector: normPipe.multiply(projPipe).sum(pipe.from.vec),
                     };
                 }
             }

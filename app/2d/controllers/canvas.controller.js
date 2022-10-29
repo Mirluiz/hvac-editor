@@ -73,12 +73,45 @@ var Canvas = /** @class */ (function () {
                 Math.round(_mouse.y / this.model.config.net.step) *
                     this.model.config.net.step;
         }
+        switch (this.model.mode) {
+            case "default":
+                break;
+            case "wall":
+                break;
+            case "pipe":
+                this.pipe.mouseMove(_mouse);
+                break;
+            case "valve":
+                break;
+        }
         this.model.overlap.update(_mouse);
         this.stats.render();
         this.view.draw();
     };
     Canvas.prototype.mouseUp = function (e) {
         this.model.clicked = false;
+        if (!this.model.mouse)
+            return;
+        var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        if (this.model.config.net.bind) {
+            _mouse.x =
+                Math.round(_mouse.x / this.model.config.net.step) *
+                    this.model.config.net.step;
+            _mouse.y =
+                Math.round(_mouse.y / this.model.config.net.step) *
+                    this.model.config.net.step;
+        }
+        switch (this.model.mode) {
+            case "default":
+                break;
+            case "wall":
+                break;
+            case "pipe":
+                this.pipe.mouseUp(_mouse);
+                break;
+            case "valve":
+                break;
+        }
     };
     Canvas.prototype.keyUp = function (e) {
         if (e.key === "Escape") {
@@ -87,8 +120,7 @@ var Canvas = /** @class */ (function () {
         }
     };
     Canvas.prototype.reset = function () {
-        this.model.pipes = this.model.pipes.filter(function (p) { return !p.ghost; });
-        this.model.valves = this.model.valves.filter(function (v) { return !v.ghost; });
+        this.model.actionObject = null;
         this.stats.render();
         this.view.draw();
     };

@@ -18,19 +18,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var line_model_1 = __importDefault(require("../../geometry/line.model"));
-var Pipe = /** @class */ (function (_super) {
-    __extends(Pipe, _super);
-    function Pipe(from, to) {
-        return _super.call(this, { vec: from }, { vec: to }) || this;
+var arc_model_1 = __importDefault(require("../geometry/arc.model"));
+var Fitting = /** @class */ (function (_super) {
+    __extends(Fitting, _super);
+    function Fitting(model, center) {
+        var _this = _super.call(this, center) || this;
+        _this._pipes = [];
+        _this.color = "black";
+        _this.model = model;
+        return _this;
     }
-    Object.defineProperty(Pipe.prototype, "color", {
+    Object.defineProperty(Fitting.prototype, "pipes", {
         get: function () {
-            return "pink";
+            return this._pipes;
+        },
+        set: function (value) {
+            this._pipes = value;
         },
         enumerable: false,
         configurable: true
     });
-    return Pipe;
-}(line_model_1.default));
-exports.default = Pipe;
+    Fitting.prototype.needMerge = function (v) {
+        var distance = this.model.config.overlap.bindDistance;
+        return this.center.sub(v).length <= distance;
+    };
+    Fitting.prototype.addPipe = function (pipe) {
+        this._pipes.push(pipe);
+    };
+    return Fitting;
+}(arc_model_1.default));
+exports.default = Fitting;

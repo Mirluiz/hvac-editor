@@ -167,8 +167,8 @@ var Pipe = /** @class */function () {
     }
     Pipe.prototype.mouseMove = function (coord) {
         if (this.model.actionObject && this.model.actionObject instanceof pipe_model_1.default) {
-            this.model.actionObject.end.x = coord.x;
-            this.model.actionObject.end.y = coord.y;
+            this.model.actionObject.to.vec.x = coord.x;
+            this.model.actionObject.to.vec.y = coord.y;
         }
     };
     Pipe.prototype.mouseDown = function (coord) {
@@ -177,14 +177,12 @@ var Pipe = /** @class */function () {
             this.model.actionMode = "pipeLaying";
         }
         if (this.model.actionObject instanceof pipe_model_1.default) {
-            var pipe = new pipe_model_2.default(this.model.actionObject.start.clone(), this.model.actionObject.end.clone());
+            var pipe = new pipe_model_2.default(this.model, this.model.actionObject.from.vec.clone(), this.model.actionObject.to.vec.clone());
             pipe.type = (_a = this.model.subMode) !== null && _a !== void 0 ? _a : "supply";
             this.model.addPipe(pipe);
-            this.model.mergeController(pipe, pipe.start);
-            this.model.mergeController(pipe, pipe.end);
+            pipe.merge();
         }
-        var ghostP = new pipe_model_1.default(coord.clone(), coord.clone());
-        this.model.actionObject = ghostP;
+        this.model.actionObject = new pipe_model_1.default(coord.clone(), coord.clone());
     };
     Pipe.prototype.mouseUp = function (coord) {};
     return Pipe;
@@ -219,7 +217,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var pipe_model_1 = __importDefault(require("./heating/pipe.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
-var fitting_model_1 = __importDefault(require("./heating/fitting.model"));
 var Canvas = /** @class */function () {
     function Canvas() {
         this._walls = [];
@@ -231,8 +228,6 @@ var Canvas = /** @class */function () {
         this.actionMode = null;
         this.actionObject = null;
         this.placingObject = null;
-        this.nearestObject = null;
-        this.hoveredObjects = [];
         this.mouse = null;
         this.canvasSize = null;
         this.mouseCanvasRatio = null;
@@ -258,7 +253,7 @@ var Canvas = /** @class */function () {
             }
         };
         this.overlap = new overlap_model_1.default(this);
-        this.pipes.push(new pipe_model_1.default(new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
+        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
         // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
         // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
     }
@@ -322,42 +317,6 @@ var Canvas = /** @class */function () {
             return p.id === id;
         });
     };
-    Canvas.prototype.mergeController = function (p, end) {
-        var _this = this;
-        this.pipes.map(function (pipe) {
-            if (p.id === pipe.id) return;
-            if (pipe.start.sub(end).length <= _this.config.overlap.bindDistance || pipe.end.sub(end).length <= _this.config.overlap.bindDistance || end.distanceToLine(pipe) <= _this.config.overlap.bindDistance) {
-                var pipePart = "body";
-                if (pipe.start.sub(end).length <= _this.config.overlap.bindDistance) {
-                    pipePart = "start";
-                }
-                if (pipe.end.sub(end).length <= _this.config.overlap.bindDistance) {
-                    pipePart = "end";
-                }
-                var mergePoint = void 0;
-                if (pipePart === "start") {
-                    mergePoint = pipe.start.clone();
-                } else if (pipePart === "end") {
-                    mergePoint = pipe.end.clone();
-                } else {
-                    var normPipe = pipe.toOrigin().normalize();
-                    var projPipe = pipe.toOrigin().projection(end.sub(pipe.start));
-                    mergePoint = normPipe.multiply(projPipe).sum(pipe.start);
-                    mergePoint = mergePoint.bindNet(_this.config.net.step);
-                    var newP1 = new pipe_model_1.default(new vect_1.Vector(0, 0).sum(pipe.start), new vect_1.Vector(mergePoint.x, mergePoint.y));
-                    var newP2 = new pipe_model_1.default(new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.end.x, pipe.end.y));
-                    end = mergePoint.clone();
-                    _this.addPipe(newP1);
-                    _this.addPipe(newP2);
-                    _this.pipes = _this.pipes.filter(function (_p) {
-                        return _p.id !== pipe.id;
-                    });
-                }
-                var newFitting = new fitting_model_1.default(mergePoint);
-                _this.addFitting(newFitting);
-            }
-        });
-    };
     Canvas.prototype.deletePipe = function (id) {
         this.pipes = this.pipes.filter(function (p) {
             return p.id !== id;
@@ -367,7 +326,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":20,"../overlap.model":12,"./heating/fitting.model":9,"./heating/pipe.model":10}],6:[function(require,module,exports){
+},{"../../geometry/vect":20,"../overlap.model":12,"./heating/pipe.model":10}],6:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -439,41 +398,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var main_model_1 = __importDefault(require("../main.model"));
 var Line = /** @class */function (_super) {
     __extends(Line, _super);
-    function Line(start, end) {
+    function Line(from, to) {
         var _this = _super.call(this) || this;
-        _this.thickness = 1;
-        _this._color = "#000";
         _this.width = 1;
-        _this.start = start;
-        _this.end = end;
+        _this.from = from;
+        _this.to = to;
         return _this;
     }
-    Object.defineProperty(Line.prototype, "color", {
-        // getNearest(pipes: Array<Pipe>) {
-        //   let pipe = pipes.find((pipe) => {
-        //     if (pipe._id === this._id) return;
-        //
-        //     let start = pipe.start.distanceTo(this.end);
-        //     let end = pipe.end.distanceTo(this.end);
-        //
-        //     return (start && start < 30) || (end && end < 30);
-        //   });
-        //
-        //   return pipe;
-        // }
-        //
-        // getNearestCoordinateOnPipe(coord: IVec, pipe: Pipe) {
-        //   let _coord = coord.sub(pipe.start);
-        // }
-        get: function get() {
-            return this._color;
-        },
-        set: function set(color) {
-            this._color = color;
-        },
-        enumerable: false,
-        configurable: true
-    });
     return Line;
 }(main_model_1.default);
 exports.default = Line;
@@ -508,8 +439,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var line_model_1 = __importDefault(require("../../geometry/line.model"));
 var Pipe = /** @class */function (_super) {
     __extends(Pipe, _super);
-    function Pipe(start, end) {
-        return _super.call(this, start, end) || this;
+    function Pipe(from, to) {
+        return _super.call(this, { vec: from }, { vec: to }) || this;
     }
     Object.defineProperty(Pipe.prototype, "color", {
         get: function get() {
@@ -552,12 +483,30 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var arc_model_1 = __importDefault(require("../geometry/arc.model"));
 var Fitting = /** @class */function (_super) {
     __extends(Fitting, _super);
-    function Fitting(center) {
+    function Fitting(model, center) {
         var _this = _super.call(this, center) || this;
-        _this.pipes = [];
+        _this._pipes = [];
         _this.color = "black";
+        _this.model = model;
         return _this;
     }
+    Object.defineProperty(Fitting.prototype, "pipes", {
+        get: function get() {
+            return this._pipes;
+        },
+        set: function set(value) {
+            this._pipes = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Fitting.prototype.needMerge = function (v) {
+        var distance = this.model.config.overlap.bindDistance;
+        return this.center.sub(v).length <= distance;
+    };
+    Fitting.prototype.addPipe = function (pipe) {
+        this._pipes.push(pipe);
+    };
     return Fitting;
 }(arc_model_1.default);
 exports.default = Fitting;
@@ -589,13 +538,15 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../../geometry/vect");
 var line_model_1 = __importDefault(require("../geometry/line.model"));
+var fitting_model_1 = __importDefault(require("./fitting.model"));
 var Pipe = /** @class */function (_super) {
     __extends(Pipe, _super);
-    function Pipe(start, end) {
-        var _this = _super.call(this, start, end) || this;
-        _this.ghost = false;
+    function Pipe(model, from, to) {
+        var _this = _super.call(this, { target: null, vec: from }, { target: null, vec: to }) || this;
         _this.type = "supply";
+        _this.model = model;
         return _this;
     }
     Object.defineProperty(Pipe.prototype, "color", {
@@ -606,13 +557,101 @@ var Pipe = /** @class */function (_super) {
         configurable: true
     });
     Pipe.prototype.toOrigin = function () {
-        return this.end.sub(this.start);
+        return this.to.vec.sub(this.from.vec);
+    };
+    Pipe.prototype.merge = function () {
+        var _this = this;
+        var merged = false;
+        this.model.fittings.map(function (fitting) {
+            if (fitting.needMerge(_this.from.vec) || fitting.needMerge(_this.to.vec)) {
+                merged = _this.mergeFitting(fitting);
+            }
+        });
+        this.model.pipes.map(function (pipe) {
+            if (_this.id === pipe.id) return;
+            if (pipe.isClose(_this.from.vec) || pipe.isClose(_this.to.vec)) {
+                merged = _this.mergePipe(pipe);
+            }
+        });
+    };
+    Pipe.prototype.mergePipe = function (pipe) {
+        var _this = this;
+        var distance = this.model.config.overlap.bindDistance;
+        var merged = false;
+        var run = function run(end) {
+            if (_this.id === pipe.id) return;
+            if (pipe.isClose(end.vec)) {
+                var mergePoint = void 0;
+                if (pipe.from.vec.sub(end.vec).length <= distance) {
+                    if (pipe.from.target) return;
+                    mergePoint = pipe.from.vec.clone();
+                    var newFitting_1 = new fitting_model_1.default(_this.model, mergePoint);
+                    _this.model.addFitting(newFitting_1);
+                    pipe.from.target = newFitting_1;
+                    end.target = newFitting_1;
+                    return;
+                } else if (pipe.to.vec.sub(end.vec).length <= distance) {
+                    if (pipe.to.target) return;
+                    mergePoint = pipe.to.vec.clone();
+                    var newFitting_2 = new fitting_model_1.default(_this.model, mergePoint);
+                    _this.model.addFitting(newFitting_2);
+                    pipe.to.target = newFitting_2;
+                    end.target = newFitting_2;
+                    return;
+                }
+                var normPipe = pipe.toOrigin().normalize();
+                var projPipe = pipe.toOrigin().projection(end.vec.sub(pipe.from.vec));
+                mergePoint = normPipe.multiply(projPipe).sum(pipe.from.vec);
+                mergePoint = mergePoint.bindNet(_this.model.config.net.step);
+                var newP1 = new Pipe(_this.model, new vect_1.Vector(0, 0).sum(pipe.from.vec), new vect_1.Vector(mergePoint.x, mergePoint.y));
+                var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y));
+                // end = mergePoint.clone();
+                _this.model.addPipe(newP1);
+                _this.model.addPipe(newP2);
+                pipe.delete();
+                var newFitting = new fitting_model_1.default(_this.model, mergePoint);
+                _this.model.addFitting(newFitting);
+                newP1.from.target = pipe.from.target;
+                newP1.to.target = newFitting;
+                newP2.from.target = newFitting;
+                newP2.to.target = pipe.to.target;
+                merged = true;
+            }
+        };
+        run(this.from);
+        run(this.to);
+        console.log("from", this.from);
+        console.log("to", this.to);
+        return merged;
+    };
+    Pipe.prototype.mergeFitting = function (fitting) {
+        var merged = false;
+        var isFrom = fitting.needMerge(this.from.vec);
+        var isTo = fitting.needMerge(this.to.vec);
+        if (isFrom || isTo) {
+            fitting.pipes.push(this);
+            merged = true;
+        }
+        if (isFrom) {
+            this.from.target = fitting;
+        } else if (isTo) this.to.target = fitting;
+        return merged;
+    };
+    Pipe.prototype.isClose = function (end) {
+        var distance = this.model.config.overlap.bindDistance;
+        return this.from.vec.sub(end).length <= distance || this.to.vec.sub(end).length <= distance || end.distanceToLine(this) <= distance;
+    };
+    Pipe.prototype.delete = function () {
+        var _this = this;
+        this.model.pipes = this.model.pipes.filter(function (_p) {
+            return _p.id !== _this.id;
+        });
     };
     return Pipe;
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../geometry/line.model":7}],11:[function(require,module,exports){
+},{"../../../geometry/vect":20,"../geometry/line.model":7,"./fitting.model":9}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -658,29 +697,29 @@ var Overlap = /** @class */function () {
         this.model.pipes.map(function (pipe) {
             if (!_this.mouse) return;
             var _p = null;
-            if (pipe.start.sub(_this.mouse).length <= bind) {
+            if (pipe.from.vec.sub(_this.mouse).length <= bind) {
                 _p = {
                     type: "pipe",
                     id: pipe.id,
-                    ioVector: new vect_1.Vector(pipe.start.x, pipe.start.y)
+                    ioVector: new vect_1.Vector(pipe.from.vec.x, pipe.from.vec.y)
                 };
             }
-            if (!_p && pipe.end.sub(_this.mouse).length <= bind) {
+            if (!_p && pipe.to.vec.sub(_this.mouse).length <= bind) {
                 _p = {
                     type: "pipe",
                     id: pipe.id,
-                    ioVector: new vect_1.Vector(pipe.end.x, pipe.end.y)
+                    ioVector: new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y)
                 };
             }
             if (!_p) {
                 var l = _this.mouse.distanceToLine(pipe);
                 if (l <= bind) {
                     var normPipe = pipe.toOrigin().normalize();
-                    var projPipe = pipe.toOrigin().projection(_this.mouse.sub(pipe.start));
+                    var projPipe = pipe.toOrigin().projection(_this.mouse.sub(pipe.from.vec));
                     _p = {
                         type: "pipe",
                         id: pipe.id,
-                        ioVector: normPipe.multiply(projPipe).sum(pipe.start)
+                        ioVector: normPipe.multiply(projPipe).sum(pipe.from.vec)
                     };
                 }
             }
@@ -853,11 +892,10 @@ var Canvas = /** @class */function () {
             if (!ctx) return;
             ctx.save();
             ctx.beginPath();
-            var from = _this_1.getWorldCoordinates(wall.start.x, wall.start.y);
-            var to = _this_1.getWorldCoordinates(wall.end.x, wall.end.y);
+            var from = _this_1.getWorldCoordinates(wall.from.x, wall.from.y);
+            var to = _this_1.getWorldCoordinates(wall.from.x, wall.from.y);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
-            console.log("wall.color", wall.color);
             ctx.strokeStyle = wall.color;
             ctx.lineWidth = wall.width;
             ctx.stroke();
@@ -970,8 +1008,8 @@ var Pipe = /** @class */function () {
     Pipe.prototype.drawPipe = function (pipe) {
         this.ctx.save();
         this.ctx.beginPath();
-        var from = this.canvas.getWorldCoordinates(pipe.start.x, pipe.start.y);
-        var to = this.canvas.getWorldCoordinates(pipe.end.x, pipe.end.y);
+        var from = this.canvas.getWorldCoordinates(pipe.from.vec.x, pipe.from.vec.y);
+        var to = this.canvas.getWorldCoordinates(pipe.to.vec.x, pipe.to.vec.y);
         this.ctx.moveTo(from.x, from.y);
         this.ctx.lineTo(to.x, to.y);
         this.ctx.strokeStyle = pipe.color;
@@ -990,8 +1028,8 @@ var Pipe = /** @class */function () {
     Pipe.prototype.drawGhost = function (pipe) {
         this.ctx.save();
         this.ctx.beginPath();
-        var from = this.canvas.getWorldCoordinates(pipe.start.x, pipe.start.y);
-        var to = this.canvas.getWorldCoordinates(pipe.end.x, pipe.end.y);
+        var from = this.canvas.getWorldCoordinates(pipe.from.vec.x, pipe.from.vec.y);
+        var to = this.canvas.getWorldCoordinates(pipe.to.vec.x, pipe.to.vec.y);
         this.ctx.moveTo(from.x, from.y);
         this.ctx.lineTo(to.x, to.y);
         this.ctx.strokeStyle = pipe.color;
@@ -1124,8 +1162,8 @@ var Vector = /** @class */function () {
     };
     Vector.prototype.distanceToLine = function (l) {
         var ret;
-        var lVec = l.end.sub(l.start);
-        var vec = this.sub(l.start);
+        var lVec = l.to.vec.sub(l.from.vec);
+        var vec = this.sub(l.from.vec);
         var angle = vec.angle(lVec);
         if (vec.length === 0) console.warn("ops");
         var p = lVec.product(vec);

@@ -4,6 +4,7 @@ var Mode = /** @class */ (function () {
     function Mode(model) {
         this.model = model;
         this.container = document.querySelector("#mode");
+        this.subContainer = document.querySelector("#subMode");
     }
     return Mode;
 }());

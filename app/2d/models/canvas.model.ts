@@ -1,6 +1,7 @@
 import { ICoord, IVec, Vector } from "../../geometry/vect";
 import Wall from "./architecture/wall.model";
 import Pipe from "./heating/pipe.model";
+import GhostPipe from "./ghost/heating/pipe.model";
 import Valve from "./heating/valve.model";
 import Overlap from "../overlap.model";
 import Fitting from "./heating/fitting.model";
@@ -15,20 +16,16 @@ class Canvas {
   mode: "default" | "wall" | "pipe" | "valve" = "pipe";
   subMode: "supply" | "return" | null = null;
   actionMode: "pipeLaying" | "wallLaying" | null = null;
-  actionObject: Wall | Pipe | null = null;
+  actionObject: Wall | Pipe | null | GhostPipe = null;
   placingObject: Valve | null = null;
 
   constructor() {
     this.overlap = new Overlap(this);
 
-    this.pipes.push(new Pipe(new Vector(40, 100), new Vector(300, 100)));
+    this.pipes.push(new Pipe(this, new Vector(40, 100), new Vector(300, 100)));
     // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
     // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
   }
-
-  nearestObject: IVec | null = null;
-
-  hoveredObjects: Array<IHoveredObject> = [];
 
   mouse: ICoord | null = null;
   canvasSize: ICoord | null = null;
@@ -116,59 +113,6 @@ class Canvas {
     return this.pipes.find((p) => p.id === id);
   }
 
-  mergeController(p: Pipe, end: IVec) {
-    this.pipes.map((pipe) => {
-      if (p.id === pipe.id) return;
-
-      if (
-        pipe.start.sub(end).length <= this.config.overlap.bindDistance ||
-        pipe.end.sub(end).length <= this.config.overlap.bindDistance ||
-        end.distanceToLine(pipe) <= this.config.overlap.bindDistance
-      ) {
-        let pipePart: "start" | "end" | "body" = "body";
-
-        if (pipe.start.sub(end).length <= this.config.overlap.bindDistance) {
-          pipePart = "start";
-        }
-        if (pipe.end.sub(end).length <= this.config.overlap.bindDistance) {
-          pipePart = "end";
-        }
-
-        let mergePoint;
-
-        if (pipePart === "start") {
-          mergePoint = pipe.start.clone();
-        } else if (pipePart === "end") {
-          mergePoint = pipe.end.clone();
-        } else {
-          let normPipe = pipe.toOrigin().normalize();
-          let projPipe = pipe.toOrigin().projection(end.sub(pipe.start));
-
-          mergePoint = normPipe.multiply(projPipe).sum(pipe.start);
-          mergePoint = mergePoint.bindNet(this.config.net.step);
-
-          let newP1 = new Pipe(
-            new Vector(0, 0).sum(pipe.start),
-            new Vector(mergePoint.x, mergePoint.y)
-          );
-          let newP2 = new Pipe(
-            new Vector(mergePoint.x, mergePoint.y),
-            new Vector(pipe.end.x, pipe.end.y)
-          );
-
-          end = mergePoint.clone();
-
-          this.addPipe(newP1);
-          this.addPipe(newP2);
-          this.pipes = this.pipes.filter((_p) => _p.id !== pipe.id);
-        }
-
-        let newFitting = new Fitting(mergePoint);
-        this.addFitting(newFitting);
-      }
-    });
-  }
-
   deletePipe(id: string) {
     this.pipes = this.pipes.filter((p) => p.id !== id);
   }
@@ -185,14 +129,6 @@ interface IConfig {
   };
   overlap: {
     bindDistance: 10 | 20;
-  };
-}
-
-interface IHoveredObject {
-  id: string;
-  type: "wall" | "pipe" | "valve";
-  hoveredPart?: {
-    pipe: "start" | "end" | "body";
   };
 }
 

@@ -44,19 +44,19 @@ class Overlap {
 
       let _p: IOverlap | null = null;
 
-      if (pipe.start.sub(this.mouse).length <= bind) {
+      if (pipe.from.vec.sub(this.mouse).length <= bind) {
         _p = {
           type: "pipe",
           id: pipe.id,
-          ioVector: new Vector(pipe.start.x, pipe.start.y),
+          ioVector: new Vector(pipe.from.vec.x, pipe.from.vec.y),
         };
       }
 
-      if (!_p && pipe.end.sub(this.mouse).length <= bind) {
+      if (!_p && pipe.to.vec.sub(this.mouse).length <= bind) {
         _p = {
           type: "pipe",
           id: pipe.id,
-          ioVector: new Vector(pipe.end.x, pipe.end.y),
+          ioVector: new Vector(pipe.to.vec.x, pipe.to.vec.y),
         };
       }
 
@@ -65,12 +65,14 @@ class Overlap {
 
         if (l <= bind) {
           let normPipe = pipe.toOrigin().normalize();
-          let projPipe = pipe.toOrigin().projection(this.mouse.sub(pipe.start));
+          let projPipe = pipe
+            .toOrigin()
+            .projection(this.mouse.sub(pipe.from.vec));
 
           _p = {
             type: "pipe",
             id: pipe.id,
-            ioVector: normPipe.multiply(projPipe).sum(pipe.start),
+            ioVector: normPipe.multiply(projPipe).sum(pipe.from.vec),
           };
         }
       }

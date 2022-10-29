@@ -15,8 +15,8 @@ class Pipe {
       this.model.actionObject &&
       this.model.actionObject instanceof PipeGhostModel
     ) {
-      this.model.actionObject.end.x = coord.x;
-      this.model.actionObject.end.y = coord.y;
+      this.model.actionObject.to.vec.x = coord.x;
+      this.model.actionObject.to.vec.y = coord.y;
     }
   }
 
@@ -27,17 +27,17 @@ class Pipe {
 
     if (this.model.actionObject instanceof PipeGhostModel) {
       let pipe = new PipeModel(
-        this.model.actionObject.start.clone(),
-        this.model.actionObject.end.clone()
+        this.model,
+        this.model.actionObject.from.vec.clone(),
+        this.model.actionObject.to.vec.clone()
       );
       pipe.type = this.model.subMode ?? "supply";
       this.model.addPipe(pipe);
-      this.model.mergeController(pipe, pipe.start);
-      this.model.mergeController(pipe, pipe.end);
+
+      pipe.merge();
     }
 
-    let ghostP = new PipeGhostModel(coord.clone(), coord.clone());
-    this.model.actionObject = ghostP;
+    this.model.actionObject = new PipeGhostModel(coord.clone(), coord.clone());
   }
 
   mouseUp(coord: IVec) {}
