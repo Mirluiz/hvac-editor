@@ -6,7 +6,7 @@ class Arc extends Main {
   center: IVec;
 
   color: string = "#fff";
-  width: number = 1;
+  width: number = 10;
 
   constructor(center: IVec) {
     super();

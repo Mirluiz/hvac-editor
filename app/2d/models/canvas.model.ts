@@ -23,6 +23,10 @@ class Canvas {
     this.overlap = new Overlap(this);
 
     this.pipes.push(new Pipe(this, new Vector(40, 100), new Vector(300, 100)));
+    this.pipes.push(new Pipe(this, new Vector(300, 100), new Vector(300, 500)));
+
+    this.pipes.push(new Pipe(this, new Vector(300, 500), new Vector(300, 100)));
+    this.pipes.push(new Pipe(this, new Vector(300, 100), new Vector(40, 100)));
     // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
     // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
   }

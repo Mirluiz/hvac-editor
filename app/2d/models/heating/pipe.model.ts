@@ -12,10 +12,10 @@ interface IPipeEnd {
 class Pipe extends Line<IPipeEnd> {
   type: "supply" | "return" = "supply";
   model: CanvasModel;
-
   constructor(model: CanvasModel, from: IVec, to: IVec) {
     super({ target: null, vec: from }, { target: null, vec: to });
 
+    this.width = 10;
     this.model = model;
   }
 
@@ -62,6 +62,8 @@ class Pipe extends Line<IPipeEnd> {
 
           let newFitting = new Fitting(this.model, mergePoint);
           this.model.addFitting(newFitting);
+          newFitting.addPipe(pipe);
+          newFitting.addPipe(this);
 
           pipe.from.target = newFitting;
           end.target = newFitting;
@@ -74,6 +76,8 @@ class Pipe extends Line<IPipeEnd> {
 
           let newFitting = new Fitting(this.model, mergePoint);
           this.model.addFitting(newFitting);
+          newFitting.addPipe(pipe);
+          newFitting.addPipe(this);
 
           pipe.to.target = newFitting;
           end.target = newFitting;
@@ -99,13 +103,15 @@ class Pipe extends Line<IPipeEnd> {
           new Vector(pipe.to.vec.x, pipe.to.vec.y)
         );
 
-        // end = mergePoint.clone();
         this.model.addPipe(newP1);
         this.model.addPipe(newP2);
         pipe.delete();
 
         let newFitting = new Fitting(this.model, mergePoint);
         this.model.addFitting(newFitting);
+
+        newFitting.addPipe(newP1);
+        newFitting.addPipe(newP2);
 
         newP1.from.target = pipe.from.target;
         newP1.to.target = newFitting;
@@ -118,8 +124,6 @@ class Pipe extends Line<IPipeEnd> {
 
     run(this.from);
     run(this.to);
-    console.log("from", this.from);
-    console.log("to", this.to);
 
     return merged;
   }
@@ -131,7 +135,7 @@ class Pipe extends Line<IPipeEnd> {
     let isTo = fitting.needMerge(this.to.vec);
 
     if (isFrom || isTo) {
-      fitting.pipes.push(this);
+      fitting.addPipe(this);
       merged = true;
     }
 

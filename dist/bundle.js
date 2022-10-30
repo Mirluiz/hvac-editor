@@ -254,6 +254,9 @@ var Canvas = /** @class */function () {
         };
         this.overlap = new overlap_model_1.default(this);
         this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
+        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 100), new vect_1.Vector(300, 500)));
+        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 500), new vect_1.Vector(300, 100)));
+        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 100), new vect_1.Vector(40, 100)));
         // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
         // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
     }
@@ -360,7 +363,7 @@ var Arc = /** @class */function (_super) {
         var _this = _super.call(this) || this;
         _this.radius = 5;
         _this.color = "#fff";
-        _this.width = 1;
+        _this.width = 10;
         _this.center = center;
         return _this;
     }
@@ -500,12 +503,26 @@ var Fitting = /** @class */function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Fitting.prototype, "type", {
+        get: function get() {
+            var ret = null;
+            if (this.pipes.length === 2) ret = "2d";
+            if (this.pipes.length === 3) ret = "3d";
+            if (this.pipes.length === 4) ret = "4d";
+            console.log("", this.pipes.length);
+            return ret;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Fitting.prototype.needMerge = function (v) {
         var distance = this.model.config.overlap.bindDistance;
         return this.center.sub(v).length <= distance;
     };
     Fitting.prototype.addPipe = function (pipe) {
         this._pipes.push(pipe);
+        this.pipes = this._pipes;
+        return this.pipes[this.pipes.length - 1];
     };
     return Fitting;
 }(arc_model_1.default);
@@ -546,6 +563,7 @@ var Pipe = /** @class */function (_super) {
     function Pipe(model, from, to) {
         var _this = _super.call(this, { target: null, vec: from }, { target: null, vec: to }) || this;
         _this.type = "supply";
+        _this.width = 10;
         _this.model = model;
         return _this;
     }
@@ -587,6 +605,8 @@ var Pipe = /** @class */function (_super) {
                     mergePoint = pipe.from.vec.clone();
                     var newFitting_1 = new fitting_model_1.default(_this.model, mergePoint);
                     _this.model.addFitting(newFitting_1);
+                    newFitting_1.addPipe(pipe);
+                    newFitting_1.addPipe(_this);
                     pipe.from.target = newFitting_1;
                     end.target = newFitting_1;
                     return;
@@ -595,6 +615,8 @@ var Pipe = /** @class */function (_super) {
                     mergePoint = pipe.to.vec.clone();
                     var newFitting_2 = new fitting_model_1.default(_this.model, mergePoint);
                     _this.model.addFitting(newFitting_2);
+                    newFitting_2.addPipe(pipe);
+                    newFitting_2.addPipe(_this);
                     pipe.to.target = newFitting_2;
                     end.target = newFitting_2;
                     return;
@@ -605,12 +627,13 @@ var Pipe = /** @class */function (_super) {
                 mergePoint = mergePoint.bindNet(_this.model.config.net.step);
                 var newP1 = new Pipe(_this.model, new vect_1.Vector(0, 0).sum(pipe.from.vec), new vect_1.Vector(mergePoint.x, mergePoint.y));
                 var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y));
-                // end = mergePoint.clone();
                 _this.model.addPipe(newP1);
                 _this.model.addPipe(newP2);
                 pipe.delete();
                 var newFitting = new fitting_model_1.default(_this.model, mergePoint);
                 _this.model.addFitting(newFitting);
+                newFitting.addPipe(newP1);
+                newFitting.addPipe(newP2);
                 newP1.from.target = pipe.from.target;
                 newP1.to.target = newFitting;
                 newP2.from.target = newFitting;
@@ -620,8 +643,6 @@ var Pipe = /** @class */function (_super) {
         };
         run(this.from);
         run(this.to);
-        console.log("from", this.from);
-        console.log("to", this.to);
         return merged;
     };
     Pipe.prototype.mergeFitting = function (fitting) {
@@ -629,7 +650,7 @@ var Pipe = /** @class */function (_super) {
         var isFrom = fitting.needMerge(this.from.vec);
         var isTo = fitting.needMerge(this.to.vec);
         if (isFrom || isTo) {
-            fitting.pipes.push(this);
+            fitting.addPipe(this);
             merged = true;
         }
         if (isFrom) {
@@ -945,6 +966,7 @@ exports.default = Canvas;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../geometry/vect");
 var Fitting = /** @class */function () {
     function Fitting(view, model, ctx) {
         this.canvas = view;
@@ -957,12 +979,101 @@ var Fitting = /** @class */function () {
         });
     };
     Fitting.prototype.drawFitting = function (fitting) {
+        var _a, _b, _c, _d;
         this.ctx.save();
         this.ctx.beginPath();
-        var c = this.canvas.getWorldCoordinates(fitting.center.x, fitting.center.y);
-        this.ctx.arc(c.x, c.y, fitting.radius, 0, 2 * Math.PI);
-        this.ctx.fillStyle = fitting.color;
-        this.ctx.fill();
+        // let c = this.canvas.getWorldCoordinates(fitting.center.x, fitting.center.y);
+        // this.ctx.arc(c.x, c.y, fitting.radius, 0, 2 * Math.PI);
+        console.log("fitting.type", fitting.type);
+        switch (fitting.type) {
+            case "2d":
+                var pipe1 = fitting.pipes[0];
+                var pipe2 = fitting.pipes[1];
+                var pipe1End = void 0,
+                    pipe1OppositeEnd = void 0,
+                    pipe2End = void 0,
+                    pipe2OppositeEnd = void 0;
+                if (((_a = pipe1.from.target) === null || _a === void 0 ? void 0 : _a.id) === fitting.id) {
+                    pipe1End = pipe1.from;
+                    pipe1OppositeEnd = pipe1.to;
+                } else if (((_b = pipe1.to.target) === null || _b === void 0 ? void 0 : _b.id) === fitting.id) {
+                    pipe1End = pipe1.to;
+                    pipe1OppositeEnd = pipe1.from;
+                }
+                if (((_c = pipe2.from.target) === null || _c === void 0 ? void 0 : _c.id) === fitting.id) {
+                    pipe2End = pipe2.from;
+                    pipe2OppositeEnd = pipe2.to;
+                } else if (((_d = pipe2.to.target) === null || _d === void 0 ? void 0 : _d.id) === fitting.id) {
+                    pipe2End = pipe2.to;
+                    pipe2OppositeEnd = pipe2.from;
+                }
+                if (!pipe1End || !pipe2End || !pipe1OppositeEnd || !pipe2OppositeEnd) break;
+                var angleBetween = pipe1OppositeEnd.vec.sub(fitting.center).normalize().sum(pipe2OppositeEnd.vec.sub(fitting.center).normalize());
+                var pipe1Angle = pipe1.to.vec.sub(pipe1.from.vec).angle();
+                var pipe2Angle = pipe2.to.vec.sub(pipe2.from.vec).angle();
+                // let v1 = new Vector(Math.cos(pipe1Angle), Math.sin(pipe1Angle));
+                // let v2 = new Vector(Math.cos(pipe2Angle), Math.sin(pipe2Angle));
+                var v1 = pipe1.to.vec.sub(pipe1.from.vec).normalize();
+                var v2 = pipe2.to.vec.sub(pipe2.from.vec).normalize();
+                var r1 = v1.multiply(10);
+                var r2 = v2.multiply(10);
+                var pipe1Width = r1.perpendicular();
+                var pipe2Width = r2.perpendicular();
+                var pipe1NeckBottom = pipe1End.vec.sub(r1).sub(pipe1Width);
+                var pipe1NeckTop = pipe1End.vec.sub(r1).sum(pipe1Width);
+                var pipe2NeckTop = pipe2End.vec.sum(r2).sub(pipe2Width);
+                var pipe2NeckBottom = pipe2End.vec.sum(r2).sum(pipe2Width);
+                var topCurve = new vect_1.Vector(-angleBetween.x, -angleBetween.y).multiply(fitting.width).sum(fitting.center);
+                // pipe1NeckBottom.drawVector();
+                // pipe1NeckTop.drawVector();
+                // pipe2NeckTop.drawVector();
+                // pipe2NeckBottom.drawVector();
+                // topCurve.drawVector();
+                //
+                // let bottomCurve = angleBetween
+                //   .multiply(fitting.width)
+                //   .sum(fitting.center);
+                //
+                this.ctx.moveTo(pipe1NeckBottom.x, pipe1NeckBottom.y);
+                this.ctx.lineTo(pipe1NeckTop.x, pipe1NeckTop.y);
+                this.ctx.lineTo(topCurve.x, topCurve.y);
+                this.ctx.lineTo(pipe2NeckBottom.x, pipe2NeckBottom.y);
+                this.ctx.lineTo(pipe2NeckTop.x, pipe2NeckTop.y);
+                // this.ctx.lineTo(bottomCurve.x, bottomCurve.y);
+                // this.ctx.lineTo(pipe1NeckBottom.x, pipe1NeckBottom.y);
+                // this.ctx.bezierCurveTo(
+                //   topCurve.x,
+                //   topCurve.y,
+                //   topCurve.x,
+                //   topCurve.y,
+                //   pipe2NeckTop.x,
+                //   pipe2NeckTop.y
+                // );
+                // this.ctx.lineTo(pipe2NeckBottom.x, pipe2NeckBottom.y);
+                // this.ctx.bezierCurveTo(
+                //   bottomCurve.x,
+                //   bottomCurve.y,
+                //   bottomCurve.x,
+                //   bottomCurve.y,
+                //   pipe1NeckBottom.x,
+                //   pipe1NeckBottom.y
+                // );
+                this.ctx.closePath();
+                this.ctx.stroke();
+                this.ctx.fillStyle = "black";
+                this.ctx.fill();
+                break;
+            case "3d":
+                console.log("3d");
+                break;
+            case "4d":
+                console.log("4d");
+                break;
+            default:
+                console.warn("no type");
+        }
+        // this.ctx.fillStyle = fitting.color;
+        // this.ctx.fill();
         this.ctx.restore();
     };
     Fitting.prototype.draw = function () {
@@ -972,7 +1083,7 @@ var Fitting = /** @class */function () {
 }();
 exports.default = Fitting;
 
-},{}],15:[function(require,module,exports){
+},{"../../geometry/vect":20}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1196,7 +1307,17 @@ var Vector = /** @class */function () {
         return new Vector(this.x + v.x, this.y + v.y);
     };
     Vector.prototype.angle = function (v) {
-        return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
+        if (v === void 0) {
+            v = undefined;
+        }
+        if (v) {
+            // return Math.atan2(
+            //   this.x * v.y - this.y * v.x,
+            //   this.x * v.x + this.y * v.y
+            // );
+            return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
+        }
+        return Math.atan2(this.y, this.x);
     };
     Vector.prototype.product = function (v) {
         return this.x * v.x + this.y * v.y;
@@ -1207,11 +1328,30 @@ var Vector = /** @class */function () {
     Vector.prototype.multiply = function (a) {
         return new Vector(this.x * a, this.y * a);
     };
+    Vector.prototype.perpendicular = function () {
+        return new Vector(this.y, -this.x);
+    };
     Vector.prototype.clone = function () {
         return new Vector(this.x, this.y);
     };
     Vector.prototype.bindNet = function (step) {
         return new Vector(Math.round(this.x / step) * step, Math.round(this.y / step) * step);
+    };
+    Vector.prototype.drawVector = function () {
+        var _this = this;
+        //debug only
+        setTimeout(function () {
+            var container = document.querySelector("#editor");
+            if (container) {
+                var ctx = container.getContext("2d");
+                if (!ctx) return;
+                ctx.save();
+                ctx.arc(_this.x, _this.y, 2, 0, 2 * Math.PI);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                ctx.restore();
+            }
+        }, 0);
     };
     return Vector;
 }();

@@ -56,8 +56,19 @@ export class Vector implements IVec {
     return new Vector(this.x + v.x, this.y + v.y);
   }
 
-  angle(v: IVec) {
-    return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
+  angle(v: IVec | undefined = undefined) {
+    if (v) {
+      // return Math.atan2(
+      //   this.x * v.y - this.y * v.x,
+      //   this.x * v.x + this.y * v.y
+      // );
+
+      return Math.acos(
+        (this.x * v.x + this.y * v.y) / (this.length * v.length)
+      );
+    }
+
+    return Math.atan2(this.y, this.x);
   }
 
   product(v: IVec): number {
@@ -72,6 +83,10 @@ export class Vector implements IVec {
     return new Vector(this.x * a, this.y * a);
   }
 
+  perpendicular() {
+    return new Vector(this.y, -this.x);
+  }
+
   clone() {
     return new Vector(this.x, this.y);
   }
@@ -82,6 +97,25 @@ export class Vector implements IVec {
       Math.round(this.y / step) * step
     );
   }
+
+  drawVector() {
+    //debug only
+    setTimeout(() => {
+      let container: HTMLCanvasElement | null =
+        document.querySelector("#editor");
+
+      if (container) {
+        const ctx = container.getContext("2d");
+
+        if (!ctx) return;
+        ctx.save();
+        ctx.arc(this.x, this.y, 2, 0, 2 * Math.PI);
+        ctx.fillStyle = "black";
+        ctx.fill();
+        ctx.restore();
+      }
+    }, 0);
+  }
 }
 
 export interface IVec extends ICoord {
@@ -90,13 +124,14 @@ export interface IVec extends ICoord {
   sub: (v: IVec) => IVec;
   sum: (v: IVec) => IVec;
   distanceToLine: (l: Line) => number;
-  angle: (v: IVec) => number;
+  angle: (v?: IVec) => number;
   projection: (v: IVec) => number;
   normalize: () => Vector;
   multiply: (n: number) => IVec;
   product: (v: IVec) => number;
   clone: () => IVec;
   bindNet: (step: number) => IVec;
+  drawVector: () => void;
 }
 
 export interface ICoord {

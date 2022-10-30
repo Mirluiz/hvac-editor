@@ -23,6 +23,18 @@ class Fitting extends Arc {
     this._pipes = value;
   }
 
+  get type(): "2d" | "3d" | "4d" | null {
+    let ret: "2d" | "3d" | "4d" | null = null;
+
+    if (this.pipes.length === 2) ret = "2d";
+    if (this.pipes.length === 3) ret = "3d";
+    if (this.pipes.length === 4) ret = "4d";
+
+    console.log("", this.pipes.length);
+
+    return ret;
+  }
+
   needMerge(v: IVec) {
     let distance = this.model.config.overlap.bindDistance;
 
@@ -31,6 +43,9 @@ class Fitting extends Arc {
 
   addPipe(pipe: Pipe) {
     this._pipes.push(pipe);
+    this.pipes = this._pipes;
+
+    return this.pipes[this.pipes.length - 1];
   }
 }
 

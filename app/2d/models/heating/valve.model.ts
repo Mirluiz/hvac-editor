@@ -4,7 +4,6 @@ import Arc from "../geometry/arc.model";
 import Pipe from "./pipe.model";
 
 class Valve extends Arc {
-  ghost: boolean = false;
   pipes: Array<{ id: string }> = [];
 
   constructor(center: IVec) {
