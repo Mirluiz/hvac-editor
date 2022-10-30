@@ -273,7 +273,7 @@ var Canvas = /** @class */function () {
         }],
         /*
                   1 - from right top to left
-                  2 - from right to bottom
+                  2 - from top to bottom
                  */
         [{
             x1: 100,
@@ -377,6 +377,237 @@ var Canvas = /** @class */function () {
             x2: 40,
             y2: 40
         }]];
+        var arrays45Check = [
+        /*
+            /\
+            1 - from left to right,
+            2 - from right to left,
+           */
+        [{
+            x1: 40,
+            y1: 60,
+            x2: 80,
+            y2: 20
+        }, {
+            x1: 120,
+            y1: 60,
+            x2: 80,
+            y2: 20
+        }],
+        /*
+            V
+            1 - from left to right,
+            2 - from right to left,
+           */
+        [{
+            x1: 40,
+            y1: 20,
+            x2: 80,
+            y2: 60
+        }, {
+            x1: 120,
+            y1: 20,
+            x2: 80,
+            y2: 60
+        }],
+        /*
+          >
+          1 - from left to right,
+          2 - from left to right,
+         */
+        [{
+            x1: 40,
+            y1: 20,
+            x2: 80,
+            y2: 60
+        }, {
+            x1: 40,
+            y1: 100,
+            x2: 80,
+            y2: 60
+        }],
+        /*
+          >
+          1 - from right to left,
+          2 - from right to left,
+         */
+        [{
+            x1: 80,
+            y1: 60,
+            x2: 40,
+            y2: 20
+        }, {
+            x1: 80,
+            y1: 60,
+            x2: 40,
+            y2: 100
+        }],
+        /*
+          <
+          1 - from left to right,
+          2 - from left to right,
+         */
+        [{
+            x1: 40,
+            y1: 60,
+            x2: 80,
+            y2: 20
+        }, {
+            x1: 40,
+            y1: 60,
+            x2: 80,
+            y2: 100
+        }],
+        /*
+          <
+          1 - from right to left,
+          2 - from right to left,
+         */
+        [{
+            x1: 80,
+            y1: 20,
+            x2: 40,
+            y2: 60
+        }, {
+            x1: 80,
+            y1: 100,
+            x2: 40,
+            y2: 60
+        }]];
+        var arrays90HCheck = [
+        /*
+            --
+            1 - from left to right
+            2 - from left to right,
+           */
+        [{
+            x1: 40,
+            y1: 40,
+            x2: 80,
+            y2: 40
+        }, {
+            x1: 80,
+            y1: 40,
+            x2: 120,
+            y2: 40
+        }],
+        /*
+          --
+          1 - from left to right
+          2 - from right to left,
+         */
+        [{
+            x1: 40,
+            y1: 40,
+            x2: 80,
+            y2: 40
+        }, {
+            x1: 120,
+            y1: 40,
+            x2: 80,
+            y2: 40
+        }],
+        /*
+        --
+        1 - from right to left
+        2 - from left to right,
+        */
+        [{
+            x1: 80,
+            y1: 40,
+            x2: 40,
+            y2: 40
+        }, {
+            x1: 80,
+            y1: 40,
+            x2: 120,
+            y2: 40
+        }],
+        /*
+        --
+          1 - from left to right
+          2 - from left to right,
+         */
+        [{
+            x1: 80,
+            y1: 40,
+            x2: 40,
+            y2: 40
+        }, {
+            x1: 120,
+            y1: 40,
+            x2: 80,
+            y2: 40
+        }]];
+        var arrays90VCheck = [
+        /*
+            |
+            |
+            1 - from top to bottom
+            2 - from top to bottom
+           */
+        [{
+            x1: 40,
+            y1: 40,
+            x2: 40,
+            y2: 80
+        }, {
+            x1: 40,
+            y1: 80,
+            x2: 40,
+            y2: 120
+        }],
+        /*
+          |
+          |
+          1 - from top to bottom
+          2 - from bottom to top
+         */
+        [{
+            x1: 40,
+            y1: 40,
+            x2: 40,
+            y2: 80
+        }, {
+            x1: 40,
+            y1: 120,
+            x2: 40,
+            y2: 80
+        }],
+        /*
+          |
+          |
+          1 - from bottom to top
+          2 - from top to bottom
+         */
+        [{
+            x1: 40,
+            y1: 80,
+            x2: 40,
+            y2: 40
+        }, {
+            x1: 40,
+            y1: 80,
+            x2: 40,
+            y2: 120
+        }],
+        /*
+          |
+          |
+          1 - from bottom to top
+          2 - from bottom to top
+         */
+        [{
+            x1: 40,
+            y1: 80,
+            x2: 40,
+            y2: 40
+        }, {
+            x1: 40,
+            y1: 120,
+            x2: 40,
+            y2: 80
+        }]];
         arraysForLeftCheck.map(function (lines, index) {
             lines.map(function (line) {
                 _this.pipes.push(new pipe_model_1.default(_this, new vect_1.Vector(100 * index + line.x1, line.y1), new vect_1.Vector(100 * index + line.x2, line.y2)));
@@ -385,6 +616,21 @@ var Canvas = /** @class */function () {
         arraysForRightCheck.map(function (lines, index) {
             lines.map(function (line) {
                 _this.pipes.push(new pipe_model_1.default(_this, new vect_1.Vector(100 * index + line.x1, 100 + line.y1), new vect_1.Vector(100 * index + line.x2, 100 + line.y2)));
+            });
+        });
+        arrays45Check.map(function (lines, index) {
+            lines.map(function (line) {
+                _this.pipes.push(new pipe_model_1.default(_this, new vect_1.Vector(100 * index + line.x1, 300 + line.y1), new vect_1.Vector(100 * index + line.x2, 300 + line.y2)));
+            });
+        });
+        arrays90HCheck.map(function (lines, index) {
+            lines.map(function (line) {
+                _this.pipes.push(new pipe_model_1.default(_this, new vect_1.Vector(100 * index + line.x1, 400 + line.y1), new vect_1.Vector(100 * index + line.x2, 400 + line.y2)));
+            });
+        });
+        arrays90VCheck.map(function (lines, index) {
+            lines.map(function (line) {
+                _this.pipes.push(new pipe_model_1.default(_this, new vect_1.Vector(500 + 100 * index + line.x1, line.y1), new vect_1.Vector(500 + 100 * index + line.x2, line.y2)));
             });
         });
         // this.pipes.push(new Pipe(this, new Vector(40, 100), new Vector(300, 100)));
@@ -1140,7 +1386,6 @@ var Fitting = /** @class */function () {
         this.ctx.beginPath();
         // let c = this.canvas.getWorldCoordinates(fitting.center.x, fitting.center.y);
         // this.ctx.arc(c.x, c.y, fitting.radius, 0, 2 * Math.PI);
-        console.log("fitting.type", fitting.type);
         switch (fitting.type) {
             case "2d":
                 var pipe1 = fitting.pipes[0];
@@ -1165,59 +1410,42 @@ var Fitting = /** @class */function () {
                 }
                 if (!pipe1End || !pipe2End || !pipe1OppositeEnd || !pipe2OppositeEnd) break;
                 var angleBetween = pipe1OppositeEnd.vec.sub(fitting.center).normalize().sum(pipe2OppositeEnd.vec.sub(fitting.center).normalize());
-                var pipe1Angle = pipe1.to.vec.sub(pipe1.from.vec).angle();
-                var pipe2Angle = pipe2.to.vec.sub(pipe2.from.vec).angle();
+                // let pipe1Angle = pipe1.to.vec.sub(pipe1.from.vec).angle();
+                // let pipe2Angle = pipe2.to.vec.sub(pipe2.from.vec).angle();
+                var pipe1Angle = pipe1End.vec.sub(pipe1OppositeEnd.vec).angle();
+                var pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
                 // let v1 = new Vector(Math.cos(pipe1Angle), Math.sin(pipe1Angle));
                 // let v2 = new Vector(Math.cos(pipe2Angle), Math.sin(pipe2Angle));
-                var v1 = pipe1.to.vec.sub(pipe1.from.vec).normalize();
-                var v2 = pipe2.to.vec.sub(pipe2.from.vec).normalize();
-                var r1 = v1.multiply(10);
-                var r2 = v2.multiply(10);
+                // let v1 = pipe1.to.vec.sub(pipe1.from.vec).normalize();
+                // let v2 = pipe2.to.vec.sub(pipe2.from.vec).normalize();
+                var v1 = pipe1End.vec.sub(pipe1OppositeEnd.vec).normalize();
+                var v2 = pipe2End.vec.sub(pipe2OppositeEnd.vec).normalize();
+                // let v1 = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
+                // let v2 = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
+                var r1 = v1.multiply(20);
+                var r2 = v2.multiply(20);
                 var pipe1Width = r1.perpendicular();
                 var pipe2Width = r2.perpendicular();
-                var pipe1NeckBottom = pipe1End.vec.sub(r1).sub(pipe1Width);
                 var pipe1NeckTop = pipe1End.vec.sub(r1).sum(pipe1Width);
-                var pipe2NeckTop = pipe2End.vec.sum(r2).sub(pipe2Width);
-                var pipe2NeckBottom = pipe2End.vec.sum(r2).sum(pipe2Width);
+                var pipe1NeckBottom = pipe1End.vec.sub(r1).sub(pipe1Width);
+                var pipe2NeckTop = pipe2End.vec.sub(r2).sub(pipe2Width);
+                var pipe2NeckBottom = pipe2End.vec.sub(r2).sum(pipe2Width);
                 var topCurve = new vect_1.Vector(-angleBetween.x, -angleBetween.y).multiply(fitting.width).sum(fitting.center);
-                // pipe1NeckBottom.drawVector();
-                // pipe1NeckTop.drawVector();
-                // pipe2NeckTop.drawVector();
-                // pipe2NeckBottom.drawVector();
-                // topCurve.drawVector();
-                //
-                // let bottomCurve = angleBetween
-                //   .multiply(fitting.width)
-                //   .sum(fitting.center);
-                //
-                this.ctx.moveTo(pipe1NeckBottom.x, pipe1NeckBottom.y);
-                this.ctx.lineTo(pipe1NeckTop.x, pipe1NeckTop.y);
-                this.ctx.lineTo(topCurve.x, topCurve.y);
-                this.ctx.lineTo(pipe2NeckBottom.x, pipe2NeckBottom.y);
-                this.ctx.lineTo(pipe2NeckTop.x, pipe2NeckTop.y);
-                // this.ctx.lineTo(bottomCurve.x, bottomCurve.y);
-                // this.ctx.lineTo(pipe1NeckBottom.x, pipe1NeckBottom.y);
-                // this.ctx.bezierCurveTo(
-                //   topCurve.x,
-                //   topCurve.y,
-                //   topCurve.x,
-                //   topCurve.y,
-                //   pipe2NeckTop.x,
-                //   pipe2NeckTop.y
-                // );
-                // this.ctx.lineTo(pipe2NeckBottom.x, pipe2NeckBottom.y);
-                // this.ctx.bezierCurveTo(
-                //   bottomCurve.x,
-                //   bottomCurve.y,
-                //   bottomCurve.x,
-                //   bottomCurve.y,
-                //   pipe1NeckBottom.x,
-                //   pipe1NeckBottom.y
-                // );
+                var bottomCurve = new vect_1.Vector(angleBetween.x, angleBetween.y).multiply(fitting.width).sum(fitting.center);
+                // let needBezier = Math.round(angleBetween.angle() % 180) < Number.EPSILON;
+                var points = [pipe1NeckTop, pipe1NeckBottom, pipe2NeckTop, pipe2NeckBottom];
+                points = points.sort(function (a, b) {
+                    return (a.x - fitting.center.x) * (b.y - fitting.center.y) - (b.x - fitting.center.x) * (a.y - fitting.center.y);
+                });
+                this.ctx.moveTo(points[0].x, points[0].y);
+                this.ctx.lineTo(points[1].x, points[1].y);
+                this.ctx.lineTo(points[2].x, points[2].y);
+                this.ctx.lineTo(points[3].x, points[3].y);
+                this.ctx.bezierCurveTo(topCurve.x, topCurve.y, topCurve.x, topCurve.y, points[0].x, points[0].y);
                 this.ctx.closePath();
                 this.ctx.stroke();
-                this.ctx.fillStyle = "black";
-                this.ctx.fill();
+                // this.ctx.fillStyle = "black";
+                // this.ctx.fill();
                 break;
             case "3d":
                 console.log("3d");

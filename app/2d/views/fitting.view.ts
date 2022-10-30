@@ -33,8 +33,6 @@ class Fitting {
 
     // this.ctx.arc(c.x, c.y, fitting.radius, 0, 2 * Math.PI);
 
-    console.log("fitting.type", fitting.type);
-
     switch (fitting.type) {
       case "2d":
         let pipe1 = fitting.pipes[0];
@@ -65,65 +63,67 @@ class Fitting {
           .normalize()
           .sum(pipe2OppositeEnd.vec.sub(fitting.center).normalize());
 
-        let pipe1Angle = pipe1.to.vec.sub(pipe1.from.vec).angle();
-        let pipe2Angle = pipe2.to.vec.sub(pipe2.from.vec).angle();
+        // let pipe1Angle = pipe1.to.vec.sub(pipe1.from.vec).angle();
+        // let pipe2Angle = pipe2.to.vec.sub(pipe2.from.vec).angle();
+        let pipe1Angle = pipe1End.vec.sub(pipe1OppositeEnd.vec).angle();
+        let pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
 
         // let v1 = new Vector(Math.cos(pipe1Angle), Math.sin(pipe1Angle));
         // let v2 = new Vector(Math.cos(pipe2Angle), Math.sin(pipe2Angle));
-        let v1 = pipe1.to.vec.sub(pipe1.from.vec).normalize();
-        let v2 = pipe2.to.vec.sub(pipe2.from.vec).normalize();
-        let r1 = v1.multiply(10);
-        let r2 = v2.multiply(10);
+        // let v1 = pipe1.to.vec.sub(pipe1.from.vec).normalize();
+        // let v2 = pipe2.to.vec.sub(pipe2.from.vec).normalize();
+        let v1 = pipe1End.vec.sub(pipe1OppositeEnd.vec).normalize();
+        let v2 = pipe2End.vec.sub(pipe2OppositeEnd.vec).normalize();
+        // let v1 = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
+        // let v2 = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
+        let r1 = v1.multiply(20);
+        let r2 = v2.multiply(20);
 
         let pipe1Width = r1.perpendicular();
         let pipe2Width = r2.perpendicular();
-        let pipe1NeckBottom = pipe1End.vec.sub(r1).sub(pipe1Width);
         let pipe1NeckTop = pipe1End.vec.sub(r1).sum(pipe1Width);
-        let pipe2NeckTop = pipe2End.vec.sum(r2).sub(pipe2Width);
-        let pipe2NeckBottom = pipe2End.vec.sum(r2).sum(pipe2Width);
+        let pipe1NeckBottom = pipe1End.vec.sub(r1).sub(pipe1Width);
+        let pipe2NeckTop = pipe2End.vec.sub(r2).sub(pipe2Width);
+        let pipe2NeckBottom = pipe2End.vec.sub(r2).sum(pipe2Width);
         let topCurve = new Vector(-angleBetween.x, -angleBetween.y)
           .multiply(fitting.width)
           .sum(fitting.center);
+        let bottomCurve = new Vector(angleBetween.x, angleBetween.y)
+          .multiply(fitting.width)
+          .sum(fitting.center);
 
-        // pipe1NeckBottom.drawVector();
-        // pipe1NeckTop.drawVector();
-        // pipe2NeckTop.drawVector();
-        // pipe2NeckBottom.drawVector();
-        // topCurve.drawVector();
-        //
+        // let needBezier = Math.round(angleBetween.angle() % 180) < Number.EPSILON;
 
-        // let bottomCurve = angleBetween
-        //   .multiply(fitting.width)
-        //   .sum(fitting.center);
-        //
-        this.ctx.moveTo(pipe1NeckBottom.x, pipe1NeckBottom.y);
-        this.ctx.lineTo(pipe1NeckTop.x, pipe1NeckTop.y);
-        this.ctx.lineTo(topCurve.x, topCurve.y);
-        this.ctx.lineTo(pipe2NeckBottom.x, pipe2NeckBottom.y);
-        this.ctx.lineTo(pipe2NeckTop.x, pipe2NeckTop.y);
-        // this.ctx.lineTo(bottomCurve.x, bottomCurve.y);
-        // this.ctx.lineTo(pipe1NeckBottom.x, pipe1NeckBottom.y);
-        // this.ctx.bezierCurveTo(
-        //   topCurve.x,
-        //   topCurve.y,
-        //   topCurve.x,
-        //   topCurve.y,
-        //   pipe2NeckTop.x,
-        //   pipe2NeckTop.y
-        // );
-        // this.ctx.lineTo(pipe2NeckBottom.x, pipe2NeckBottom.y);
-        // this.ctx.bezierCurveTo(
-        //   bottomCurve.x,
-        //   bottomCurve.y,
-        //   bottomCurve.x,
-        //   bottomCurve.y,
-        //   pipe1NeckBottom.x,
-        //   pipe1NeckBottom.y
-        // );
+        let points = [
+          pipe1NeckTop,
+          pipe1NeckBottom,
+          pipe2NeckTop,
+          pipe2NeckBottom,
+        ];
+
+        points = points.sort((a, b) => {
+          return (
+            (a.x - fitting.center.x) * (b.y - fitting.center.y) -
+            (b.x - fitting.center.x) * (a.y - fitting.center.y)
+          );
+        });
+
+        this.ctx.moveTo(points[0].x, points[0].y);
+        this.ctx.lineTo(points[1].x, points[1].y);
+        this.ctx.lineTo(points[2].x, points[2].y);
+        this.ctx.lineTo(points[3].x, points[3].y);
+        this.ctx.bezierCurveTo(
+          topCurve.x,
+          topCurve.y,
+          topCurve.x,
+          topCurve.y,
+          points[0].x,
+          points[0].y
+        );
         this.ctx.closePath();
         this.ctx.stroke();
-        this.ctx.fillStyle = "black";
-        this.ctx.fill();
+        // this.ctx.fillStyle = "black";
+        // this.ctx.fill();
         break;
       case "3d":
         console.log("3d");

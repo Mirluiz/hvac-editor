@@ -43,7 +43,7 @@ class Canvas {
       ],
       /*
                 1 - from right top to left
-                2 - from right to bottom
+                2 - from top to bottom
                */
       [
         {
@@ -172,6 +172,285 @@ class Canvas {
       ],
     ];
 
+    let arrays45Check = [
+      /*
+          /\
+          1 - from left to right,
+          2 - from right to left,
+         */
+      [
+        {
+          x1: 40,
+          y1: 60,
+          x2: 80,
+          y2: 20,
+        },
+        {
+          x1: 120,
+          y1: 60,
+          x2: 80,
+          y2: 20,
+        },
+      ],
+      /*
+          V
+          1 - from left to right,
+          2 - from right to left,
+         */
+      [
+        {
+          x1: 40,
+          y1: 20,
+          x2: 80,
+          y2: 60,
+        },
+        {
+          x1: 120,
+          y1: 20,
+          x2: 80,
+          y2: 60,
+        },
+      ],
+      /*
+        >
+        1 - from left to right,
+        2 - from left to right,
+       */
+      [
+        {
+          x1: 40,
+          y1: 20,
+          x2: 80,
+          y2: 60,
+        },
+        {
+          x1: 40,
+          y1: 100,
+          x2: 80,
+          y2: 60,
+        },
+      ],
+      /*
+        >
+        1 - from right to left,
+        2 - from right to left,
+       */
+      [
+        {
+          x1: 80,
+          y1: 60,
+          x2: 40,
+          y2: 20,
+        },
+        {
+          x1: 80,
+          y1: 60,
+          x2: 40,
+          y2: 100,
+        },
+      ],
+      /*
+        <
+        1 - from left to right,
+        2 - from left to right,
+       */
+      [
+        {
+          x1: 40,
+          y1: 60,
+          x2: 80,
+          y2: 20,
+        },
+        {
+          x1: 40,
+          y1: 60,
+          x2: 80,
+          y2: 100,
+        },
+      ],
+      /*
+        <
+        1 - from right to left,
+        2 - from right to left,
+       */
+      [
+        {
+          x1: 80,
+          y1: 20,
+          x2: 40,
+          y2: 60,
+        },
+        {
+          x1: 80,
+          y1: 100,
+          x2: 40,
+          y2: 60,
+        },
+      ],
+    ];
+
+    let arrays90HCheck = [
+      /*
+          --
+          1 - from left to right
+          2 - from left to right,
+         */
+      [
+        {
+          x1: 40,
+          y1: 40,
+          x2: 80,
+          y2: 40,
+        },
+        {
+          x1: 80,
+          y1: 40,
+          x2: 120,
+          y2: 40,
+        },
+      ],
+      /*
+        --
+        1 - from left to right
+        2 - from right to left,
+       */
+      [
+        {
+          x1: 40,
+          y1: 40,
+          x2: 80,
+          y2: 40,
+        },
+        {
+          x1: 120,
+          y1: 40,
+          x2: 80,
+          y2: 40,
+        },
+      ],
+      /*
+      --
+      1 - from right to left
+      2 - from left to right,
+     */
+      [
+        {
+          x1: 80,
+          y1: 40,
+          x2: 40,
+          y2: 40,
+        },
+        {
+          x1: 80,
+          y1: 40,
+          x2: 120,
+          y2: 40,
+        },
+      ],
+      /*
+      --
+        1 - from left to right
+        2 - from left to right,
+       */
+      [
+        {
+          x1: 80,
+          y1: 40,
+          x2: 40,
+          y2: 40,
+        },
+        {
+          x1: 120,
+          y1: 40,
+          x2: 80,
+          y2: 40,
+        },
+      ],
+    ];
+
+    let arrays90VCheck = [
+      /*
+          |
+          |
+          1 - from top to bottom
+          2 - from top to bottom
+         */
+      [
+        {
+          x1: 40,
+          y1: 40,
+          x2: 40,
+          y2: 80,
+        },
+        {
+          x1: 40,
+          y1: 80,
+          x2: 40,
+          y2: 120,
+        },
+      ],
+      /*
+        |
+        |
+        1 - from top to bottom
+        2 - from bottom to top
+       */
+      [
+        {
+          x1: 40,
+          y1: 40,
+          x2: 40,
+          y2: 80,
+        },
+        {
+          x1: 40,
+          y1: 120,
+          x2: 40,
+          y2: 80,
+        },
+      ],
+      /*
+        |
+        |
+        1 - from bottom to top
+        2 - from top to bottom
+       */
+      [
+        {
+          x1: 40,
+          y1: 80,
+          x2: 40,
+          y2: 40,
+        },
+        {
+          x1: 40,
+          y1: 80,
+          x2: 40,
+          y2: 120,
+        },
+      ],
+      /*
+        |
+        |
+        1 - from bottom to top
+        2 - from bottom to top
+       */
+      [
+        {
+          x1: 40,
+          y1: 80,
+          x2: 40,
+          y2: 40,
+        },
+        {
+          x1: 40,
+          y1: 120,
+          x2: 40,
+          y2: 80,
+        },
+      ],
+    ];
+
     arraysForLeftCheck.map((lines, index) => {
       lines.map((line) => {
         this.pipes.push(
@@ -191,6 +470,42 @@ class Canvas {
             this,
             new Vector(100 * index + line.x1, 100 + line.y1),
             new Vector(100 * index + line.x2, 100 + line.y2)
+          )
+        );
+      });
+    });
+
+    arrays45Check.map((lines, index) => {
+      lines.map((line) => {
+        this.pipes.push(
+          new Pipe(
+            this,
+            new Vector(100 * index + line.x1, 300 + line.y1),
+            new Vector(100 * index + line.x2, 300 + line.y2)
+          )
+        );
+      });
+    });
+
+    arrays90HCheck.map((lines, index) => {
+      lines.map((line) => {
+        this.pipes.push(
+          new Pipe(
+            this,
+            new Vector(100 * index + line.x1, 400 + line.y1),
+            new Vector(100 * index + line.x2, 400 + line.y2)
+          )
+        );
+      });
+    });
+
+    arrays90VCheck.map((lines, index) => {
+      lines.map((line) => {
+        this.pipes.push(
+          new Pipe(
+            this,
+            new Vector(500 + 100 * index + line.x1, line.y1),
+            new Vector(500 + 100 * index + line.x2, line.y2)
           )
         );
       });
