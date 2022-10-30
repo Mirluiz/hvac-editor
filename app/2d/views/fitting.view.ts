@@ -19,7 +19,6 @@ class Fitting {
   }
 
   drawFittings() {
-    console.log("this.canvas.model.fittings", this.canvas.model.fittings);
     this.canvas.model.fittings.map((fitting) => {
       this.drawFitting(fitting);
     });
@@ -63,21 +62,10 @@ class Fitting {
           .normalize()
           .sum(pipe2OppositeEnd.vec.sub(fitting.center).normalize());
 
-        // let pipe1Angle = pipe1.to.vec.sub(pipe1.from.vec).angle();
-        // let pipe2Angle = pipe2.to.vec.sub(pipe2.from.vec).angle();
-        let pipe1Angle = pipe1End.vec.sub(pipe1OppositeEnd.vec).angle();
-        let pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
-
-        // let v1 = new Vector(Math.cos(pipe1Angle), Math.sin(pipe1Angle));
-        // let v2 = new Vector(Math.cos(pipe2Angle), Math.sin(pipe2Angle));
-        // let v1 = pipe1.to.vec.sub(pipe1.from.vec).normalize();
-        // let v2 = pipe2.to.vec.sub(pipe2.from.vec).normalize();
         let v1 = pipe1End.vec.sub(pipe1OppositeEnd.vec).normalize();
         let v2 = pipe2End.vec.sub(pipe2OppositeEnd.vec).normalize();
-        // let v1 = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
-        // let v2 = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
-        let r1 = v1.multiply(20);
-        let r2 = v2.multiply(20);
+        let r1 = v1.multiply(10);
+        let r2 = v2.multiply(10);
 
         let pipe1Width = r1.perpendicular();
         let pipe2Width = r2.perpendicular();
@@ -92,7 +80,9 @@ class Fitting {
           .multiply(fitting.width)
           .sum(fitting.center);
 
-        // let needBezier = Math.round(angleBetween.angle() % 180) < Number.EPSILON;
+        let pipe1Angle = pipe1OppositeEnd.vec.sub(pipe1End.vec).angle();
+        let pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
+        let needBezier = pipe1Angle - pipe2Angle !== 0;
 
         let points = [
           pipe1NeckTop,
@@ -112,18 +102,22 @@ class Fitting {
         this.ctx.lineTo(points[1].x, points[1].y);
         this.ctx.lineTo(points[2].x, points[2].y);
         this.ctx.lineTo(points[3].x, points[3].y);
-        this.ctx.bezierCurveTo(
-          topCurve.x,
-          topCurve.y,
-          topCurve.x,
-          topCurve.y,
-          points[0].x,
-          points[0].y
-        );
+
+        if (needBezier) {
+          this.ctx.bezierCurveTo(
+            topCurve.x,
+            topCurve.y,
+            topCurve.x,
+            topCurve.y,
+            points[0].x,
+            points[0].y
+          );
+        }
+
         this.ctx.closePath();
         this.ctx.stroke();
-        // this.ctx.fillStyle = "black";
-        // this.ctx.fill();
+        this.ctx.fillStyle = "black";
+        this.ctx.fill();
         break;
       case "3d":
         console.log("3d");

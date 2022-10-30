@@ -985,7 +985,10 @@ var Pipe = /** @class */function (_super) {
             }
         });
         this.model.fittings.map(function (fitting) {
-            if (fitting.isClose(pipe.from.vec) || fitting.isClose(pipe.to.vec)) {
+            if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
+                pipe.connect(fitting);
+            }
+            if (fitting.isClose(pipe.to.vec) && !pipe.to.target) {
                 pipe.connect(fitting);
             }
         });
@@ -1375,7 +1378,6 @@ var Fitting = /** @class */function () {
     }
     Fitting.prototype.drawFittings = function () {
         var _this = this;
-        console.log("this.canvas.model.fittings", this.canvas.model.fittings);
         this.canvas.model.fittings.map(function (fitting) {
             _this.drawFitting(fitting);
         });
@@ -1410,20 +1412,10 @@ var Fitting = /** @class */function () {
                 }
                 if (!pipe1End || !pipe2End || !pipe1OppositeEnd || !pipe2OppositeEnd) break;
                 var angleBetween = pipe1OppositeEnd.vec.sub(fitting.center).normalize().sum(pipe2OppositeEnd.vec.sub(fitting.center).normalize());
-                // let pipe1Angle = pipe1.to.vec.sub(pipe1.from.vec).angle();
-                // let pipe2Angle = pipe2.to.vec.sub(pipe2.from.vec).angle();
-                var pipe1Angle = pipe1End.vec.sub(pipe1OppositeEnd.vec).angle();
-                var pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
-                // let v1 = new Vector(Math.cos(pipe1Angle), Math.sin(pipe1Angle));
-                // let v2 = new Vector(Math.cos(pipe2Angle), Math.sin(pipe2Angle));
-                // let v1 = pipe1.to.vec.sub(pipe1.from.vec).normalize();
-                // let v2 = pipe2.to.vec.sub(pipe2.from.vec).normalize();
                 var v1 = pipe1End.vec.sub(pipe1OppositeEnd.vec).normalize();
                 var v2 = pipe2End.vec.sub(pipe2OppositeEnd.vec).normalize();
-                // let v1 = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
-                // let v2 = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
-                var r1 = v1.multiply(20);
-                var r2 = v2.multiply(20);
+                var r1 = v1.multiply(10);
+                var r2 = v2.multiply(10);
                 var pipe1Width = r1.perpendicular();
                 var pipe2Width = r2.perpendicular();
                 var pipe1NeckTop = pipe1End.vec.sub(r1).sum(pipe1Width);
@@ -1432,7 +1424,9 @@ var Fitting = /** @class */function () {
                 var pipe2NeckBottom = pipe2End.vec.sub(r2).sum(pipe2Width);
                 var topCurve = new vect_1.Vector(-angleBetween.x, -angleBetween.y).multiply(fitting.width).sum(fitting.center);
                 var bottomCurve = new vect_1.Vector(angleBetween.x, angleBetween.y).multiply(fitting.width).sum(fitting.center);
-                // let needBezier = Math.round(angleBetween.angle() % 180) < Number.EPSILON;
+                var pipe1Angle = pipe1OppositeEnd.vec.sub(pipe1End.vec).angle();
+                var pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
+                var needBezier = pipe1Angle - pipe2Angle !== 0;
                 var points = [pipe1NeckTop, pipe1NeckBottom, pipe2NeckTop, pipe2NeckBottom];
                 points = points.sort(function (a, b) {
                     return (a.x - fitting.center.x) * (b.y - fitting.center.y) - (b.x - fitting.center.x) * (a.y - fitting.center.y);
@@ -1441,11 +1435,13 @@ var Fitting = /** @class */function () {
                 this.ctx.lineTo(points[1].x, points[1].y);
                 this.ctx.lineTo(points[2].x, points[2].y);
                 this.ctx.lineTo(points[3].x, points[3].y);
-                this.ctx.bezierCurveTo(topCurve.x, topCurve.y, topCurve.x, topCurve.y, points[0].x, points[0].y);
+                if (needBezier) {
+                    this.ctx.bezierCurveTo(topCurve.x, topCurve.y, topCurve.x, topCurve.y, points[0].x, points[0].y);
+                }
                 this.ctx.closePath();
                 this.ctx.stroke();
-                // this.ctx.fillStyle = "black";
-                // this.ctx.fill();
+                this.ctx.fillStyle = "black";
+                this.ctx.fill();
                 break;
             case "3d":
                 console.log("3d");

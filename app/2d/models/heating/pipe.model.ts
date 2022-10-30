@@ -39,7 +39,11 @@ class Pipe extends Line<IPipeEnd> {
     });
 
     this.model.fittings.map((fitting) => {
-      if (fitting.isClose(pipe.from.vec) || fitting.isClose(pipe.to.vec)) {
+      if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
+        pipe.connect(fitting);
+      }
+
+      if (fitting.isClose(pipe.to.vec) && !pipe.to.target) {
         pipe.connect(fitting);
       }
     });
