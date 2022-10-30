@@ -38,12 +38,29 @@ var Fitting = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Fitting.prototype.needMerge = function (v) {
+    Object.defineProperty(Fitting.prototype, "type", {
+        get: function () {
+            var ret = null;
+            if (this.pipes.length === 2)
+                ret = "2d";
+            if (this.pipes.length === 3)
+                ret = "3d";
+            if (this.pipes.length === 4)
+                ret = "4d";
+            console.log("", this.pipes.length);
+            return ret;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Fitting.prototype.isClose = function (v) {
         var distance = this.model.config.overlap.bindDistance;
         return this.center.sub(v).length <= distance;
     };
     Fitting.prototype.addPipe = function (pipe) {
         this._pipes.push(pipe);
+        this.pipes = this._pipes;
+        return this.pipes[this.pipes.length - 1];
     };
     return Fitting;
 }(arc_model_1.default));

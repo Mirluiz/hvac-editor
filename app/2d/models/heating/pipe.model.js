@@ -26,6 +26,7 @@ var Pipe = /** @class */ (function (_super) {
     function Pipe(model, from, to) {
         var _this = _super.call(this, { target: null, vec: from }, { target: null, vec: to }) || this;
         _this.type = "supply";
+        _this.width = 10;
         _this.model = model;
         return _this;
     }
@@ -39,23 +40,21 @@ var Pipe = /** @class */ (function (_super) {
     Pipe.prototype.toOrigin = function () {
         return this.to.vec.sub(this.from.vec);
     };
-    Pipe.prototype.merge = function () {
-        var _this = this;
-        var merged = false;
-        this.model.fittings.map(function (fitting) {
-            if (fitting.needMerge(_this.from.vec) || fitting.needMerge(_this.to.vec)) {
-                merged = _this.mergeFitting(fitting);
+    Pipe.prototype.update = function (pipe) {
+        this.model.pipes.map(function (_pipe) {
+            if (_pipe.id === pipe.id)
+                return;
+            if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
+                pipe.merge(_pipe);
             }
         });
-        this.model.pipes.map(function (pipe) {
-            if (_this.id === pipe.id)
-                return;
-            if (pipe.isClose(_this.from.vec) || pipe.isClose(_this.to.vec)) {
-                merged = _this.mergePipe(pipe);
+        this.model.fittings.map(function (fitting) {
+            if (fitting.isClose(pipe.from.vec) || fitting.isClose(pipe.to.vec)) {
+                pipe.connect(fitting);
             }
         });
     };
-    Pipe.prototype.mergePipe = function (pipe) {
+    Pipe.prototype.merge = function (pipe) {
         var _this = this;
         var distance = this.model.config.overlap.bindDistance;
         var merged = false;
@@ -64,20 +63,26 @@ var Pipe = /** @class */ (function (_super) {
                 return;
             if (pipe.isClose(end.vec)) {
                 var mergePoint = void 0;
-                if (pipe.from.vec.sub(end.vec).length <= distance &&
-                    !pipe.from.target) {
+                if (pipe.from.vec.sub(end.vec).length <= distance) {
+                    if (pipe.from.target)
+                        return;
                     mergePoint = pipe.from.vec.clone();
                     var newFitting_1 = new fitting_model_1.default(_this.model, mergePoint);
                     _this.model.addFitting(newFitting_1);
+                    newFitting_1.addPipe(pipe);
+                    newFitting_1.addPipe(_this);
                     pipe.from.target = newFitting_1;
                     end.target = newFitting_1;
                     return;
                 }
-                else if (pipe.to.vec.sub(end.vec).length <= distance &&
-                    !pipe.to.target) {
+                else if (pipe.to.vec.sub(end.vec).length <= distance) {
+                    if (pipe.to.target)
+                        return;
                     mergePoint = pipe.to.vec.clone();
                     var newFitting_2 = new fitting_model_1.default(_this.model, mergePoint);
                     _this.model.addFitting(newFitting_2);
+                    newFitting_2.addPipe(pipe);
+                    newFitting_2.addPipe(_this);
                     pipe.to.target = newFitting_2;
                     end.target = newFitting_2;
                     return;
@@ -88,12 +93,13 @@ var Pipe = /** @class */ (function (_super) {
                 mergePoint = mergePoint.bindNet(_this.model.config.net.step);
                 var newP1 = new Pipe(_this.model, new vect_1.Vector(0, 0).sum(pipe.from.vec), new vect_1.Vector(mergePoint.x, mergePoint.y));
                 var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y));
-                // end = mergePoint.clone();
                 _this.model.addPipe(newP1);
                 _this.model.addPipe(newP2);
                 pipe.delete();
                 var newFitting = new fitting_model_1.default(_this.model, mergePoint);
                 _this.model.addFitting(newFitting);
+                newFitting.addPipe(newP1);
+                newFitting.addPipe(newP2);
                 newP1.from.target = pipe.from.target;
                 newP1.to.target = newFitting;
                 newP2.from.target = newFitting;
@@ -105,19 +111,22 @@ var Pipe = /** @class */ (function (_super) {
         run(this.to);
         return merged;
     };
-    Pipe.prototype.mergeFitting = function (fitting) {
+    Pipe.prototype.connect = function (target) {
         var merged = false;
-        var isFrom = fitting.needMerge(this.from.vec);
-        var isTo = fitting.needMerge(this.to.vec);
-        if (isFrom || isTo) {
-            fitting.pipes.push(this);
-            merged = true;
+        if (target instanceof fitting_model_1.default) {
+            var isFrom = target.isClose(this.from.vec);
+            var isTo = target.isClose(this.to.vec);
+            if (isFrom || isTo) {
+                target.addPipe(this);
+                merged = true;
+            }
+            if (isFrom) {
+                this.from.target = target;
+            }
+            else if (isTo)
+                this.to.target = target;
+            return merged;
         }
-        if (isFrom) {
-            this.from.target = fitting;
-        }
-        else if (isTo)
-            this.to.target = fitting;
         return merged;
     };
     Pipe.prototype.isClose = function (end) {

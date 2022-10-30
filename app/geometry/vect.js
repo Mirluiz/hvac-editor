@@ -50,7 +50,15 @@ var Vector = /** @class */ (function () {
         return new Vector(this.x + v.x, this.y + v.y);
     };
     Vector.prototype.angle = function (v) {
-        return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
+        if (v === void 0) { v = undefined; }
+        if (v) {
+            // return Math.atan2(
+            //   this.x * v.y - this.y * v.x,
+            //   this.x * v.x + this.y * v.y
+            // );
+            return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
+        }
+        return Math.atan2(this.y, this.x);
     };
     Vector.prototype.product = function (v) {
         return this.x * v.x + this.y * v.y;
@@ -61,11 +69,31 @@ var Vector = /** @class */ (function () {
     Vector.prototype.multiply = function (a) {
         return new Vector(this.x * a, this.y * a);
     };
+    Vector.prototype.perpendicular = function () {
+        return new Vector(this.y, -this.x);
+    };
     Vector.prototype.clone = function () {
         return new Vector(this.x, this.y);
     };
     Vector.prototype.bindNet = function (step) {
         return new Vector(Math.round(this.x / step) * step, Math.round(this.y / step) * step);
+    };
+    Vector.prototype.drawVector = function () {
+        var _this = this;
+        //debug only
+        setTimeout(function () {
+            var container = document.querySelector("#editor");
+            if (container) {
+                var ctx = container.getContext("2d");
+                if (!ctx)
+                    return;
+                ctx.save();
+                ctx.arc(_this.x, _this.y, 2, 0, 2 * Math.PI);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                ctx.restore();
+            }
+        }, 0);
     };
     return Vector;
 }());

@@ -22,11 +22,185 @@ class Canvas {
   constructor() {
     this.overlap = new Overlap(this);
 
-    this.pipes.push(new Pipe(this, new Vector(40, 100), new Vector(300, 100)));
-    this.pipes.push(new Pipe(this, new Vector(300, 100), new Vector(300, 500)));
+    let arraysForLeftCheck = [
+      /*
+          1 - from right bottom to top
+          2 - from left to right
+         */
+      [
+        {
+          x1: 100,
+          y1: 100,
+          x2: 100,
+          y2: 40,
+        },
+        {
+          x1: 40,
+          y1: 40,
+          x2: 100,
+          y2: 40,
+        },
+      ],
+      /*
+                1 - from right top to left
+                2 - from right to bottom
+               */
+      [
+        {
+          x1: 100,
+          y1: 40,
+          x2: 40,
+          y2: 40,
+        },
+        {
+          x1: 100,
+          y1: 40,
+          x2: 100,
+          y2: 100,
+        },
+      ],
+      /*
+        1 - from left top to right
+        2 - from right top to bottom
+       */
+      [
+        {
+          x1: 40,
+          y1: 40,
+          x2: 100,
+          y2: 40,
+        },
+        {
+          x1: 100,
+          y1: 40,
+          x2: 100,
+          y2: 100,
+        },
+      ],
+      /*
+      1 - from right bottom to top
+      2 - from right to left
+     */
+      [
+        {
+          x1: 100,
+          y1: 100,
+          x2: 100,
+          y2: 40,
+        },
+        {
+          x1: 100,
+          y1: 40,
+          x2: 40,
+          y2: 40,
+        },
+      ],
+    ];
 
-    this.pipes.push(new Pipe(this, new Vector(300, 500), new Vector(300, 100)));
-    this.pipes.push(new Pipe(this, new Vector(300, 100), new Vector(40, 100)));
+    let arraysForRightCheck = [
+      /*
+          1 - from bottom to top
+          2 - from left to right
+         */
+      [
+        {
+          x1: 40,
+          y1: 40,
+          x2: 40,
+          y2: 100,
+        },
+        {
+          x1: 40,
+          y1: 40,
+          x2: 100,
+          y2: 40,
+        },
+      ],
+      /*
+        1 - from right top to left
+        2 - from top to bottom
+       */
+      [
+        {
+          x1: 100,
+          y1: 40,
+          x2: 40,
+          y2: 40,
+        },
+        {
+          x1: 40,
+          y1: 40,
+          x2: 40,
+          y2: 100,
+        },
+      ],
+      /*
+        1 - from left top to right
+        2 - from top to bottom
+       */
+      [
+        {
+          x1: 40,
+          y1: 40,
+          x2: 100,
+          y2: 40,
+        },
+        {
+          x1: 40,
+          y1: 40,
+          x2: 40,
+          y2: 100,
+        },
+      ],
+      /*
+      1 - from right to left
+      2 - from bottom to top
+     */
+      [
+        {
+          x1: 100,
+          y1: 40,
+          x2: 40,
+          y2: 40,
+        },
+        {
+          x1: 40,
+          y1: 100,
+          x2: 40,
+          y2: 40,
+        },
+      ],
+    ];
+
+    arraysForLeftCheck.map((lines, index) => {
+      lines.map((line) => {
+        this.pipes.push(
+          new Pipe(
+            this,
+            new Vector(100 * index + line.x1, line.y1),
+            new Vector(100 * index + line.x2, line.y2)
+          )
+        );
+      });
+    });
+
+    arraysForRightCheck.map((lines, index) => {
+      lines.map((line) => {
+        this.pipes.push(
+          new Pipe(
+            this,
+            new Vector(100 * index + line.x1, 100 + line.y1),
+            new Vector(100 * index + line.x2, 100 + line.y2)
+          )
+        );
+      });
+    });
+
+    // this.pipes.push(new Pipe(this, new Vector(40, 100), new Vector(300, 100)));
+    // this.pipes.push(new Pipe(this, new Vector(300, 100), new Vector(300, 500)));
+    //
+    // this.pipes.push(new Pipe(this, new Vector(600, 100), new Vector(700, 100)));
+    // this.pipes.push(new Pipe(this, new Vector(700, 500), new Vector(700, 100)));
     // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
     // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
   }
@@ -115,6 +289,28 @@ class Canvas {
 
   getPipeByID(id: string) {
     return this.pipes.find((p) => p.id === id);
+  }
+
+  update() {
+    this.pipes.map((pipe) => {
+      this.pipes.map((_pipe) => {
+        if (_pipe.id === pipe.id) return;
+
+        if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
+          pipe.merge(_pipe);
+        }
+      });
+
+      this.fittings.map((fitting) => {
+        if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
+          pipe.connect(fitting);
+        }
+
+        if (fitting.isClose(pipe.to.vec) && !pipe.to.target) {
+          pipe.connect(fitting);
+        }
+      });
+    });
   }
 
   deletePipe(id: string) {

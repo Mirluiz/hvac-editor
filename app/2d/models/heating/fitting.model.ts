@@ -35,7 +35,7 @@ class Fitting extends Arc {
     return ret;
   }
 
-  needMerge(v: IVec) {
+  isClose(v: IVec) {
     let distance = this.model.config.overlap.bindDistance;
 
     return this.center.sub(v).length <= distance;

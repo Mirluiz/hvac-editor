@@ -25,7 +25,7 @@ var Pipe = /** @class */ (function () {
             var pipe = new pipe_model_2.default(this.model, this.model.actionObject.from.vec.clone(), this.model.actionObject.to.vec.clone());
             pipe.type = (_a = this.model.subMode) !== null && _a !== void 0 ? _a : "supply";
             this.model.addPipe(pipe);
-            pipe.merge();
+            pipe.update(pipe);
         }
         this.model.actionObject = new pipe_model_1.default(coord.clone(), coord.clone());
     };

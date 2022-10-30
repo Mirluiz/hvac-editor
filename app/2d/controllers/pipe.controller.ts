@@ -34,7 +34,7 @@ class Pipe {
       pipe.type = this.model.subMode ?? "supply";
       this.model.addPipe(pipe);
 
-      pipe.merge();
+      pipe.update(pipe);
     }
 
     this.model.actionObject = new PipeGhostModel(coord.clone(), coord.clone());

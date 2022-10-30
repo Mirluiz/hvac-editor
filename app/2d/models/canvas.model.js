@@ -43,6 +43,9 @@ var Canvas = /** @class */ (function () {
         };
         this.overlap = new overlap_model_1.default(this);
         this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
+        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 100), new vect_1.Vector(300, 500)));
+        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 500), new vect_1.Vector(300, 100)));
+        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 100), new vect_1.Vector(40, 100)));
         // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
         // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
     }
@@ -103,6 +106,23 @@ var Canvas = /** @class */ (function () {
     };
     Canvas.prototype.getPipeByID = function (id) {
         return this.pipes.find(function (p) { return p.id === id; });
+    };
+    Canvas.prototype.update = function () {
+        var _this = this;
+        this.pipes.map(function (pipe) {
+            _this.pipes.map(function (_pipe) {
+                if (_pipe.id === pipe.id)
+                    return;
+                if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
+                    pipe.merge(_pipe);
+                }
+            });
+            _this.fittings.map(function (fitting) {
+                if (fitting.isClose(pipe.from.vec) || fitting.isClose(pipe.to.vec)) {
+                    pipe.connect(fitting);
+                }
+            });
+        });
     };
     Canvas.prototype.deletePipe = function (id) {
         this.pipes = this.pipes.filter(function (p) { return p.id !== id; });

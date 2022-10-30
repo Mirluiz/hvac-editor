@@ -9,6 +9,7 @@ class Controller {
 
   constructor() {
     this.mode = new ModeController(this.canvas.model);
+    this.canvas.model.update();
   }
 }
 

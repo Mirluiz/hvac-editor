@@ -19,6 +19,7 @@ class Fitting {
   }
 
   drawFittings() {
+    console.log("this.canvas.model.fittings", this.canvas.model.fittings);
     this.canvas.model.fittings.map((fitting) => {
       this.drawFitting(fitting);
     });

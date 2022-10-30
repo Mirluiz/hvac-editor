@@ -23,7 +23,6 @@ var Valve = /** @class */ (function (_super) {
     __extends(Valve, _super);
     function Valve(center) {
         var _this = _super.call(this, center) || this;
-        _this.ghost = false;
         _this.pipes = [];
         return _this;
     }

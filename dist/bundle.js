@@ -180,7 +180,7 @@ var Pipe = /** @class */function () {
             var pipe = new pipe_model_2.default(this.model, this.model.actionObject.from.vec.clone(), this.model.actionObject.to.vec.clone());
             pipe.type = (_a = this.model.subMode) !== null && _a !== void 0 ? _a : "supply";
             this.model.addPipe(pipe);
-            pipe.merge();
+            pipe.update(pipe);
         }
         this.model.actionObject = new pipe_model_1.default(coord.clone(), coord.clone());
     };
@@ -202,6 +202,7 @@ var Controller = /** @class */function () {
     function Controller() {
         this.canvas = new canvas_controller_1.default();
         this.mode = new mode_controller_1.default(this.canvas.model);
+        this.canvas.model.update();
     }
     return Controller;
 }();
@@ -219,6 +220,7 @@ var pipe_model_1 = __importDefault(require("./heating/pipe.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
 var Canvas = /** @class */function () {
     function Canvas() {
+        var _this = this;
         this._walls = [];
         this._pipes = [];
         this._valves = [];
@@ -253,10 +255,143 @@ var Canvas = /** @class */function () {
             }
         };
         this.overlap = new overlap_model_1.default(this);
-        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
-        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 100), new vect_1.Vector(300, 500)));
-        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 500), new vect_1.Vector(300, 100)));
-        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 100), new vect_1.Vector(40, 100)));
+        var arraysForLeftCheck = [
+        /*
+            1 - from right bottom to top
+            2 - from left to right
+           */
+        [{
+            x1: 100,
+            y1: 100,
+            x2: 100,
+            y2: 40
+        }, {
+            x1: 40,
+            y1: 40,
+            x2: 100,
+            y2: 40
+        }],
+        /*
+                  1 - from right top to left
+                  2 - from right to bottom
+                 */
+        [{
+            x1: 100,
+            y1: 40,
+            x2: 40,
+            y2: 40
+        }, {
+            x1: 100,
+            y1: 40,
+            x2: 100,
+            y2: 100
+        }],
+        /*
+          1 - from left top to right
+          2 - from right top to bottom
+         */
+        [{
+            x1: 40,
+            y1: 40,
+            x2: 100,
+            y2: 40
+        }, {
+            x1: 100,
+            y1: 40,
+            x2: 100,
+            y2: 100
+        }],
+        /*
+        1 - from right bottom to top
+        2 - from right to left
+        */
+        [{
+            x1: 100,
+            y1: 100,
+            x2: 100,
+            y2: 40
+        }, {
+            x1: 100,
+            y1: 40,
+            x2: 40,
+            y2: 40
+        }]];
+        var arraysForRightCheck = [
+        /*
+            1 - from bottom to top
+            2 - from left to right
+           */
+        [{
+            x1: 40,
+            y1: 40,
+            x2: 40,
+            y2: 100
+        }, {
+            x1: 40,
+            y1: 40,
+            x2: 100,
+            y2: 40
+        }],
+        /*
+          1 - from right top to left
+          2 - from top to bottom
+         */
+        [{
+            x1: 100,
+            y1: 40,
+            x2: 40,
+            y2: 40
+        }, {
+            x1: 40,
+            y1: 40,
+            x2: 40,
+            y2: 100
+        }],
+        /*
+          1 - from left top to right
+          2 - from top to bottom
+         */
+        [{
+            x1: 40,
+            y1: 40,
+            x2: 100,
+            y2: 40
+        }, {
+            x1: 40,
+            y1: 40,
+            x2: 40,
+            y2: 100
+        }],
+        /*
+        1 - from right to left
+        2 - from bottom to top
+        */
+        [{
+            x1: 100,
+            y1: 40,
+            x2: 40,
+            y2: 40
+        }, {
+            x1: 40,
+            y1: 100,
+            x2: 40,
+            y2: 40
+        }]];
+        arraysForLeftCheck.map(function (lines, index) {
+            lines.map(function (line) {
+                _this.pipes.push(new pipe_model_1.default(_this, new vect_1.Vector(100 * index + line.x1, line.y1), new vect_1.Vector(100 * index + line.x2, line.y2)));
+            });
+        });
+        arraysForRightCheck.map(function (lines, index) {
+            lines.map(function (line) {
+                _this.pipes.push(new pipe_model_1.default(_this, new vect_1.Vector(100 * index + line.x1, 100 + line.y1), new vect_1.Vector(100 * index + line.x2, 100 + line.y2)));
+            });
+        });
+        // this.pipes.push(new Pipe(this, new Vector(40, 100), new Vector(300, 100)));
+        // this.pipes.push(new Pipe(this, new Vector(300, 100), new Vector(300, 500)));
+        //
+        // this.pipes.push(new Pipe(this, new Vector(600, 100), new Vector(700, 100)));
+        // this.pipes.push(new Pipe(this, new Vector(700, 500), new Vector(700, 100)));
         // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
         // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
     }
@@ -318,6 +453,25 @@ var Canvas = /** @class */function () {
     Canvas.prototype.getPipeByID = function (id) {
         return this.pipes.find(function (p) {
             return p.id === id;
+        });
+    };
+    Canvas.prototype.update = function () {
+        var _this = this;
+        this.pipes.map(function (pipe) {
+            _this.pipes.map(function (_pipe) {
+                if (_pipe.id === pipe.id) return;
+                if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
+                    pipe.merge(_pipe);
+                }
+            });
+            _this.fittings.map(function (fitting) {
+                if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
+                    pipe.connect(fitting);
+                }
+                if (fitting.isClose(pipe.to.vec) && !pipe.to.target) {
+                    pipe.connect(fitting);
+                }
+            });
         });
     };
     Canvas.prototype.deletePipe = function (id) {
@@ -515,7 +669,7 @@ var Fitting = /** @class */function (_super) {
         enumerable: false,
         configurable: true
     });
-    Fitting.prototype.needMerge = function (v) {
+    Fitting.prototype.isClose = function (v) {
         var distance = this.model.config.overlap.bindDistance;
         return this.center.sub(v).length <= distance;
     };
@@ -577,22 +731,20 @@ var Pipe = /** @class */function (_super) {
     Pipe.prototype.toOrigin = function () {
         return this.to.vec.sub(this.from.vec);
     };
-    Pipe.prototype.merge = function () {
-        var _this = this;
-        var merged = false;
-        this.model.fittings.map(function (fitting) {
-            if (fitting.needMerge(_this.from.vec) || fitting.needMerge(_this.to.vec)) {
-                merged = _this.mergeFitting(fitting);
+    Pipe.prototype.update = function (pipe) {
+        this.model.pipes.map(function (_pipe) {
+            if (_pipe.id === pipe.id) return;
+            if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
+                pipe.merge(_pipe);
             }
         });
-        this.model.pipes.map(function (pipe) {
-            if (_this.id === pipe.id) return;
-            if (pipe.isClose(_this.from.vec) || pipe.isClose(_this.to.vec)) {
-                merged = _this.mergePipe(pipe);
+        this.model.fittings.map(function (fitting) {
+            if (fitting.isClose(pipe.from.vec) || fitting.isClose(pipe.to.vec)) {
+                pipe.connect(fitting);
             }
         });
     };
-    Pipe.prototype.mergePipe = function (pipe) {
+    Pipe.prototype.merge = function (pipe) {
         var _this = this;
         var distance = this.model.config.overlap.bindDistance;
         var merged = false;
@@ -645,17 +797,20 @@ var Pipe = /** @class */function (_super) {
         run(this.to);
         return merged;
     };
-    Pipe.prototype.mergeFitting = function (fitting) {
+    Pipe.prototype.connect = function (target) {
         var merged = false;
-        var isFrom = fitting.needMerge(this.from.vec);
-        var isTo = fitting.needMerge(this.to.vec);
-        if (isFrom || isTo) {
-            fitting.addPipe(this);
-            merged = true;
+        if (target instanceof fitting_model_1.default) {
+            var isFrom = target.isClose(this.from.vec);
+            var isTo = target.isClose(this.to.vec);
+            if (isFrom || isTo) {
+                target.addPipe(this);
+                merged = true;
+            }
+            if (isFrom) {
+                this.from.target = target;
+            } else if (isTo) this.to.target = target;
+            return merged;
         }
-        if (isFrom) {
-            this.from.target = fitting;
-        } else if (isTo) this.to.target = fitting;
         return merged;
     };
     Pipe.prototype.isClose = function (end) {
@@ -974,6 +1129,7 @@ var Fitting = /** @class */function () {
     }
     Fitting.prototype.drawFittings = function () {
         var _this = this;
+        console.log("this.canvas.model.fittings", this.canvas.model.fittings);
         this.canvas.model.fittings.map(function (fitting) {
             _this.drawFitting(fitting);
         });

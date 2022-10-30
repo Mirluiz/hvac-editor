@@ -4,8 +4,10 @@ import CanvasModel from "../canvas.model";
 import Fitting from "./fitting.model";
 import Valve from "./valve.model";
 
+export type PipeTarget = null | Fitting | Valve;
+
 interface IPipeEnd {
-  target: null | Fitting | Valve;
+  target: PipeTarget;
   vec: IVec;
 }
 
@@ -27,25 +29,23 @@ class Pipe extends Line<IPipeEnd> {
     return this.to.vec.sub(this.from.vec);
   }
 
-  merge() {
-    let merged = false;
+  update(pipe: Pipe) {
+    this.model.pipes.map((_pipe) => {
+      if (_pipe.id === pipe.id) return;
 
-    this.model.fittings.map((fitting) => {
-      if (fitting.needMerge(this.from.vec) || fitting.needMerge(this.to.vec)) {
-        merged = this.mergeFitting(fitting);
+      if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
+        pipe.merge(_pipe);
       }
     });
 
-    this.model.pipes.map((pipe) => {
-      if (this.id === pipe.id) return;
-
-      if (pipe.isClose(this.from.vec) || pipe.isClose(this.to.vec)) {
-        merged = this.mergePipe(pipe);
+    this.model.fittings.map((fitting) => {
+      if (fitting.isClose(pipe.from.vec) || fitting.isClose(pipe.to.vec)) {
+        pipe.connect(fitting);
       }
     });
   }
 
-  mergePipe(pipe: Pipe): boolean {
+  merge(pipe: Pipe): boolean {
     let distance = this.model.config.overlap.bindDistance;
     let merged = false;
 
@@ -128,20 +128,24 @@ class Pipe extends Line<IPipeEnd> {
     return merged;
   }
 
-  mergeFitting(fitting: Fitting): boolean {
+  connect(target: PipeTarget) {
     let merged = false;
 
-    let isFrom = fitting.needMerge(this.from.vec);
-    let isTo = fitting.needMerge(this.to.vec);
+    if (target instanceof Fitting) {
+      let isFrom = target.isClose(this.from.vec);
+      let isTo = target.isClose(this.to.vec);
 
-    if (isFrom || isTo) {
-      fitting.addPipe(this);
-      merged = true;
+      if (isFrom || isTo) {
+        target.addPipe(this);
+        merged = true;
+      }
+
+      if (isFrom) {
+        this.from.target = target;
+      } else if (isTo) this.to.target = target;
+
+      return merged;
     }
-
-    if (isFrom) {
-      this.from.target = fitting;
-    } else if (isTo) this.to.target = fitting;
 
     return merged;
   }
