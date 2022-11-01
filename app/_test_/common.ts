@@ -7,6 +7,11 @@ export const fittingModel = (model: CanvasModel) => {
   let pipes = model.pipes;
   let step = model.config.net.step / 2;
 
+  // _2Pipes(model, pipes, step);
+  _3Pipes(model, pipes, step);
+};
+
+const _2Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
   /**
    * 90 angle from right to left
    * ------ *
@@ -620,6 +625,41 @@ export const fittingModel = (model: CanvasModel) => {
         model,
         new Vector(100 * index + v1.x * step, 42 * step + v1.y * step),
         new Vector(100 * index + v2.x * step, 42 * step + v2.y * step)
+      )
+    );
+  });
+};
+
+const _3Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
+  [0].map((a, index) => {
+    let pV1 = new Vector(4, 4);
+    let pV2 = new Vector(8, 4);
+
+    let v1 = new Vector(8, 4);
+    let v2 = new Vector(12, 4).rotate(a, v1);
+    let v3 = new Vector(12, 4).rotate(a + 90, v1);
+
+    pipes.push(
+      new Pipe(
+        model,
+        new Vector(100 * index + pV1.x * step, 2 * step + pV1.y * step),
+        new Vector(100 * index + pV2.x * step, 2 * step + pV2.y * step)
+      )
+    );
+
+    pipes.push(
+      new Pipe(
+        model,
+        new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
+        new Vector(100 * index + v2.x * step, 2 * step + v2.y * step)
+      )
+    );
+
+    pipes.push(
+      new Pipe(
+        model,
+        new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
+        new Vector(100 * index + v3.x * step, 2 * step + v3.y * step)
       )
     );
   });

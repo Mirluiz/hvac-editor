@@ -124,7 +124,7 @@ var Canvas = /** @class */ (function () {
     };
     //TODO: apply scale transformation here
     Canvas.prototype.getWorldCoordinates = function (x, y) {
-        return new vect_1.Vector((x + this.offset.x) * this.scale.amount, (y + this.offset.y) * this.scale.amount);
+        return new vect_1.Vector((x - this.offset.x) * this.scale.amount, (y - this.offset.y) * this.scale.amount);
     };
     //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
     //       y: (y + this.model.offset.y)  * this.model.scale.amount,

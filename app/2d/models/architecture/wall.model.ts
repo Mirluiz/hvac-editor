@@ -1,9 +1,9 @@
 import { IVec } from "../../../geometry/vect";
 import Line from "../geometry/line.model";
 
-class Wall extends Line<IVec> {
+class Wall extends Line {
   constructor(from: IVec, to: IVec) {
-    super(from, to);
+    super({ vec: from }, { vec: to });
   }
 
   get color() {

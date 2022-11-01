@@ -163,8 +163,8 @@ var Canvas = /** @class */ (function () {
                 return;
             ctx.save();
             ctx.beginPath();
-            var from = _this.model.getLocalCoordinates(wall.from.x, wall.from.y);
-            var to = _this.model.getLocalCoordinates(wall.from.x, wall.from.y);
+            var from = _this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
+            var to = _this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             ctx.strokeStyle = wall.color;

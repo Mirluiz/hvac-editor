@@ -30,8 +30,8 @@ var Canvas = /** @class */ (function () {
         this.model.clicked = true;
         if (!this.model.mouse)
             return;
-        // let worldCoord = this.model.getWorldCoordinates(this.model.mouse.x , this.model.mouse.y);
-        var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        var worldCoord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        var _mouse = new vect_1.Vector(worldCoord.x, worldCoord.y);
         if (this.model.config.net.bind) {
             _mouse.x =
                 Math.round(_mouse.x / this.model.config.net.step) *
@@ -77,7 +77,8 @@ var Canvas = /** @class */ (function () {
                 };
             }
         }
-        var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        var worldCoord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        var _mouse = new vect_1.Vector(worldCoord.x, worldCoord.y);
         if (this.model.config.net.bind) {
             _mouse.x =
                 Math.round(_mouse.x / this.model.config.net.step) *

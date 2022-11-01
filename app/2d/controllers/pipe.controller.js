@@ -9,15 +9,12 @@ var Pipe = /** @class */ (function () {
     function Pipe(model) {
         this.model = model;
     }
-    Pipe.prototype.mouseMove = function (c) {
-        // let coord = this.model
-        // if (
-        //   this.model.actionObject &&
-        //   this.model.actionObject instanceof PipeGhostModel
-        // ) {
-        //   this.model.actionObject.to.vec.x = coord.x;
-        //   this.model.actionObject.to.vec.y = coord.y;
-        // }
+    Pipe.prototype.mouseMove = function (coord) {
+        if (this.model.actionObject &&
+            this.model.actionObject instanceof pipe_model_1.default) {
+            this.model.actionObject.to.vec.x = coord.x;
+            this.model.actionObject.to.vec.y = coord.y;
+        }
     };
     Pipe.prototype.mouseDown = function (coord) {
         var _a;

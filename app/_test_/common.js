@@ -18,6 +18,11 @@ var vect_1 = require("../geometry/vect");
 var fittingModel = function (model) {
     var pipes = model.pipes;
     var step = model.config.net.step / 2;
+    // _2Pipes(model, pipes, step);
+    _3Pipes(model, pipes, step);
+};
+exports.fittingModel = fittingModel;
+var _2Pipes = function (model, pipes, step) {
     /**
      * 90 angle from right to left
      * ------ *
@@ -554,4 +559,15 @@ var fittingModel = function (model) {
         pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 42 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 42 * step + v2.y * step)));
     });
 };
-exports.fittingModel = fittingModel;
+var _3Pipes = function (model, pipes, step) {
+    [0, 30, 60, 90, 120, 150, 180].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4);
+        var v1 = new vect_1.Vector(8, 4);
+        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
+        var v3 = new vect_1.Vector(12, 4).rotate(a + 90, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 32 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 32 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 32 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 32 * step + v2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 32 * step + v1.y * step), new vect_1.Vector(100 * index + v3.x * step, 32 * step + v3.y * step)));
+    });
+};

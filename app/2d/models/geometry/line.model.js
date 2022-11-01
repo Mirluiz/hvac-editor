@@ -28,6 +28,7 @@ var Line = /** @class */ (function (_super) {
         _this.to = to;
         return _this;
     }
+    Line.prototype.intersectionPoint = function (line) { };
     return Line;
 }(main_model_1.default));
 exports.default = Line;

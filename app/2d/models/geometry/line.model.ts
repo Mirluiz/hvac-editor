@@ -1,7 +1,7 @@
 import { IVec } from "../../../geometry/vect";
 import Main from "../main.model";
 
-class Line<T = { vec: IVec }> extends Main {
+class Line<T extends { vec: IVec } = { vec: IVec }> extends Main {
   from: T;
   to: T;
 
@@ -13,6 +13,8 @@ class Line<T = { vec: IVec }> extends Main {
     this.from = from;
     this.to = to;
   }
+
+  intersectionPoint(line: Line) {}
 }
 
 export default Line;

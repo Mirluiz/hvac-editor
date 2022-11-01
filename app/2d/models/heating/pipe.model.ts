@@ -3,8 +3,6 @@ import Line from "../geometry/line.model";
 import CanvasModel from "../canvas.model";
 import Fitting from "./fitting.model";
 import Valve from "./valve.model";
-import { IOverlap } from "../../overlap.model";
-import { getProperty } from "../../../utils";
 
 export type PipeTarget = null | Fitting | Valve;
 
@@ -86,13 +84,12 @@ class Pipe extends Line<IPipeEnd> {
     [pipe1.from, pipe1.to, pipe2.from, pipe2.to].map((end) => {
       if (mergingVec) return;
 
-      let overlap = this.model.overlap.pipeOverlap(end.vec);
-      if (overlap.length > 0) {
-        let _end = overlap.find(
-          (p) => "pipeEnd" in p && end.getPipe().id !== p.id
-        );
-        if (_end && _end.pipeEnd) {
-          angleBetween = _end.pipeEnd
+      let overlaps = this.model.overlap.pipeOverlap(end.vec);
+      overlaps = overlaps.filter((o) => o.id !== end.getPipe().id);
+      if (overlaps.length > 0) {
+        let overlap = overlaps[0];
+        if (overlap && overlap.pipeEnd) {
+          angleBetween = overlap.pipeEnd
             .getOpposite()
             .vec.sub(end.vec)
             .angle(end.getOpposite().vec.sub(end.vec));
@@ -105,15 +102,19 @@ class Pipe extends Line<IPipeEnd> {
       Math.abs(angleBetween * (180 / Math.PI)) >= 90
     ) {
       canMerge = true;
+    } else {
+      console.warn("cant merge");
+      // alert("Cant merge");
     }
 
     return canMerge;
   }
 
-  afterMerge() {}
+  afterMerge() {
+    console.log("after merge");
+  }
 
   merge(pipe: Pipe): boolean {
-    let distance = this.model.config.overlap.bindDistance;
     let merged = false;
 
     if (!this.beforeMerge(pipe, this)) return false;
@@ -121,78 +122,59 @@ class Pipe extends Line<IPipeEnd> {
     const run = (end: IPipeEnd) => {
       if (this.id === pipe.id) return;
 
-      if (pipe.isClose(end.vec)) {
-        let mergePoint;
+      let overlaps = this.model.overlap.pipeOverlap(end.vec);
+      overlaps = overlaps.filter((o) => o.id !== end.getPipe().id);
+      if (overlaps.length > 0) {
+        let overlap = overlaps[0];
+        if (overlap && overlap.pipeEnd) {
+          if (overlap.pipeEnd.target) return;
 
-        if (pipe.from.vec.sub(end.vec).length <= distance) {
-          if (pipe.from.target) return;
-
-          mergePoint = pipe.from.vec.clone();
-
-          let newFitting = new Fitting(this.model, mergePoint);
+          let newFitting = new Fitting(this.model, overlap.pipeEnd.vec);
           this.model.addFitting(newFitting);
           newFitting.addPipe(pipe);
           newFitting.addPipe(this);
 
-          pipe.from.target = newFitting;
+          overlap.pipeEnd.target = newFitting;
           end.target = newFitting;
+        } else if (overlap && overlap.pipe) {
+          let mergePoint = overlap.pipe.vec.bindNet(this.model.config.net.step);
 
-          return;
-        } else if (pipe.to.vec.sub(end.vec).length <= distance) {
-          if (pipe.to.target) return;
+          let newP1 = new Pipe(
+            this.model,
+            new Vector(0, 0).sum(pipe.from.vec),
+            new Vector(mergePoint.x, mergePoint.y)
+          );
 
-          mergePoint = pipe.to.vec.clone();
+          let newP2 = new Pipe(
+            this.model,
+            new Vector(mergePoint.x, mergePoint.y),
+            new Vector(pipe.to.vec.x, pipe.to.vec.y)
+          );
+
+          this.model.addPipe(newP1);
+          this.model.addPipe(newP2);
+          pipe.delete();
 
           let newFitting = new Fitting(this.model, mergePoint);
           this.model.addFitting(newFitting);
-          newFitting.addPipe(pipe);
-          newFitting.addPipe(this);
 
-          pipe.to.target = newFitting;
-          end.target = newFitting;
+          newFitting.addPipe(newP1);
+          newFitting.addPipe(newP2);
 
-          return;
+          newP1.from.target = pipe.from.target;
+          newP1.to.target = newFitting;
+          newP2.from.target = newFitting;
+          newP2.to.target = pipe.to.target;
+
+          merged = true;
         }
-
-        let normPipe = pipe.toOrigin().normalize();
-        let projPipe = pipe.toOrigin().projection(end.vec.sub(pipe.from.vec));
-
-        mergePoint = normPipe.multiply(projPipe).sum(pipe.from.vec);
-        mergePoint = mergePoint.bindNet(this.model.config.net.step);
-
-        let newP1 = new Pipe(
-          this.model,
-          new Vector(0, 0).sum(pipe.from.vec),
-          new Vector(mergePoint.x, mergePoint.y)
-        );
-
-        let newP2 = new Pipe(
-          this.model,
-          new Vector(mergePoint.x, mergePoint.y),
-          new Vector(pipe.to.vec.x, pipe.to.vec.y)
-        );
-
-        this.model.addPipe(newP1);
-        this.model.addPipe(newP2);
-        pipe.delete();
-
-        let newFitting = new Fitting(this.model, mergePoint);
-        this.model.addFitting(newFitting);
-
-        newFitting.addPipe(newP1);
-        newFitting.addPipe(newP2);
-
-        newP1.from.target = pipe.from.target;
-        newP1.to.target = newFitting;
-        newP2.from.target = newFitting;
-        newP2.to.target = pipe.to.target;
-
-        merged = true;
       }
     };
 
-    run(this.from);
-    run(this.to);
+    if (!this.from.target) run(this.from);
+    if (!this.to.target) run(this.to);
+
+    this.afterMerge();
 
     return merged;
   }

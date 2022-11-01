@@ -202,8 +202,11 @@ class Canvas {
       ctx.save();
       ctx.beginPath();
 
-      let from = this.model.getLocalCoordinates(wall.from.x, wall.from.y);
-      let to = this.model.getLocalCoordinates(wall.from.x, wall.from.y);
+      let from = this.model.getLocalCoordinates(
+        wall.from.vec.x,
+        wall.from.vec.y
+      );
+      let to = this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
 
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);

@@ -100,6 +100,9 @@ var Pipe = /** @class */ (function (_super) {
             Math.abs(angleBetween * (180 / Math.PI)) >= 90) {
             canMerge = true;
         }
+        else {
+            alert("Cant merge");
+        }
         return canMerge;
     };
     Pipe.prototype.afterMerge = function () { };

@@ -22,7 +22,7 @@ var line_model_1 = __importDefault(require("../geometry/line.model"));
 var Wall = /** @class */ (function (_super) {
     __extends(Wall, _super);
     function Wall(from, to) {
-        return _super.call(this, from, to) || this;
+        return _super.call(this, { vec: from }, { vec: to }) || this;
     }
     Object.defineProperty(Wall.prototype, "color", {
         get: function () {

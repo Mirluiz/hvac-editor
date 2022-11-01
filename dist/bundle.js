@@ -128,7 +128,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":20,"../models/canvas.model":5,"../views/canvas.view":13,"../views/stats.view":17,"./pipe.controller":3}],2:[function(require,module,exports){
+},{"../../geometry/vect":21,"../models/canvas.model":5,"../views/canvas.view":13,"../views/stats.view":17,"./pipe.controller":3}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -230,6 +230,7 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var overlap_model_1 = __importDefault(require("../overlap.model"));
+var common_1 = require("../../_test_/common");
 var Canvas = /** @class */function () {
     function Canvas() {
         this._walls = [];
@@ -266,7 +267,7 @@ var Canvas = /** @class */function () {
             }
         };
         this.overlap = new overlap_model_1.default(this);
-        // fittingModel(this);
+        (0, common_1.fittingModel)(this);
     }
     Object.defineProperty(Canvas.prototype, "walls", {
         get: function get() {
@@ -376,7 +377,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":20,"../overlap.model":12}],6:[function(require,module,exports){
+},{"../../_test_/common":19,"../../geometry/vect":21,"../overlap.model":12}],6:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -455,6 +456,7 @@ var Line = /** @class */function (_super) {
         _this.to = to;
         return _this;
     }
+    Line.prototype.intersectionPoint = function (line) {};
     return Line;
 }(main_model_1.default);
 exports.default = Line;
@@ -666,74 +668,70 @@ var Pipe = /** @class */function (_super) {
         var angleBetween;
         [pipe1.from, pipe1.to, pipe2.from, pipe2.to].map(function (end) {
             if (mergingVec) return;
-            var overlap = _this.model.overlap.pipeOverlap(end.vec);
-            if (overlap.length > 0) {
-                var _end = overlap.find(function (p) {
-                    return "pipeEnd" in p && end.getPipe().id !== p.id;
-                });
-                if (_end && _end.pipeEnd) {
-                    angleBetween = _end.pipeEnd.getOpposite().vec.sub(end.vec).angle(end.getOpposite().vec.sub(end.vec));
+            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
+            overlaps = overlaps.filter(function (o) {
+                return o.id !== end.getPipe().id;
+            });
+            if (overlaps.length > 0) {
+                var overlap = overlaps[0];
+                if (overlap && overlap.pipeEnd) {
+                    angleBetween = overlap.pipeEnd.getOpposite().vec.sub(end.vec).angle(end.getOpposite().vec.sub(end.vec));
                 }
             }
         });
         if (angleBetween !== undefined && Math.abs(angleBetween * (180 / Math.PI)) >= 90) {
             canMerge = true;
+        } else {
+            console.warn("cant merge");
+            // alert("Cant merge");
         }
         return canMerge;
     };
-    Pipe.prototype.afterMerge = function () {};
+    Pipe.prototype.afterMerge = function () {
+        console.log("after merge");
+    };
     Pipe.prototype.merge = function (pipe) {
         var _this = this;
-        var distance = this.model.config.overlap.bindDistance;
         var merged = false;
         if (!this.beforeMerge(pipe, this)) return false;
         var run = function run(end) {
             if (_this.id === pipe.id) return;
-            if (pipe.isClose(end.vec)) {
-                var mergePoint = void 0;
-                if (pipe.from.vec.sub(end.vec).length <= distance) {
-                    if (pipe.from.target) return;
-                    mergePoint = pipe.from.vec.clone();
-                    var newFitting_1 = new fitting_model_1.default(_this.model, mergePoint);
-                    _this.model.addFitting(newFitting_1);
-                    newFitting_1.addPipe(pipe);
-                    newFitting_1.addPipe(_this);
-                    pipe.from.target = newFitting_1;
-                    end.target = newFitting_1;
-                    return;
-                } else if (pipe.to.vec.sub(end.vec).length <= distance) {
-                    if (pipe.to.target) return;
-                    mergePoint = pipe.to.vec.clone();
-                    var newFitting_2 = new fitting_model_1.default(_this.model, mergePoint);
-                    _this.model.addFitting(newFitting_2);
-                    newFitting_2.addPipe(pipe);
-                    newFitting_2.addPipe(_this);
-                    pipe.to.target = newFitting_2;
-                    end.target = newFitting_2;
-                    return;
+            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
+            overlaps = overlaps.filter(function (o) {
+                return o.id !== end.getPipe().id;
+            });
+            if (overlaps.length > 0) {
+                var overlap = overlaps[0];
+                if (overlap && overlap.pipeEnd) {
+                    if (overlap.pipeEnd.target) return;
+                    var newFitting = new fitting_model_1.default(_this.model, overlap.pipeEnd.vec);
+                    _this.model.addFitting(newFitting);
+                    newFitting.addPipe(pipe);
+                    newFitting.addPipe(_this);
+                    overlap.pipeEnd.target = newFitting;
+                    end.target = newFitting;
+                } else if (overlap && overlap.pipe) {
+                    var mergePoint = overlap.pipe.vec.bindNet(_this.model.config.net.step);
+                    var newP1 = new Pipe(_this.model, new vect_1.Vector(0, 0).sum(pipe.from.vec), new vect_1.Vector(mergePoint.x, mergePoint.y));
+                    var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y));
+                    _this.model.addPipe(newP1);
+                    _this.model.addPipe(newP2);
+                    pipe.delete();
+                    var newFitting = new fitting_model_1.default(_this.model, mergePoint);
+                    _this.model.addFitting(newFitting);
+                    newFitting.addPipe(newP1);
+                    newFitting.addPipe(newP2);
+                    newP1.from.target = pipe.from.target;
+                    newP1.to.target = newFitting;
+                    newP2.from.target = newFitting;
+                    newP2.to.target = pipe.to.target;
+                    merged = true;
                 }
-                var normPipe = pipe.toOrigin().normalize();
-                var projPipe = pipe.toOrigin().projection(end.vec.sub(pipe.from.vec));
-                mergePoint = normPipe.multiply(projPipe).sum(pipe.from.vec);
-                mergePoint = mergePoint.bindNet(_this.model.config.net.step);
-                var newP1 = new Pipe(_this.model, new vect_1.Vector(0, 0).sum(pipe.from.vec), new vect_1.Vector(mergePoint.x, mergePoint.y));
-                var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y));
-                _this.model.addPipe(newP1);
-                _this.model.addPipe(newP2);
-                pipe.delete();
-                var newFitting = new fitting_model_1.default(_this.model, mergePoint);
-                _this.model.addFitting(newFitting);
-                newFitting.addPipe(newP1);
-                newFitting.addPipe(newP2);
-                newP1.from.target = pipe.from.target;
-                newP1.to.target = newFitting;
-                newP2.from.target = newFitting;
-                newP2.to.target = pipe.to.target;
-                merged = true;
             }
         };
-        run(this.from);
-        run(this.to);
+        if (!this.from.target) run(this.from);
+        if (!this.to.target) run(this.to);
+        this.afterMerge();
         return merged;
     };
     Pipe.prototype.connect = function (target) {
@@ -766,7 +764,7 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../../../geometry/vect":20,"../geometry/line.model":7,"./fitting.model":9}],11:[function(require,module,exports){
+},{"../../../geometry/vect":21,"../geometry/line.model":7,"./fitting.model":9}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -779,7 +777,7 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":22}],12:[function(require,module,exports){
+},{"../../utils":23}],12:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -1014,8 +1012,8 @@ var Canvas = /** @class */function () {
             if (!ctx) return;
             ctx.save();
             ctx.beginPath();
-            var from = _this.model.getLocalCoordinates(wall.from.x, wall.from.y);
-            var to = _this.model.getLocalCoordinates(wall.from.x, wall.from.y);
+            var from = _this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
+            var to = _this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             ctx.strokeStyle = wall.color;
@@ -1040,7 +1038,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":20,"./fitting.view":14,"./pipe.view":16,"./valve.view":18}],14:[function(require,module,exports){
+},{"../../geometry/vect":21,"./fitting.view":14,"./pipe.view":16,"./valve.view":18}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1137,7 +1135,7 @@ var Fitting = /** @class */function () {
 }();
 exports.default = Fitting;
 
-},{"../../geometry/vect":20}],15:[function(require,module,exports){
+},{"../../geometry/vect":21}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1295,6 +1293,504 @@ exports.default = Valve;
 },{}],19:[function(require,module,exports){
 "use strict";
 
+var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fittingModel = void 0;
+var pipe_model_1 = __importDefault(require("../2d/models/heating/pipe.model"));
+var vect_1 = require("../geometry/vect");
+var fittingModel = function fittingModel(model) {
+    var pipes = model.pipes;
+    var step = model.config.net.step / 2;
+    // _2Pipes(model, pipes, step);
+    _3Pipes(model, pipes, step);
+};
+exports.fittingModel = fittingModel;
+var _2Pipes = function _2Pipes(model, pipes, step) {
+    /**
+     * 90 angle from right to left
+     * ------ *
+     *        |
+     *        |
+     *        |
+     *
+     * Y+ is bottom
+     */
+    var arraysRL90 = [
+    /*
+      1 - from left to right
+      2 - from top to bottom
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 10,
+        y1: 4,
+        x2: 10,
+        y2: 10
+    }],
+    /*
+      1 - from right to left
+      2 - from top to bottom
+     */
+    [{
+        x1: 10,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 10,
+        y1: 4,
+        x2: 10,
+        y2: 10
+    }],
+    /*
+      1 - from left to right
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 10,
+        y1: 10,
+        x2: 10,
+        y2: 4
+    }],
+    /*
+      1 - from right to left
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 10,
+        y1: 10,
+        x2: 10,
+        y2: 4
+    }]];
+    /**
+     *  90 angle from left to right
+     *    * -------
+     *    |
+     *    |
+     *    |
+     */
+    var arraysLR90 = [
+    /*
+      2 - from left to right
+      1 - from top to bottom
+     */
+    [{
+        x1: 10,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 4,
+        x2: 4,
+        y2: 10
+    }],
+    /*
+      1 - from left top to right
+      2 - from top to bottom
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 4,
+        x2: 4,
+        y2: 10
+    }],
+    /*
+      1 - from right to left
+      2 - from bottom to top
+     */
+    [{
+        x1: 10,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 10,
+        x2: 4,
+        y2: 4
+    }],
+    /*
+      1 - from left to right
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 10,
+        x2: 4,
+        y2: 4
+    }]];
+    /**
+     *  Down V from 90 angle
+     *           *
+     *          / \
+     *        /    \
+     *      /       \
+     *    /          \
+     */
+    var arraysV90Down = [
+    /*
+      1 - from left to right,
+      2 - from left to right
+     */
+    [{
+        x1: 4,
+        y1: 6,
+        x2: 8,
+        y2: 2
+    }, {
+        x1: 8,
+        y1: 2,
+        x2: 12,
+        y2: 6
+    }],
+    /*
+      1 - from right to left,
+      2 - from left to right,
+     */
+    [{
+        x1: 8,
+        y1: 2,
+        x2: 4,
+        y2: 6
+    }, {
+        x1: 8,
+        y1: 2,
+        x2: 12,
+        y2: 6
+    }],
+    /*
+     1 - from left to right,
+     2 - from right to left,
+    */
+    [{
+        x1: 4,
+        y1: 6,
+        x2: 8,
+        y2: 2
+    }, {
+        x1: 12,
+        y1: 6,
+        x2: 8,
+        y2: 2
+    }],
+    /*
+     1 - from right to left,
+     2 - from right to left,
+    */
+    [{
+        x1: 8,
+        y1: 2,
+        x2: 4,
+        y2: 6
+    }, {
+        x1: 12,
+        y1: 6,
+        x2: 8,
+        y2: 2
+    }]];
+    /**
+     *  V form 90 angle
+     *   \       /
+     *    \     /
+     *     \   /
+     *      \ /
+     *       *
+     */
+    var arraysV90Up = [
+    /*
+      1 - from left to right,
+      2 - from left to right
+     */
+    [{
+        x1: 4,
+        y1: 2,
+        x2: 8,
+        y2: 6
+    }, {
+        x1: 8,
+        y1: 6,
+        x2: 12,
+        y2: 2
+    }],
+    /*
+      1 - from right to left,
+      2 - from left to right,
+     */
+    [{
+        x1: 8,
+        y1: 6,
+        x2: 4,
+        y2: 2
+    }, {
+        x1: 8,
+        y1: 6,
+        x2: 12,
+        y2: 2
+    }],
+    /*
+     1 - from left to right,
+     2 - from right to left,
+    */
+    [{
+        x1: 4,
+        y1: 2,
+        x2: 8,
+        y2: 6
+    }, {
+        x1: 12,
+        y1: 2,
+        x2: 8,
+        y2: 6
+    }],
+    /*
+     1 - from right to left,
+     2 - from right to left,
+    */
+    [{
+        x1: 8,
+        y1: 6,
+        x2: 4,
+        y2: 2
+    }, {
+        x1: 12,
+        y1: 2,
+        x2: 8,
+        y2: 6
+    }]];
+    /**
+     * Horizontal same angle
+     *  --------- * ----------
+     */
+    var arrays90H = [
+    /*
+      1 - from left to right
+      2 - from left to right,
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 8,
+        y2: 4
+    }, {
+        x1: 8,
+        y1: 4,
+        x2: 12,
+        y2: 4
+    }],
+    /*
+      1 - from right to left
+      2 - from left to right,
+     */
+    [{
+        x1: 8,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 8,
+        y1: 4,
+        x2: 12,
+        y2: 4
+    }],
+    /*
+      1 - from left to right
+      2 - from right to left,
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 8,
+        y2: 4
+    }, {
+        x1: 12,
+        y1: 4,
+        x2: 8,
+        y2: 4
+    }],
+    /*
+      1 - from right to left
+      2 - from right to left,
+     */
+    [{
+        x1: 8,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 12,
+        y1: 4,
+        x2: 8,
+        y2: 4
+    }]];
+    /**
+     *  Vertical same angle
+     *    |
+     *    |
+     *    |
+     *    *
+     *    |
+     *    |
+     *    |
+     */
+    var arrays90V = [
+    /*
+      1 - from top to bottom
+      2 - from top to bottom
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 4,
+        y2: 8
+    }, {
+        x1: 4,
+        y1: 8,
+        x2: 4,
+        y2: 12
+    }],
+    /*
+      1 - from bottom to top
+      2 - from top to bottom
+     */
+    [{
+        x1: 4,
+        y1: 8,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 8,
+        x2: 4,
+        y2: 12
+    }],
+    /*
+      1 - from top to bottom
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 4,
+        y2: 8
+    }, {
+        x1: 4,
+        y1: 12,
+        x2: 4,
+        y2: 8
+    }],
+    /*
+      1 - from bottom to top
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 8,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 12,
+        x2: 4,
+        y2: 8
+    }]];
+    __spreadArray(__spreadArray([], arraysRL90, true), arraysLR90, true).map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, line.y2 * step)));
+        });
+    });
+    __spreadArray(__spreadArray([], arraysV90Down, true), arraysV90Up, true).map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 12 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 12 * step + line.y2 * step)));
+        });
+    });
+    arrays90H.map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 18 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 18 * step + line.y2 * step)));
+        });
+    });
+    arrays90V.map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 22 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 22 * step + line.y2 * step)));
+        });
+    });
+    [0, 30, 60, 90].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4).rotate(a, pV1);
+        var v1 = new vect_1.Vector(pV2.x, pV2.y);
+        var v2 = new vect_1.Vector(pV2.x + 4, pV2.y).rotate(a, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(400 + 100 * index + pV1.x * step, 22 * step + pV1.y * step), new vect_1.Vector(400 + 100 * index + pV2.x * step, 22 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(400 + 100 * index + v1.x * step, 22 * step + v1.y * step), new vect_1.Vector(400 + 100 * index + v2.x * step, 22 * step + v2.y * step)));
+    });
+    // horizontal line with angles
+    [0, 30, 60, 90, 120, 150, 180].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4);
+        var v1 = new vect_1.Vector(8, 4);
+        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 32 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 32 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 32 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 32 * step + v2.y * step)));
+    });
+    [0, -30, -60, -90, -120, -150, -180].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4);
+        var v1 = new vect_1.Vector(8, 4);
+        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 42 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 42 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 42 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 42 * step + v2.y * step)));
+    });
+};
+var _3Pipes = function _3Pipes(model, pipes, step) {
+    [0].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4);
+        var v1 = new vect_1.Vector(8, 4);
+        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
+        var v3 = new vect_1.Vector(12, 4).rotate(a + 90, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 2 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 2 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 2 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 2 * step + v2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 2 * step + v1.y * step), new vect_1.Vector(100 * index + v3.x * step, 2 * step + v3.y * step)));
+    });
+};
+
+},{"../2d/models/heating/pipe.model":10,"../geometry/vect":21}],20:[function(require,module,exports){
+"use strict";
+
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
@@ -1311,7 +1807,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":4}],20:[function(require,module,exports){
+},{"./2d":4}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1429,7 +1925,7 @@ var Vector = /** @class */function () {
 }();
 exports.Vector = Vector;
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1440,7 +1936,7 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":19}],22:[function(require,module,exports){
+},{"./app":20}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1463,6 +1959,6 @@ function getProperty(obj, key) {
 }
 exports.getProperty = getProperty;
 
-},{}]},{},[21])
+},{}]},{},[22])
 
 //# sourceMappingURL=bundle.js.map
