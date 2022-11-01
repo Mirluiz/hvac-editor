@@ -3,19 +3,47 @@ import Line from "../geometry/line.model";
 import CanvasModel from "../canvas.model";
 import Fitting from "./fitting.model";
 import Valve from "./valve.model";
+import { IOverlap } from "../../overlap.model";
+import { getProperty } from "../../../utils";
 
 export type PipeTarget = null | Fitting | Valve;
 
-interface IPipeEnd {
+export interface IPipeEnd {
   target: PipeTarget;
   vec: IVec;
+  title: "from" | "to";
+  getPipe: () => Pipe;
+  getOpposite: () => IPipeEnd;
 }
 
 class Pipe extends Line<IPipeEnd> {
   type: "supply" | "return" = "supply";
   model: CanvasModel;
   constructor(model: CanvasModel, from: IVec, to: IVec) {
-    super({ target: null, vec: from }, { target: null, vec: to });
+    super(
+      {
+        target: null,
+        vec: from,
+        title: "from",
+        getPipe: () => {
+          return this;
+        },
+        getOpposite: () => {
+          return this.to;
+        },
+      },
+      {
+        target: null,
+        vec: to,
+        title: "to",
+        getPipe: () => {
+          return this;
+        },
+        getOpposite: () => {
+          return this.from;
+        },
+      }
+    );
 
     this.width = 10;
     this.model = model;
@@ -49,9 +77,47 @@ class Pipe extends Line<IPipeEnd> {
     });
   }
 
+  beforeMerge(pipe1: Pipe, pipe2: Pipe): boolean {
+    let canMerge = false;
+
+    let mergingVec: IPipeEnd | null = null;
+    let angleBetween;
+
+    [pipe1.from, pipe1.to, pipe2.from, pipe2.to].map((end) => {
+      if (mergingVec) return;
+
+      let overlap = this.model.overlap.pipeOverlap(end.vec);
+      console.log("overlap", overlap);
+      if (overlap.length > 0) {
+        let _end = overlap.find(
+          (p) => "pipeEnd" in p && end.getPipe().id !== p.id
+        );
+        if (_end && _end.pipeEnd) {
+          angleBetween = _end.pipeEnd
+            .getOpposite()
+            .vec.sub(end.vec)
+            .angle(end.getOpposite().vec.sub(end.vec));
+        }
+      }
+    });
+
+    if (
+      angleBetween !== undefined &&
+      Math.abs(angleBetween * (180 / Math.PI)) >= 90
+    ) {
+      canMerge = true;
+    }
+
+    return canMerge;
+  }
+
+  afterMerge() {}
+
   merge(pipe: Pipe): boolean {
     let distance = this.model.config.overlap.bindDistance;
     let merged = false;
+
+    if (!this.beforeMerge(pipe, this)) return false;
 
     const run = (end: IPipeEnd) => {
       if (this.id === pipe.id) return;

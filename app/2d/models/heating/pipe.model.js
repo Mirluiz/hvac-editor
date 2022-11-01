@@ -24,7 +24,27 @@ var fitting_model_1 = __importDefault(require("./fitting.model"));
 var Pipe = /** @class */ (function (_super) {
     __extends(Pipe, _super);
     function Pipe(model, from, to) {
-        var _this = _super.call(this, { target: null, vec: from }, { target: null, vec: to }) || this;
+        var _this = _super.call(this, {
+            target: null,
+            vec: from,
+            title: "from",
+            getPipe: function () {
+                return _this;
+            },
+            getOpposite: function () {
+                return _this.to;
+            },
+        }, {
+            target: null,
+            vec: to,
+            title: "to",
+            getPipe: function () {
+                return _this;
+            },
+            getOpposite: function () {
+                return _this.from;
+            },
+        }) || this;
         _this.type = "supply";
         _this.width = 10;
         _this.model = model;
@@ -49,15 +69,45 @@ var Pipe = /** @class */ (function (_super) {
             }
         });
         this.model.fittings.map(function (fitting) {
-            if (fitting.isClose(pipe.from.vec) || fitting.isClose(pipe.to.vec)) {
+            if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
+                pipe.connect(fitting);
+            }
+            if (fitting.isClose(pipe.to.vec) && !pipe.to.target) {
                 pipe.connect(fitting);
             }
         });
     };
+    Pipe.prototype.beforeMerge = function (pipe1, pipe2) {
+        var _this = this;
+        var canMerge = false;
+        var mergingVec = null;
+        var angleBetween;
+        [pipe1.from, pipe1.to, pipe2.from, pipe2.to].map(function (end) {
+            if (mergingVec)
+                return;
+            var overlap = _this.model.overlap.pipeOverlap(end.vec);
+            if (overlap.length > 0) {
+                var _end = overlap.find(function (p) { return "pipeEnd" in p; });
+                if (_end && _end.pipeEnd) {
+                    angleBetween = _end.pipeEnd
+                        .getOpposite()
+                        .vec.sub(end.vec)
+                        .angle(end.vec);
+                }
+            }
+        });
+        if (angleBetween && Math.abs(angleBetween * (180 / Math.PI)) > 90) {
+            canMerge = true;
+        }
+        return canMerge;
+    };
+    Pipe.prototype.afterMerge = function () { };
     Pipe.prototype.merge = function (pipe) {
         var _this = this;
         var distance = this.model.config.overlap.bindDistance;
         var merged = false;
+        if (!this.beforeMerge(pipe, this))
+            return false;
         var run = function (end) {
             if (_this.id === pipe.id)
                 return;

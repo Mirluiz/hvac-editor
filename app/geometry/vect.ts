@@ -116,6 +116,27 @@ export class Vector implements IVec {
       }
     }, 0);
   }
+
+  rotate(angle: number, around: IVec | undefined = undefined) {
+    let { x, y } = this;
+    angle *= Math.PI / 180;
+
+    if (around) {
+      x = this.x - around.x;
+      y = this.y - around.y;
+    }
+
+    let v = new Vector(
+      x * Math.cos(angle) - y * Math.sin(angle),
+      x * Math.sin(angle) + y * Math.cos(angle)
+    );
+
+    if (around) {
+      v = v.sum(around);
+    }
+
+    return v;
+  }
 }
 
 export interface IVec extends ICoord {
@@ -132,6 +153,7 @@ export interface IVec extends ICoord {
   clone: () => IVec;
   bindNet: (step: number) => IVec;
   drawVector: () => void;
+  rotate: (angle: number, around?: IVec) => IVec;
 }
 
 export interface ICoord {

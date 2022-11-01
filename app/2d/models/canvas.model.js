@@ -3,9 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var vect_1 = require("../../geometry/vect");
-var pipe_model_1 = __importDefault(require("./heating/pipe.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
+var common_1 = require("../../_test_/common");
 var Canvas = /** @class */ (function () {
     function Canvas() {
         this._walls = [];
@@ -42,12 +41,7 @@ var Canvas = /** @class */ (function () {
             },
         };
         this.overlap = new overlap_model_1.default(this);
-        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(40, 100), new vect_1.Vector(300, 100)));
-        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 100), new vect_1.Vector(300, 500)));
-        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 500), new vect_1.Vector(300, 100)));
-        this.pipes.push(new pipe_model_1.default(this, new vect_1.Vector(300, 100), new vect_1.Vector(40, 100)));
-        // this.pipes.push(new Pipe(new Vector(40, 200), new Vector(100, 260)));
-        // this.pipes.push(new Pipe(new Vector(40, 380), new Vector(100, 320)));
+        (0, common_1.fittingModel)(this);
     }
     Object.defineProperty(Canvas.prototype, "walls", {
         get: function () {
@@ -118,7 +112,10 @@ var Canvas = /** @class */ (function () {
                 }
             });
             _this.fittings.map(function (fitting) {
-                if (fitting.isClose(pipe.from.vec) || fitting.isClose(pipe.to.vec)) {
+                if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
+                    pipe.connect(fitting);
+                }
+                if (fitting.isClose(pipe.to.vec) && !pipe.to.target) {
                     pipe.connect(fitting);
                 }
             });

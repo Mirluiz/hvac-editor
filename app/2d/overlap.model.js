@@ -1,6 +1,14 @@
 "use strict";
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var vect_1 = require("../geometry/vect");
 var Overlap = /** @class */ (function () {
     function Overlap(model) {
         this.mouse = null;
@@ -15,52 +23,45 @@ var Overlap = /** @class */ (function () {
     Overlap.prototype.update = function (mouse) {
         this.mouse = mouse;
         this.wallsOverlap();
-        this.pipeOverlap();
+        this.list = __spreadArray([], this.pipeOverlap(this.mouse), true);
         this.updateList();
         // this.updateNetBoundList();
     };
     Overlap.prototype.wallsOverlap = function () {
         this.model.walls.map(function () { });
     };
-    Overlap.prototype.pipeOverlap = function () {
-        var _this = this;
-        this.pipes = [];
+    Overlap.prototype.pipeOverlap = function (vec) {
+        var ret = [];
         var bind = this.model.config.overlap.bindDistance;
         this.model.pipes.map(function (pipe) {
-            if (!_this.mouse)
-                return;
             var _p = null;
-            if (pipe.from.vec.sub(_this.mouse).length <= bind) {
+            if (pipe.from.vec.sub(vec).length <= bind) {
                 _p = {
-                    type: "pipe",
-                    id: pipe.id,
-                    ioVector: new vect_1.Vector(pipe.from.vec.x, pipe.from.vec.y),
+                    pipeEnd: pipe.from,
                 };
             }
-            if (!_p && pipe.to.vec.sub(_this.mouse).length <= bind) {
+            if (!_p && pipe.to.vec.sub(vec).length <= bind) {
                 _p = {
-                    type: "pipe",
-                    id: pipe.id,
-                    ioVector: new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y),
+                    pipeEnd: pipe.to,
                 };
             }
             if (!_p) {
-                var l = _this.mouse.distanceToLine(pipe);
+                var l = vec.distanceToLine(pipe);
                 if (l <= bind) {
                     var normPipe = pipe.toOrigin().normalize();
-                    var projPipe = pipe
-                        .toOrigin()
-                        .projection(_this.mouse.sub(pipe.from.vec));
+                    var projPipe = pipe.toOrigin().projection(vec.sub(pipe.from.vec));
                     _p = {
-                        type: "pipe",
-                        id: pipe.id,
-                        ioVector: normPipe.multiply(projPipe).sum(pipe.from.vec),
+                        pipe: {
+                            object: pipe,
+                            vec: normPipe.multiply(projPipe).sum(pipe.from.vec),
+                        },
                     };
                 }
             }
             if (_p)
-                _this.pipes.push(_p);
+                ret.push(_p);
         });
+        return ret;
     };
     Overlap.prototype.updateList = function () {
         var _a;

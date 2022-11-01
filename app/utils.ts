@@ -6,6 +6,11 @@ export const uuid = (): string => {
   });
 };
 
-// export const isImplementInterface = <T>(object: T): object is T {
-//   return ;
-// }
+/**
+ * https://mariusschulz.com/blog/keyof-and-lookup-types-in-typescript
+ * @param obj
+ * @param key
+ */
+export function getProperty<T>(obj: any, key: any): T | null {
+  return key in obj ? obj : null;
+}

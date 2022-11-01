@@ -62,21 +62,22 @@ class Fitting {
           .normalize()
           .sum(pipe2OppositeEnd.vec.sub(fitting.center).normalize());
 
-        let v1 = pipe1End.vec.sub(pipe1OppositeEnd.vec).normalize();
-        let v2 = pipe2End.vec.sub(pipe2OppositeEnd.vec).normalize();
-        let r1 = v1.multiply(10);
-        let r2 = v2.multiply(10);
+        let v1 = pipe1End.vec
+          .sub(pipe1OppositeEnd.vec)
+          .normalize()
+          .multiply(10);
+        let v2 = pipe2End.vec
+          .sub(pipe2OppositeEnd.vec)
+          .normalize()
+          .multiply(10);
 
-        let pipe1Width = r1.perpendicular();
-        let pipe2Width = r2.perpendicular();
-        let pipe1NeckTop = pipe1End.vec.sub(r1).sum(pipe1Width);
-        let pipe1NeckBottom = pipe1End.vec.sub(r1).sub(pipe1Width);
-        let pipe2NeckTop = pipe2End.vec.sub(r2).sub(pipe2Width);
-        let pipe2NeckBottom = pipe2End.vec.sub(r2).sum(pipe2Width);
+        let pipe1Width = v1.perpendicular();
+        let pipe2Width = v2.perpendicular();
+        let pipe1NeckTop = pipe1End.vec.sub(v1).sum(pipe1Width);
+        let pipe1NeckBottom = pipe1End.vec.sub(v1).sub(pipe1Width);
+        let pipe2NeckTop = pipe2End.vec.sub(v2).sub(pipe2Width);
+        let pipe2NeckBottom = pipe2End.vec.sub(v2).sum(pipe2Width);
         let topCurve = new Vector(-angleBetween.x, -angleBetween.y)
-          .multiply(fitting.width)
-          .sum(fitting.center);
-        let bottomCurve = new Vector(angleBetween.x, angleBetween.y)
           .multiply(fitting.width)
           .sum(fitting.center);
 
@@ -129,9 +130,6 @@ class Fitting {
         console.warn("no type");
     }
 
-    // this.ctx.fillStyle = fitting.color;
-
-    // this.ctx.fill();
     this.ctx.restore();
   }
 

@@ -47,7 +47,6 @@ var Fitting = /** @class */ (function (_super) {
                 ret = "3d";
             if (this.pipes.length === 4)
                 ret = "4d";
-            console.log("", this.pipes.length);
             return ret;
         },
         enumerable: false,

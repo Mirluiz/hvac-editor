@@ -30,8 +30,6 @@ class Fitting extends Arc {
     if (this.pipes.length === 3) ret = "3d";
     if (this.pipes.length === 4) ret = "4d";
 
-    console.log("", this.pipes.length);
-
     return ret;
   }
 

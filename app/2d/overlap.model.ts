@@ -1,8 +1,9 @@
 import Wall from "./models/architecture/wall.model";
-import Pipe from "./models/heating/pipe.model";
+import Pipe, { IPipeEnd } from "./models/heating/pipe.model";
 import Valve from "./models/heating/valve.model";
 import CanvasModel from "./models/canvas.model";
 import { IVec, Vector } from "../geometry/vect";
+import Fitting from "./models/heating/fitting.model";
 
 class Overlap {
   readonly model: CanvasModel;
@@ -25,7 +26,7 @@ class Overlap {
     this.mouse = mouse;
 
     this.wallsOverlap();
-    this.pipeOverlap();
+    this.list = [...this.pipeOverlap(this.mouse)];
     this.updateList();
     // this.updateNetBoundList();
   }
@@ -34,51 +35,49 @@ class Overlap {
     this.model.walls.map(() => {});
   }
 
-  pipeOverlap() {
-    this.pipes = [];
+  pipeOverlap(vec: IVec): Array<IOverlap> {
+    let ret: Array<IOverlap> = [];
 
     let bind = this.model.config.overlap.bindDistance;
 
     this.model.pipes.map((pipe) => {
-      if (!this.mouse) return;
-
       let _p: IOverlap | null = null;
 
-      if (pipe.from.vec.sub(this.mouse).length <= bind) {
+      if (pipe.from.vec.sub(vec).length <= bind) {
         _p = {
-          type: "pipe",
           id: pipe.id,
-          ioVector: new Vector(pipe.from.vec.x, pipe.from.vec.y),
+          pipeEnd: pipe.from,
         };
       }
 
-      if (!_p && pipe.to.vec.sub(this.mouse).length <= bind) {
+      if (!_p && pipe.to.vec.sub(vec).length <= bind) {
         _p = {
-          type: "pipe",
           id: pipe.id,
-          ioVector: new Vector(pipe.to.vec.x, pipe.to.vec.y),
+          pipeEnd: pipe.to,
         };
       }
 
       if (!_p) {
-        let l = this.mouse.distanceToLine(pipe);
+        let l = vec.distanceToLine(pipe);
 
         if (l <= bind) {
           let normPipe = pipe.toOrigin().normalize();
-          let projPipe = pipe
-            .toOrigin()
-            .projection(this.mouse.sub(pipe.from.vec));
+          let projPipe = pipe.toOrigin().projection(vec.sub(pipe.from.vec));
 
           _p = {
-            type: "pipe",
             id: pipe.id,
-            ioVector: normPipe.multiply(projPipe).sum(pipe.from.vec),
+            pipe: {
+              object: pipe,
+              vec: normPipe.multiply(projPipe).sum(pipe.from.vec),
+            },
           };
         }
       }
 
-      if (_p) this.pipes.push(_p);
+      if (_p) ret.push(_p);
     });
+
+    return ret;
   }
 
   updateList() {
@@ -88,10 +87,11 @@ class Overlap {
   }
 }
 
-interface IOverlap {
+export interface IOverlap {
   id: string;
-  type: "wall" | "pipe" | "valve";
-  ioVector?: IVec;
+  pipe?: { object: Pipe; vec: IVec };
+  pipeEnd?: IPipeEnd;
+  fitting?: Fitting;
 }
 
 export interface IOverlapValve extends IOverlap {}

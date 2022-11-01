@@ -95,6 +95,20 @@ var Vector = /** @class */ (function () {
             }
         }, 0);
     };
+    Vector.prototype.rotate = function (angle, around) {
+        if (around === void 0) { around = undefined; }
+        var _a = this, x = _a.x, y = _a.y;
+        angle *= Math.PI / 180;
+        if (around) {
+            x = this.x - around.x;
+            y = this.y - around.y;
+        }
+        var v = new Vector(x * Math.cos(angle) - y * Math.sin(angle), x * Math.sin(angle) + y * Math.cos(angle));
+        if (around) {
+            v = v.sum(around);
+        }
+        return v;
+    };
     return Vector;
 }());
 exports.Vector = Vector;
