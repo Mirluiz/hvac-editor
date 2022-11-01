@@ -31,7 +31,8 @@ var Canvas = /** @class */function () {
     Canvas.prototype.mouseDown = function (e) {
         this.model.clicked = true;
         if (!this.model.mouse) return;
-        var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        var worldCoord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        var _mouse = new vect_1.Vector(worldCoord.x, worldCoord.y);
         if (this.model.config.net.bind) {
             _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
             _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
@@ -71,7 +72,8 @@ var Canvas = /** @class */function () {
                 };
             }
         }
-        var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        var worldCoord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        var _mouse = new vect_1.Vector(worldCoord.x, worldCoord.y);
         if (this.model.config.net.bind) {
             _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
             _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
@@ -126,7 +128,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":21,"../models/canvas.model":5,"../views/canvas.view":13,"../views/stats.view":17,"./pipe.controller":3}],2:[function(require,module,exports){
+},{"../../geometry/vect":20,"../models/canvas.model":5,"../views/canvas.view":13,"../views/stats.view":17,"./pipe.controller":3}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -226,8 +228,8 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../geometry/vect");
 var overlap_model_1 = __importDefault(require("../overlap.model"));
-var common_1 = require("../../_test_/common");
 var Canvas = /** @class */function () {
     function Canvas() {
         this._walls = [];
@@ -264,7 +266,7 @@ var Canvas = /** @class */function () {
             }
         };
         this.overlap = new overlap_model_1.default(this);
-        (0, common_1.fittingModel)(this);
+        // fittingModel(this);
     }
     Object.defineProperty(Canvas.prototype, "walls", {
         get: function get() {
@@ -327,15 +329,15 @@ var Canvas = /** @class */function () {
         });
     };
     Canvas.prototype.update = function () {
-        var _this = this;
+        var _this_1 = this;
         this.pipes.map(function (pipe) {
-            _this.pipes.map(function (_pipe) {
+            _this_1.pipes.map(function (_pipe) {
                 if (_pipe.id === pipe.id) return;
                 if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
                     pipe.merge(_pipe);
                 }
             });
-            _this.fittings.map(function (fitting) {
+            _this_1.fittings.map(function (fitting) {
                 if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
                     pipe.connect(fitting);
                 }
@@ -344,6 +346,26 @@ var Canvas = /** @class */function () {
                 }
             });
         });
+    };
+    //TODO: apply scale transformation here
+    Canvas.prototype.getWorldCoordinates = function (x, y) {
+        return new vect_1.Vector((x - this.offset.x) * this.scale.amount, (y - this.offset.y) * this.scale.amount);
+    };
+    //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
+    //       y: (y + this.model.offset.y)  * this.model.scale.amount,
+    Canvas.prototype.getLocalCoordinates = function (x, y) {
+        var _this = this;
+        var scale = function scale(vec) {
+            return new vect_1.Vector(vec.x * _this.scale.amount, vec.y * _this.scale.amount);
+        };
+        var translate = function (vec) {
+            return new vect_1.Vector(vec.x + _this.offset.x, vec.y + _this.offset.y);
+        }.bind(this);
+        var t = new vect_1.Vector(x, y);
+        t = scale(t);
+        // t = rotation(t); TODO order is scaling rotation translation
+        t = translate(t);
+        return t;
     };
     Canvas.prototype.deletePipe = function (id) {
         this.pipes = this.pipes.filter(function (p) {
@@ -354,7 +376,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../_test_/common":19,"../overlap.model":12}],6:[function(require,module,exports){
+},{"../../geometry/vect":20,"../overlap.model":12}],6:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -744,7 +766,7 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../../../geometry/vect":21,"../geometry/line.model":7,"./fitting.model":9}],11:[function(require,module,exports){
+},{"../../../geometry/vect":20,"../geometry/line.model":7,"./fitting.model":9}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -757,7 +779,7 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":23}],12:[function(require,module,exports){
+},{"../../utils":22}],12:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -943,8 +965,8 @@ var Canvas = /** @class */function () {
         var iV = 0;
         var maxV = w / step;
         while (iV <= maxV) {
-            var from = this.getWorldCoordinates(step * iV, 0);
-            var to = this.getWorldCoordinates(step * iV, h);
+            var from = this.model.getLocalCoordinates(step * iV, 0);
+            var to = this.model.getLocalCoordinates(step * iV, h);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             iV++;
@@ -953,8 +975,8 @@ var Canvas = /** @class */function () {
         var iH = 0;
         var maxH = h / step;
         while (iH <= maxH) {
-            var from = this.getWorldCoordinates(0, step * iH);
-            var to = this.getWorldCoordinates(w, step * iH);
+            var from = this.model.getLocalCoordinates(0, step * iH);
+            var to = this.model.getLocalCoordinates(w, step * iH);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             iH++;
@@ -971,10 +993,10 @@ var Canvas = /** @class */function () {
         ctx.beginPath();
         var h = this.container.height;
         var w = this.container.width;
-        var x_From = this.getWorldCoordinates(0, 0);
-        var x_To = this.getWorldCoordinates(w, 0);
-        var y_From = this.getWorldCoordinates(0, 0);
-        var y_To = this.getWorldCoordinates(0, h);
+        var x_From = this.model.getLocalCoordinates(0, 0);
+        var x_To = this.model.getLocalCoordinates(w, 0);
+        var y_From = this.model.getLocalCoordinates(0, 0);
+        var y_To = this.model.getLocalCoordinates(0, h);
         ctx.moveTo(0, x_From.y);
         ctx.lineTo(w, x_To.y);
         ctx.moveTo(y_From.x, 0);
@@ -984,16 +1006,16 @@ var Canvas = /** @class */function () {
         ctx.restore();
     };
     Canvas.prototype.drawWalls = function () {
-        var _this_1 = this;
+        var _this = this;
         var walls = this.model.walls;
         walls === null || walls === void 0 ? void 0 : walls.map(function (wall) {
-            if (!_this_1.container) return;
-            var ctx = _this_1.container.getContext("2d");
+            if (!_this.container) return;
+            var ctx = _this.container.getContext("2d");
             if (!ctx) return;
             ctx.save();
             ctx.beginPath();
-            var from = _this_1.getWorldCoordinates(wall.from.x, wall.from.y);
-            var to = _this_1.getWorldCoordinates(wall.from.x, wall.from.y);
+            var from = _this.model.getLocalCoordinates(wall.from.x, wall.from.y);
+            var to = _this.model.getLocalCoordinates(wall.from.x, wall.from.y);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             ctx.strokeStyle = wall.color;
@@ -1002,29 +1024,6 @@ var Canvas = /** @class */function () {
             ctx.restore();
         });
     };
-    //TODO: apply scale transformation here
-    Canvas.prototype.getWorldCoordinates = function (x, y) {
-        var _this = this;
-        var scale = function scale(vec) {
-            return new vect_1.Vector(vec.x * _this.model.scale.amount, vec.y * _this.model.scale.amount);
-        };
-        var translate = function (vec) {
-            return new vect_1.Vector(vec.x + _this.model.offset.x, vec.y + _this.model.offset.y);
-        }.bind(this);
-        var t = new vect_1.Vector(x, y);
-        t = scale(t);
-        // t = rotation(t); TODO order is scaling rotation translation
-        t = translate(t);
-        return t;
-    };
-    //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
-    //       y: (y + this.model.offset.y)  * this.model.scale.amount,
-    // getLocalCoordinates(x: number, y: number) {
-    //   return {
-    //     x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord ,
-    //     y: (y + this.model.offset.y)  * this.model.scale.amount,
-    //   };
-    // }
     Canvas.prototype.initCanvasContainer = function () {
         if (!this.container) return;
         this.container.style.height = "600px";
@@ -1041,7 +1040,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":21,"./fitting.view":14,"./pipe.view":16,"./valve.view":18}],14:[function(require,module,exports){
+},{"../../geometry/vect":20,"./fitting.view":14,"./pipe.view":16,"./valve.view":18}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1103,11 +1102,11 @@ var Fitting = /** @class */function () {
                 points = points.sort(function (a, b) {
                     return (a.x - fitting.center.x) * (b.y - fitting.center.y) - (b.x - fitting.center.x) * (a.y - fitting.center.y);
                 });
-                var p0 = this.canvas.getWorldCoordinates(points[0].x, points[0].y);
-                var p1 = this.canvas.getWorldCoordinates(points[1].x, points[1].y);
-                var p2 = this.canvas.getWorldCoordinates(points[2].x, points[2].y);
-                var p3 = this.canvas.getWorldCoordinates(points[3].x, points[3].y);
-                var curve = this.canvas.getWorldCoordinates(topCurve.x, topCurve.y);
+                var p0 = this.canvas.model.getLocalCoordinates(points[0].x, points[0].y);
+                var p1 = this.canvas.model.getLocalCoordinates(points[1].x, points[1].y);
+                var p2 = this.canvas.model.getLocalCoordinates(points[2].x, points[2].y);
+                var p3 = this.canvas.model.getLocalCoordinates(points[3].x, points[3].y);
+                var curve = this.canvas.model.getLocalCoordinates(topCurve.x, topCurve.y);
                 this.ctx.moveTo(p0.x, p0.y);
                 this.ctx.lineTo(p1.x, p1.y);
                 this.ctx.lineTo(p2.x, p2.y);
@@ -1138,7 +1137,7 @@ var Fitting = /** @class */function () {
 }();
 exports.default = Fitting;
 
-},{"../../geometry/vect":21}],15:[function(require,module,exports){
+},{"../../geometry/vect":20}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1174,8 +1173,8 @@ var Pipe = /** @class */function () {
     Pipe.prototype.drawPipe = function (pipe) {
         this.ctx.save();
         this.ctx.beginPath();
-        var from = this.canvas.getWorldCoordinates(pipe.from.vec.x, pipe.from.vec.y);
-        var to = this.canvas.getWorldCoordinates(pipe.to.vec.x, pipe.to.vec.y);
+        var from = this.canvas.model.getLocalCoordinates(pipe.from.vec.x, pipe.from.vec.y);
+        var to = this.canvas.model.getLocalCoordinates(pipe.to.vec.x, pipe.to.vec.y);
         this.ctx.moveTo(from.x, from.y);
         this.ctx.lineTo(to.x, to.y);
         this.ctx.strokeStyle = pipe.color;
@@ -1194,8 +1193,8 @@ var Pipe = /** @class */function () {
     Pipe.prototype.drawGhost = function (pipe) {
         this.ctx.save();
         this.ctx.beginPath();
-        var from = this.canvas.getWorldCoordinates(pipe.from.vec.x, pipe.from.vec.y);
-        var to = this.canvas.getWorldCoordinates(pipe.to.vec.x, pipe.to.vec.y);
+        var from = this.canvas.model.getLocalCoordinates(pipe.from.vec.x, pipe.from.vec.y);
+        var to = this.canvas.model.getLocalCoordinates(pipe.to.vec.x, pipe.to.vec.y);
         this.ctx.moveTo(from.x, from.y);
         this.ctx.lineTo(to.x, to.y);
         this.ctx.strokeStyle = pipe.color;
@@ -1206,7 +1205,7 @@ var Pipe = /** @class */function () {
     Pipe.prototype.drawOverLap = function (coordinate) {
         this.ctx.save();
         this.ctx.beginPath();
-        var c = this.canvas.getWorldCoordinates(coordinate.x, coordinate.y);
+        var c = this.canvas.model.getLocalCoordinates(coordinate.x, coordinate.y);
         this.ctx.arc(c.x, c.y, 5, 0, 2 * Math.PI);
         this.ctx.fillStyle = "black";
         this.ctx.fill();
@@ -1280,7 +1279,7 @@ var Valve = /** @class */function () {
     Valve.prototype.drawValve = function (valve) {
         this.ctx.save();
         this.ctx.beginPath();
-        var c = this.canvas.getWorldCoordinates(valve.center.x, valve.center.y);
+        var c = this.canvas.model.getLocalCoordinates(valve.center.x, valve.center.y);
         this.ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
         this.ctx.fillStyle = valve.color;
         this.ctx.fill();
@@ -1294,488 +1293,6 @@ var Valve = /** @class */function () {
 exports.default = Valve;
 
 },{}],19:[function(require,module,exports){
-"use strict";
-
-var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.fittingModel = void 0;
-var pipe_model_1 = __importDefault(require("../2d/models/heating/pipe.model"));
-var vect_1 = require("../geometry/vect");
-var fittingModel = function fittingModel(model) {
-    var pipes = model.pipes;
-    var step = model.config.net.step / 2;
-    /**
-     * 90 angle from right to left
-     * ------ *
-     *        |
-     *        |
-     *        |
-     *
-     * Y+ is bottom
-     */
-    var arraysRL90 = [
-    /*
-      1 - from left to right
-      2 - from top to bottom
-     */
-    [{
-        x1: 4,
-        y1: 4,
-        x2: 10,
-        y2: 4
-    }, {
-        x1: 10,
-        y1: 4,
-        x2: 10,
-        y2: 10
-    }],
-    /*
-      1 - from right to left
-      2 - from top to bottom
-     */
-    [{
-        x1: 10,
-        y1: 4,
-        x2: 4,
-        y2: 4
-    }, {
-        x1: 10,
-        y1: 4,
-        x2: 10,
-        y2: 10
-    }],
-    /*
-      1 - from left to right
-      2 - from bottom to top
-     */
-    [{
-        x1: 4,
-        y1: 4,
-        x2: 10,
-        y2: 4
-    }, {
-        x1: 10,
-        y1: 10,
-        x2: 10,
-        y2: 4
-    }],
-    /*
-      1 - from right to left
-      2 - from bottom to top
-     */
-    [{
-        x1: 4,
-        y1: 4,
-        x2: 10,
-        y2: 4
-    }, {
-        x1: 10,
-        y1: 10,
-        x2: 10,
-        y2: 4
-    }]];
-    /**
-     *  90 angle from left to right
-     *    * -------
-     *    |
-     *    |
-     *    |
-     */
-    var arraysLR90 = [
-    /*
-      2 - from left to right
-      1 - from top to bottom
-     */
-    [{
-        x1: 10,
-        y1: 4,
-        x2: 4,
-        y2: 4
-    }, {
-        x1: 4,
-        y1: 4,
-        x2: 4,
-        y2: 10
-    }],
-    /*
-      1 - from left top to right
-      2 - from top to bottom
-     */
-    [{
-        x1: 4,
-        y1: 4,
-        x2: 10,
-        y2: 4
-    }, {
-        x1: 4,
-        y1: 4,
-        x2: 4,
-        y2: 10
-    }],
-    /*
-      1 - from right to left
-      2 - from bottom to top
-     */
-    [{
-        x1: 10,
-        y1: 4,
-        x2: 4,
-        y2: 4
-    }, {
-        x1: 4,
-        y1: 10,
-        x2: 4,
-        y2: 4
-    }],
-    /*
-      1 - from left to right
-      2 - from bottom to top
-     */
-    [{
-        x1: 4,
-        y1: 4,
-        x2: 10,
-        y2: 4
-    }, {
-        x1: 4,
-        y1: 10,
-        x2: 4,
-        y2: 4
-    }]];
-    /**
-     *  Down V from 90 angle
-     *           *
-     *          / \
-     *        /    \
-     *      /       \
-     *    /          \
-     */
-    var arraysV90Down = [
-    /*
-      1 - from left to right,
-      2 - from left to right
-     */
-    [{
-        x1: 4,
-        y1: 6,
-        x2: 8,
-        y2: 2
-    }, {
-        x1: 8,
-        y1: 2,
-        x2: 12,
-        y2: 6
-    }],
-    /*
-      1 - from right to left,
-      2 - from left to right,
-     */
-    [{
-        x1: 8,
-        y1: 2,
-        x2: 4,
-        y2: 6
-    }, {
-        x1: 8,
-        y1: 2,
-        x2: 12,
-        y2: 6
-    }],
-    /*
-     1 - from left to right,
-     2 - from right to left,
-    */
-    [{
-        x1: 4,
-        y1: 6,
-        x2: 8,
-        y2: 2
-    }, {
-        x1: 12,
-        y1: 6,
-        x2: 8,
-        y2: 2
-    }],
-    /*
-     1 - from right to left,
-     2 - from right to left,
-    */
-    [{
-        x1: 8,
-        y1: 2,
-        x2: 4,
-        y2: 6
-    }, {
-        x1: 12,
-        y1: 6,
-        x2: 8,
-        y2: 2
-    }]];
-    /**
-     *  V form 90 angle
-     *   \       /
-     *    \     /
-     *     \   /
-     *      \ /
-     *       *
-     */
-    var arraysV90Up = [
-    /*
-      1 - from left to right,
-      2 - from left to right
-     */
-    [{
-        x1: 4,
-        y1: 2,
-        x2: 8,
-        y2: 6
-    }, {
-        x1: 8,
-        y1: 6,
-        x2: 12,
-        y2: 2
-    }],
-    /*
-      1 - from right to left,
-      2 - from left to right,
-     */
-    [{
-        x1: 8,
-        y1: 6,
-        x2: 4,
-        y2: 2
-    }, {
-        x1: 8,
-        y1: 6,
-        x2: 12,
-        y2: 2
-    }],
-    /*
-     1 - from left to right,
-     2 - from right to left,
-    */
-    [{
-        x1: 4,
-        y1: 2,
-        x2: 8,
-        y2: 6
-    }, {
-        x1: 12,
-        y1: 2,
-        x2: 8,
-        y2: 6
-    }],
-    /*
-     1 - from right to left,
-     2 - from right to left,
-    */
-    [{
-        x1: 8,
-        y1: 6,
-        x2: 4,
-        y2: 2
-    }, {
-        x1: 12,
-        y1: 2,
-        x2: 8,
-        y2: 6
-    }]];
-    /**
-     * Horizontal same angle
-     *  --------- * ----------
-     */
-    var arrays90H = [
-    /*
-      1 - from left to right
-      2 - from left to right,
-     */
-    [{
-        x1: 4,
-        y1: 4,
-        x2: 8,
-        y2: 4
-    }, {
-        x1: 8,
-        y1: 4,
-        x2: 12,
-        y2: 4
-    }],
-    /*
-      1 - from right to left
-      2 - from left to right,
-     */
-    [{
-        x1: 8,
-        y1: 4,
-        x2: 4,
-        y2: 4
-    }, {
-        x1: 8,
-        y1: 4,
-        x2: 12,
-        y2: 4
-    }],
-    /*
-      1 - from left to right
-      2 - from right to left,
-     */
-    [{
-        x1: 4,
-        y1: 4,
-        x2: 8,
-        y2: 4
-    }, {
-        x1: 12,
-        y1: 4,
-        x2: 8,
-        y2: 4
-    }],
-    /*
-      1 - from right to left
-      2 - from right to left,
-     */
-    [{
-        x1: 8,
-        y1: 4,
-        x2: 4,
-        y2: 4
-    }, {
-        x1: 12,
-        y1: 4,
-        x2: 8,
-        y2: 4
-    }]];
-    /**
-     *  Vertical same angle
-     *    |
-     *    |
-     *    |
-     *    *
-     *    |
-     *    |
-     *    |
-     */
-    var arrays90V = [
-    /*
-      1 - from top to bottom
-      2 - from top to bottom
-     */
-    [{
-        x1: 4,
-        y1: 4,
-        x2: 4,
-        y2: 8
-    }, {
-        x1: 4,
-        y1: 8,
-        x2: 4,
-        y2: 12
-    }],
-    /*
-      1 - from bottom to top
-      2 - from top to bottom
-     */
-    [{
-        x1: 4,
-        y1: 8,
-        x2: 4,
-        y2: 4
-    }, {
-        x1: 4,
-        y1: 8,
-        x2: 4,
-        y2: 12
-    }],
-    /*
-      1 - from top to bottom
-      2 - from bottom to top
-     */
-    [{
-        x1: 4,
-        y1: 4,
-        x2: 4,
-        y2: 8
-    }, {
-        x1: 4,
-        y1: 12,
-        x2: 4,
-        y2: 8
-    }],
-    /*
-      1 - from bottom to top
-      2 - from bottom to top
-     */
-    [{
-        x1: 4,
-        y1: 8,
-        x2: 4,
-        y2: 4
-    }, {
-        x1: 4,
-        y1: 12,
-        x2: 4,
-        y2: 8
-    }]];
-    __spreadArray(__spreadArray([], arraysRL90, true), arraysLR90, true).map(function (lines, index) {
-        lines.map(function (line) {
-            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, line.y2 * step)));
-        });
-    });
-    __spreadArray(__spreadArray([], arraysV90Down, true), arraysV90Up, true).map(function (lines, index) {
-        lines.map(function (line) {
-            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 12 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 12 * step + line.y2 * step)));
-        });
-    });
-    arrays90H.map(function (lines, index) {
-        lines.map(function (line) {
-            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 18 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 18 * step + line.y2 * step)));
-        });
-    });
-    arrays90V.map(function (lines, index) {
-        lines.map(function (line) {
-            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 22 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 22 * step + line.y2 * step)));
-        });
-    });
-    [0, 30, 60, 90].map(function (a, index) {
-        var pV1 = new vect_1.Vector(4, 4);
-        var pV2 = new vect_1.Vector(8, 4).rotate(a, pV1);
-        var v1 = new vect_1.Vector(pV2.x, pV2.y);
-        var v2 = new vect_1.Vector(pV2.x + 4, pV2.y).rotate(a, v1);
-        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(400 + 100 * index + pV1.x * step, 22 * step + pV1.y * step), new vect_1.Vector(400 + 100 * index + pV2.x * step, 22 * step + pV2.y * step)));
-        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(400 + 100 * index + v1.x * step, 22 * step + v1.y * step), new vect_1.Vector(400 + 100 * index + v2.x * step, 22 * step + v2.y * step)));
-    });
-    // horizontal line with angles
-    [0, 30, 60, 90, 120, 150, 180].map(function (a, index) {
-        var pV1 = new vect_1.Vector(4, 4);
-        var pV2 = new vect_1.Vector(8, 4);
-        var v1 = new vect_1.Vector(8, 4);
-        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
-        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 32 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 32 * step + pV2.y * step)));
-        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 32 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 32 * step + v2.y * step)));
-    });
-    [0, -30, -60, -90, -120, -150, -180].map(function (a, index) {
-        var pV1 = new vect_1.Vector(4, 4);
-        var pV2 = new vect_1.Vector(8, 4);
-        var v1 = new vect_1.Vector(8, 4);
-        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
-        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 42 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 42 * step + pV2.y * step)));
-        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 42 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 42 * step + v2.y * step)));
-    });
-};
-exports.fittingModel = fittingModel;
-
-},{"../2d/models/heating/pipe.model":10,"../geometry/vect":21}],20:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1794,7 +1311,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":4}],21:[function(require,module,exports){
+},{"./2d":4}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1912,7 +1429,7 @@ var Vector = /** @class */function () {
 }();
 exports.Vector = Vector;
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1923,7 +1440,7 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":20}],23:[function(require,module,exports){
+},{"./app":19}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1946,6 +1463,6 @@ function getProperty(obj, key) {
 }
 exports.getProperty = getProperty;
 
-},{}]},{},[22])
+},{}]},{},[21])
 
 //# sourceMappingURL=bundle.js.map

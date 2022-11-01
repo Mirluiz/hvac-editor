@@ -43,9 +43,11 @@ class Canvas {
 
     if (!this.model.mouse) return;
 
-    // let worldCoord = this.model.getWorldCoordinates(this.model.mouse.x , this.model.mouse.y);
-
-    let _mouse = new Vector(this.model.mouse.x, this.model.mouse.y);
+    let worldCoord = this.model.getWorldCoordinates(
+      this.model.mouse.x,
+      this.model.mouse.y
+    );
+    let _mouse = new Vector(worldCoord.x, worldCoord.y);
 
     if (this.model.config.net.bind) {
       _mouse.x =
@@ -95,7 +97,12 @@ class Canvas {
       }
     }
 
-    let _mouse = new Vector(this.model.mouse.x, this.model.mouse.y);
+    let worldCoord = this.model.getWorldCoordinates(
+      this.model.mouse.x,
+      this.model.mouse.y
+    );
+
+    let _mouse = new Vector(worldCoord.x, worldCoord.y);
 
     if (this.model.config.net.bind) {
       _mouse.x =

@@ -23,7 +23,7 @@ class Canvas {
   constructor() {
     this.overlap = new Overlap(this);
 
-    fittingModel(this);
+    // fittingModel(this);
   }
 
   mouse: ICoord | null = null;
@@ -137,8 +137,8 @@ class Canvas {
   //TODO: apply scale transformation here
   getWorldCoordinates(x: number, y: number): IVec {
     return new Vector(
-      (x + this.offset.x) * this.scale.amount,
-      (y + this.offset.y) * this.scale.amount
+      (x - this.offset.x) * this.scale.amount,
+      (y - this.offset.y) * this.scale.amount
     );
   }
 

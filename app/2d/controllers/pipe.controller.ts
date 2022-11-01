@@ -10,15 +10,14 @@ class Pipe {
     this.model = model;
   }
 
-  mouseMove(c: IVec) {
-    // let coord = this.model
-    // if (
-    //   this.model.actionObject &&
-    //   this.model.actionObject instanceof PipeGhostModel
-    // ) {
-    //   this.model.actionObject.to.vec.x = coord.x;
-    //   this.model.actionObject.to.vec.y = coord.y;
-    // }
+  mouseMove(coord: IVec) {
+    if (
+      this.model.actionObject &&
+      this.model.actionObject instanceof PipeGhostModel
+    ) {
+      this.model.actionObject.to.vec.x = coord.x;
+      this.model.actionObject.to.vec.y = coord.y;
+    }
   }
 
   mouseDown(coord: IVec) {
