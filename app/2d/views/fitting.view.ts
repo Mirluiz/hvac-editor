@@ -99,19 +99,39 @@ class Fitting {
           );
         });
 
-        this.ctx.moveTo(points[0].x, points[0].y);
-        this.ctx.lineTo(points[1].x, points[1].y);
-        this.ctx.lineTo(points[2].x, points[2].y);
-        this.ctx.lineTo(points[3].x, points[3].y);
+        let p0 = this.canvas.model.getLocalCoordinates(
+          points[0].x,
+          points[0].y
+        );
+        let p1 = this.canvas.model.getLocalCoordinates(
+          points[1].x,
+          points[1].y
+        );
+        let p2 = this.canvas.model.getLocalCoordinates(
+          points[2].x,
+          points[2].y
+        );
+        let p3 = this.canvas.model.getLocalCoordinates(
+          points[3].x,
+          points[3].y
+        );
+        let curve = this.canvas.model.getLocalCoordinates(
+          topCurve.x,
+          topCurve.y
+        );
+        this.ctx.moveTo(p0.x, p0.y);
+        this.ctx.lineTo(p1.x, p1.y);
+        this.ctx.lineTo(p2.x, p2.y);
+        this.ctx.lineTo(p3.x, p3.y);
 
         if (needBezier) {
           this.ctx.bezierCurveTo(
-            topCurve.x,
-            topCurve.y,
-            topCurve.x,
-            topCurve.y,
-            points[0].x,
-            points[0].y
+            curve.x,
+            curve.y,
+            curve.x,
+            curve.y,
+            p0.x,
+            p0.y
           );
         }
 

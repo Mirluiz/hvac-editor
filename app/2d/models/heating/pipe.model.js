@@ -87,16 +87,17 @@ var Pipe = /** @class */ (function (_super) {
                 return;
             var overlap = _this.model.overlap.pipeOverlap(end.vec);
             if (overlap.length > 0) {
-                var _end = overlap.find(function (p) { return "pipeEnd" in p; });
+                var _end = overlap.find(function (p) { return "pipeEnd" in p && end.getPipe().id !== p.id; });
                 if (_end && _end.pipeEnd) {
                     angleBetween = _end.pipeEnd
                         .getOpposite()
                         .vec.sub(end.vec)
-                        .angle(end.vec);
+                        .angle(end.getOpposite().vec.sub(end.vec));
                 }
             }
         });
-        if (angleBetween && Math.abs(angleBetween * (180 / Math.PI)) > 90) {
+        if (angleBetween !== undefined &&
+            Math.abs(angleBetween * (180 / Math.PI)) >= 90) {
             canMerge = true;
         }
         return canMerge;

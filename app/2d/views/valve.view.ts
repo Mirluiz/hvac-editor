@@ -26,7 +26,10 @@ class Valve {
     this.ctx.save();
     this.ctx.beginPath();
 
-    let c = this.canvas.getWorldCoordinates(valve.center.x, valve.center.y);
+    let c = this.canvas.model.getLocalCoordinates(
+      valve.center.x,
+      valve.center.y
+    );
 
     this.ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
 

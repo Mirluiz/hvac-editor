@@ -136,8 +136,8 @@ class Canvas {
     let iV = 0;
     let maxV = w / step;
     while (iV <= maxV) {
-      let from: IVec = this.getWorldCoordinates(step * iV, 0);
-      let to: IVec = this.getWorldCoordinates(step * iV, h);
+      let from: IVec = this.model.getLocalCoordinates(step * iV, 0);
+      let to: IVec = this.model.getLocalCoordinates(step * iV, h);
 
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
@@ -148,8 +148,8 @@ class Canvas {
     let iH = 0;
     let maxH = h / step;
     while (iH <= maxH) {
-      let from: IVec = this.getWorldCoordinates(0, step * iH);
-      let to: IVec = this.getWorldCoordinates(w, step * iH);
+      let from: IVec = this.model.getLocalCoordinates(0, step * iH);
+      let to: IVec = this.model.getLocalCoordinates(w, step * iH);
 
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
@@ -173,10 +173,10 @@ class Canvas {
     let h = this.container.height;
     let w = this.container.width;
 
-    let x_From = this.getWorldCoordinates(0, 0);
-    let x_To = this.getWorldCoordinates(w, 0);
-    let y_From = this.getWorldCoordinates(0, 0);
-    let y_To = this.getWorldCoordinates(0, h);
+    let x_From = this.model.getLocalCoordinates(0, 0);
+    let x_To = this.model.getLocalCoordinates(w, 0);
+    let y_From = this.model.getLocalCoordinates(0, 0);
+    let y_To = this.model.getLocalCoordinates(0, h);
 
     ctx.moveTo(0, x_From.y);
     ctx.lineTo(w, x_To.y);
@@ -202,8 +202,8 @@ class Canvas {
       ctx.save();
       ctx.beginPath();
 
-      let from = this.getWorldCoordinates(wall.from.x, wall.from.y);
-      let to = this.getWorldCoordinates(wall.from.x, wall.from.y);
+      let from = this.model.getLocalCoordinates(wall.from.x, wall.from.y);
+      let to = this.model.getLocalCoordinates(wall.from.x, wall.from.y);
 
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
@@ -215,41 +215,6 @@ class Canvas {
       ctx.restore();
     });
   }
-
-  //TODO: apply scale transformation here
-  getWorldCoordinates(x: number, y: number): IVec {
-    let _this = this;
-
-    let scale = function (vec: IVec): Vector {
-      return new Vector(
-        vec.x * _this.model.scale.amount,
-        vec.y * _this.model.scale.amount
-      );
-    };
-
-    let translate = function (vec: IVec): Vector {
-      return new Vector(
-        vec.x + _this.model.offset.x,
-        vec.y + _this.model.offset.y
-      );
-    }.bind(this);
-
-    let t = new Vector(x, y);
-    t = scale(t);
-    // t = rotation(t); TODO order is scaling rotation translation
-    t = translate(t);
-
-    return t;
-  }
-
-  //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
-  //       y: (y + this.model.offset.y)  * this.model.scale.amount,
-  // getLocalCoordinates(x: number, y: number) {
-  //   return {
-  //     x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord ,
-  //     y: (y + this.model.offset.y)  * this.model.scale.amount,
-  //   };
-  // }
 
   initCanvasContainer(): void {
     if (!this.container) return;

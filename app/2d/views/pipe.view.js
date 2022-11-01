@@ -18,8 +18,8 @@ var Pipe = /** @class */ (function () {
     Pipe.prototype.drawPipe = function (pipe) {
         this.ctx.save();
         this.ctx.beginPath();
-        var from = this.canvas.getWorldCoordinates(pipe.from.vec.x, pipe.from.vec.y);
-        var to = this.canvas.getWorldCoordinates(pipe.to.vec.x, pipe.to.vec.y);
+        var from = this.canvas.model.getLocalCoordinates(pipe.from.vec.x, pipe.from.vec.y);
+        var to = this.canvas.model.getLocalCoordinates(pipe.to.vec.x, pipe.to.vec.y);
         this.ctx.moveTo(from.x, from.y);
         this.ctx.lineTo(to.x, to.y);
         this.ctx.strokeStyle = pipe.color;
@@ -36,8 +36,8 @@ var Pipe = /** @class */ (function () {
     Pipe.prototype.drawGhost = function (pipe) {
         this.ctx.save();
         this.ctx.beginPath();
-        var from = this.canvas.getWorldCoordinates(pipe.from.vec.x, pipe.from.vec.y);
-        var to = this.canvas.getWorldCoordinates(pipe.to.vec.x, pipe.to.vec.y);
+        var from = this.canvas.model.getLocalCoordinates(pipe.from.vec.x, pipe.from.vec.y);
+        var to = this.canvas.model.getLocalCoordinates(pipe.to.vec.x, pipe.to.vec.y);
         this.ctx.moveTo(from.x, from.y);
         this.ctx.lineTo(to.x, to.y);
         this.ctx.strokeStyle = pipe.color;
@@ -48,7 +48,7 @@ var Pipe = /** @class */ (function () {
     Pipe.prototype.drawOverLap = function (coordinate) {
         this.ctx.save();
         this.ctx.beginPath();
-        var c = this.canvas.getWorldCoordinates(coordinate.x, coordinate.y);
+        var c = this.canvas.model.getLocalCoordinates(coordinate.x, coordinate.y);
         this.ctx.arc(c.x, c.y, 5, 0, 2 * Math.PI);
         this.ctx.fillStyle = "black";
         this.ctx.fill();

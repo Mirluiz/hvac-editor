@@ -27,11 +27,14 @@ class Pipe {
     this.ctx.save();
     this.ctx.beginPath();
 
-    let from = this.canvas.getWorldCoordinates(
+    let from = this.canvas.model.getLocalCoordinates(
       pipe.from.vec.x,
       pipe.from.vec.y
     );
-    let to = this.canvas.getWorldCoordinates(pipe.to.vec.x, pipe.to.vec.y);
+    let to = this.canvas.model.getLocalCoordinates(
+      pipe.to.vec.x,
+      pipe.to.vec.y
+    );
 
     this.ctx.moveTo(from.x, from.y);
     this.ctx.lineTo(to.x, to.y);
@@ -54,11 +57,14 @@ class Pipe {
     this.ctx.save();
     this.ctx.beginPath();
 
-    let from = this.canvas.getWorldCoordinates(
+    let from = this.canvas.model.getLocalCoordinates(
       pipe.from.vec.x,
       pipe.from.vec.y
     );
-    let to = this.canvas.getWorldCoordinates(pipe.to.vec.x, pipe.to.vec.y);
+    let to = this.canvas.model.getLocalCoordinates(
+      pipe.to.vec.x,
+      pipe.to.vec.y
+    );
 
     this.ctx.moveTo(from.x, from.y);
     this.ctx.lineTo(to.x, to.y);
@@ -74,7 +80,7 @@ class Pipe {
     this.ctx.save();
     this.ctx.beginPath();
 
-    let c = this.canvas.getWorldCoordinates(coordinate.x, coordinate.y);
+    let c = this.canvas.model.getLocalCoordinates(coordinate.x, coordinate.y);
 
     this.ctx.arc(c.x, c.y, 5, 0, 2 * Math.PI);
 

@@ -509,119 +509,49 @@ var fittingModel = function (model) {
         ],
     ];
     __spreadArray(__spreadArray([], arraysRL90, true), arraysLR90, true).map(function (lines, index) {
-        if (index > 0)
-            return;
         lines.map(function (line) {
             pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, line.y2 * step)));
         });
     });
-    // [...arraysV90Down, ...arraysV90Up].map((lines, index) => {
-    //   lines.map((line) => {
-    //     pipes.push(
-    //       new Pipe(
-    //         model,
-    //         new Vector(100 * index + line.x1 * step, 12 * step + line.y1 * step),
-    //         new Vector(100 * index + line.x2 * step, 12 * step + line.y2 * step)
-    //       )
-    //     );
-    //   });
-    // });
-    //
-    // arrays90H.map((lines, index) => {
-    //   lines.map((line) => {
-    //     pipes.push(
-    //       new Pipe(
-    //         model,
-    //         new Vector(100 * index + line.x1 * step, 18 * step + line.y1 * step),
-    //         new Vector(100 * index + line.x2 * step, 18 * step + line.y2 * step)
-    //       )
-    //     );
-    //   });
-    // });
-    //
-    // arrays90V.map((lines, index) => {
-    //   lines.map((line) => {
-    //     pipes.push(
-    //       new Pipe(
-    //         model,
-    //         new Vector(100 * index + line.x1 * step, 22 * step + line.y1 * step),
-    //         new Vector(100 * index + line.x2 * step, 22 * step + line.y2 * step)
-    //       )
-    //     );
-    //   });
-    // });
-    //
-    // [0, 30, 60, 90].map((a, index) => {
-    //   let pV1 = new Vector(4, 4);
-    //   let pV2 = new Vector(8, 4).rotate(a, pV1);
-    //
-    //   let v1 = new Vector(pV2.x, pV2.y);
-    //   let v2 = new Vector(pV2.x + 4, pV2.y).rotate(a, v1);
-    //
-    //   pipes.push(
-    //     new Pipe(
-    //       model,
-    //       new Vector(400 + 100 * index + pV1.x * step, 22 * step + pV1.y * step),
-    //       new Vector(400 + 100 * index + pV2.x * step, 22 * step + pV2.y * step)
-    //     )
-    //   );
-    //
-    //   pipes.push(
-    //     new Pipe(
-    //       model,
-    //       new Vector(400 + 100 * index + v1.x * step, 22 * step + v1.y * step),
-    //       new Vector(400 + 100 * index + v2.x * step, 22 * step + v2.y * step)
-    //     )
-    //   );
-    // });
-    //
-    // // horizontal line with angles
-    // [0, 30, 60, 90, 120, 150, 180].map((a, index) => {
-    //   let pV1 = new Vector(4, 4);
-    //   let pV2 = new Vector(8, 4);
-    //
-    //   let v1 = new Vector(8, 4);
-    //   let v2 = new Vector(12, 4).rotate(a, v1);
-    //
-    //   pipes.push(
-    //     new Pipe(
-    //       model,
-    //       new Vector(100 * index + pV1.x * step, 32 * step + pV1.y * step),
-    //       new Vector(100 * index + pV2.x * step, 32 * step + pV2.y * step)
-    //     )
-    //   );
-    //
-    //   pipes.push(
-    //     new Pipe(
-    //       model,
-    //       new Vector(100 * index + v1.x * step, 32 * step + v1.y * step),
-    //       new Vector(100 * index + v2.x * step, 32 * step + v2.y * step)
-    //     )
-    //   );
-    // });
-    //
-    // [0, -30, -60, -90, -120, -150, -180].map((a, index) => {
-    //   let pV1 = new Vector(4, 4);
-    //   let pV2 = new Vector(8, 4);
-    //
-    //   let v1 = new Vector(8, 4);
-    //   let v2 = new Vector(12, 4).rotate(a, v1);
-    //
-    //   pipes.push(
-    //     new Pipe(
-    //       model,
-    //       new Vector(100 * index + pV1.x * step, 42 * step + pV1.y * step),
-    //       new Vector(100 * index + pV2.x * step, 42 * step + pV2.y * step)
-    //     )
-    //   );
-    //
-    //   pipes.push(
-    //     new Pipe(
-    //       model,
-    //       new Vector(100 * index + v1.x * step, 42 * step + v1.y * step),
-    //       new Vector(100 * index + v2.x * step, 42 * step + v2.y * step)
-    //     )
-    //   );
-    // });
+    __spreadArray(__spreadArray([], arraysV90Down, true), arraysV90Up, true).map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 12 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 12 * step + line.y2 * step)));
+        });
+    });
+    arrays90H.map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 18 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 18 * step + line.y2 * step)));
+        });
+    });
+    arrays90V.map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 22 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 22 * step + line.y2 * step)));
+        });
+    });
+    [0, 30, 60, 90].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4).rotate(a, pV1);
+        var v1 = new vect_1.Vector(pV2.x, pV2.y);
+        var v2 = new vect_1.Vector(pV2.x + 4, pV2.y).rotate(a, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(400 + 100 * index + pV1.x * step, 22 * step + pV1.y * step), new vect_1.Vector(400 + 100 * index + pV2.x * step, 22 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(400 + 100 * index + v1.x * step, 22 * step + v1.y * step), new vect_1.Vector(400 + 100 * index + v2.x * step, 22 * step + v2.y * step)));
+    });
+    // horizontal line with angles
+    [0, 30, 60, 90, 120, 150, 180].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4);
+        var v1 = new vect_1.Vector(8, 4);
+        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 32 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 32 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 32 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 32 * step + v2.y * step)));
+    });
+    [0, -30, -60, -90, -120, -150, -180].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4);
+        var v1 = new vect_1.Vector(8, 4);
+        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 42 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 42 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 42 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 42 * step + v2.y * step)));
+    });
 };
 exports.fittingModel = fittingModel;

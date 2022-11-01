@@ -60,6 +60,17 @@ var Canvas = /** @class */function () {
             this.model.mouse.x = e.offsetX;
             this.model.mouse.y = e.offsetY;
         }
+        if (this.model.clicked) {
+            if (this.model.offset) {
+                this.model.offset.x += e.movementX;
+                this.model.offset.y += e.movementY;
+            } else {
+                this.model.offset = {
+                    x: 0,
+                    y: 0
+                };
+            }
+        }
         var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
         if (this.model.config.net.bind) {
             _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
@@ -634,7 +645,6 @@ var Pipe = /** @class */function (_super) {
         [pipe1.from, pipe1.to, pipe2.from, pipe2.to].map(function (end) {
             if (mergingVec) return;
             var overlap = _this.model.overlap.pipeOverlap(end.vec);
-            console.log("overlap", overlap);
             if (overlap.length > 0) {
                 var _end = overlap.find(function (p) {
                     return "pipeEnd" in p && end.getPipe().id !== p.id;
@@ -1093,12 +1103,17 @@ var Fitting = /** @class */function () {
                 points = points.sort(function (a, b) {
                     return (a.x - fitting.center.x) * (b.y - fitting.center.y) - (b.x - fitting.center.x) * (a.y - fitting.center.y);
                 });
-                this.ctx.moveTo(points[0].x, points[0].y);
-                this.ctx.lineTo(points[1].x, points[1].y);
-                this.ctx.lineTo(points[2].x, points[2].y);
-                this.ctx.lineTo(points[3].x, points[3].y);
+                var p0 = this.canvas.getWorldCoordinates(points[0].x, points[0].y);
+                var p1 = this.canvas.getWorldCoordinates(points[1].x, points[1].y);
+                var p2 = this.canvas.getWorldCoordinates(points[2].x, points[2].y);
+                var p3 = this.canvas.getWorldCoordinates(points[3].x, points[3].y);
+                var curve = this.canvas.getWorldCoordinates(topCurve.x, topCurve.y);
+                this.ctx.moveTo(p0.x, p0.y);
+                this.ctx.lineTo(p1.x, p1.y);
+                this.ctx.lineTo(p2.x, p2.y);
+                this.ctx.lineTo(p3.x, p3.y);
                 if (needBezier) {
-                    this.ctx.bezierCurveTo(topCurve.x, topCurve.y, topCurve.x, topCurve.y, points[0].x, points[0].y);
+                    this.ctx.bezierCurveTo(curve.x, curve.y, curve.x, curve.y, p0.x, p0.y);
                 }
                 this.ctx.closePath();
                 this.ctx.stroke();

@@ -87,7 +87,6 @@ class Pipe extends Line<IPipeEnd> {
       if (mergingVec) return;
 
       let overlap = this.model.overlap.pipeOverlap(end.vec);
-      console.log("overlap", overlap);
       if (overlap.length > 0) {
         let _end = overlap.find(
           (p) => "pipeEnd" in p && end.getPipe().id !== p.id

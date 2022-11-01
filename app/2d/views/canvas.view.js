@@ -110,8 +110,8 @@ var Canvas = /** @class */ (function () {
         var iV = 0;
         var maxV = w / step;
         while (iV <= maxV) {
-            var from = this.getWorldCoordinates(step * iV, 0);
-            var to = this.getWorldCoordinates(step * iV, h);
+            var from = this.model.getLocalCoordinates(step * iV, 0);
+            var to = this.model.getLocalCoordinates(step * iV, h);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             iV++;
@@ -120,8 +120,8 @@ var Canvas = /** @class */ (function () {
         var iH = 0;
         var maxH = h / step;
         while (iH <= maxH) {
-            var from = this.getWorldCoordinates(0, step * iH);
-            var to = this.getWorldCoordinates(w, step * iH);
+            var from = this.model.getLocalCoordinates(0, step * iH);
+            var to = this.model.getLocalCoordinates(w, step * iH);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             iH++;
@@ -140,10 +140,10 @@ var Canvas = /** @class */ (function () {
         ctx.beginPath();
         var h = this.container.height;
         var w = this.container.width;
-        var x_From = this.getWorldCoordinates(0, 0);
-        var x_To = this.getWorldCoordinates(w, 0);
-        var y_From = this.getWorldCoordinates(0, 0);
-        var y_To = this.getWorldCoordinates(0, h);
+        var x_From = this.model.getLocalCoordinates(0, 0);
+        var x_To = this.model.getLocalCoordinates(w, 0);
+        var y_From = this.model.getLocalCoordinates(0, 0);
+        var y_To = this.model.getLocalCoordinates(0, h);
         ctx.moveTo(0, x_From.y);
         ctx.lineTo(w, x_To.y);
         ctx.moveTo(y_From.x, 0);
@@ -153,18 +153,18 @@ var Canvas = /** @class */ (function () {
         ctx.restore();
     };
     Canvas.prototype.drawWalls = function () {
-        var _this_1 = this;
+        var _this = this;
         var walls = this.model.walls;
         walls === null || walls === void 0 ? void 0 : walls.map(function (wall) {
-            if (!_this_1.container)
+            if (!_this.container)
                 return;
-            var ctx = _this_1.container.getContext("2d");
+            var ctx = _this.container.getContext("2d");
             if (!ctx)
                 return;
             ctx.save();
             ctx.beginPath();
-            var from = _this_1.getWorldCoordinates(wall.from.x, wall.from.y);
-            var to = _this_1.getWorldCoordinates(wall.from.x, wall.from.y);
+            var from = _this.model.getLocalCoordinates(wall.from.x, wall.from.y);
+            var to = _this.model.getLocalCoordinates(wall.from.x, wall.from.y);
             ctx.moveTo(from.x, from.y);
             ctx.lineTo(to.x, to.y);
             ctx.strokeStyle = wall.color;
@@ -173,29 +173,6 @@ var Canvas = /** @class */ (function () {
             ctx.restore();
         });
     };
-    //TODO: apply scale transformation here
-    Canvas.prototype.getWorldCoordinates = function (x, y) {
-        var _this = this;
-        var scale = function (vec) {
-            return new vect_1.Vector(vec.x * _this.model.scale.amount, vec.y * _this.model.scale.amount);
-        };
-        var translate = function (vec) {
-            return new vect_1.Vector(vec.x + _this.model.offset.x, vec.y + _this.model.offset.y);
-        }.bind(this);
-        var t = new vect_1.Vector(x, y);
-        t = scale(t);
-        // t = rotation(t); TODO order is scaling rotation translation
-        t = translate(t);
-        return t;
-    };
-    //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
-    //       y: (y + this.model.offset.y)  * this.model.scale.amount,
-    // getLocalCoordinates(x: number, y: number) {
-    //   return {
-    //     x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord ,
-    //     y: (y + this.model.offset.y)  * this.model.scale.amount,
-    //   };
-    // }
     Canvas.prototype.initCanvasContainer = function () {
         if (!this.container)
             return;

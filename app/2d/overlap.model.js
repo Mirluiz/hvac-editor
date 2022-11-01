@@ -37,11 +37,13 @@ var Overlap = /** @class */ (function () {
             var _p = null;
             if (pipe.from.vec.sub(vec).length <= bind) {
                 _p = {
+                    id: pipe.id,
                     pipeEnd: pipe.from,
                 };
             }
             if (!_p && pipe.to.vec.sub(vec).length <= bind) {
                 _p = {
+                    id: pipe.id,
                     pipeEnd: pipe.to,
                 };
             }
@@ -51,6 +53,7 @@ var Overlap = /** @class */ (function () {
                     var normPipe = pipe.toOrigin().normalize();
                     var projPipe = pipe.toOrigin().projection(vec.sub(pipe.from.vec));
                     _p = {
+                        id: pipe.id,
                         pipe: {
                             object: pipe,
                             vec: normPipe.multiply(projPipe).sum(pipe.from.vec),

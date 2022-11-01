@@ -134,6 +134,35 @@ class Canvas {
     });
   }
 
+  //TODO: apply scale transformation here
+  getWorldCoordinates(x: number, y: number): IVec {
+    return new Vector(
+      (x + this.offset.x) * this.scale.amount,
+      (y + this.offset.y) * this.scale.amount
+    );
+  }
+
+  //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
+  //       y: (y + this.model.offset.y)  * this.model.scale.amount,
+  getLocalCoordinates(x: number, y: number) {
+    let _this = this;
+
+    let scale = function (vec: IVec): Vector {
+      return new Vector(vec.x * _this.scale.amount, vec.y * _this.scale.amount);
+    };
+
+    let translate = function (vec: IVec): Vector {
+      return new Vector(vec.x + _this.offset.x, vec.y + _this.offset.y);
+    }.bind(this);
+
+    let t = new Vector(x, y);
+    t = scale(t);
+    // t = rotation(t); TODO order is scaling rotation translation
+    t = translate(t);
+
+    return t;
+  }
+
   deletePipe(id: string) {
     this.pipes = this.pipes.filter((p) => p.id !== id);
   }
