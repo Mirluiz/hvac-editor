@@ -682,7 +682,7 @@ var Pipe = /** @class */function (_super) {
         if (angleBetween !== undefined && Math.abs(angleBetween * (180 / Math.PI)) >= 90) {
             canMerge = true;
         } else {
-            console.warn("cant merge");
+            console.warn("cant merge because of angle");
             // alert("Cant merge");
         }
         return canMerge;
@@ -706,17 +706,17 @@ var Pipe = /** @class */function (_super) {
                     if (overlap.pipeEnd.target) return;
                     var newFitting = new fitting_model_1.default(_this.model, overlap.pipeEnd.vec);
                     _this.model.addFitting(newFitting);
-                    newFitting.addPipe(pipe);
-                    newFitting.addPipe(_this);
+                    newFitting.addPipe(overlap.pipeEnd.getPipe());
+                    newFitting.addPipe(end.getPipe());
                     overlap.pipeEnd.target = newFitting;
                     end.target = newFitting;
                 } else if (overlap && overlap.pipe) {
                     var mergePoint = overlap.pipe.vec.bindNet(_this.model.config.net.step);
-                    var newP1 = new Pipe(_this.model, new vect_1.Vector(0, 0).sum(pipe.from.vec), new vect_1.Vector(mergePoint.x, mergePoint.y));
-                    var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y));
+                    var newP1 = new Pipe(_this.model, overlap.pipe.object.from.vec.clone(), new vect_1.Vector(mergePoint.x, mergePoint.y));
+                    var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), overlap.pipe.object.to.vec.clone());
                     _this.model.addPipe(newP1);
                     _this.model.addPipe(newP2);
-                    pipe.delete();
+                    overlap.pipe.object.delete();
                     var newFitting = new fitting_model_1.default(_this.model, mergePoint);
                     _this.model.addFitting(newFitting);
                     newFitting.addPipe(newP1);
@@ -1776,16 +1776,43 @@ var _2Pipes = function _2Pipes(model, pipes, step) {
     });
 };
 var _3Pipes = function _3Pipes(model, pipes, step) {
-    [0].map(function (a, index) {
-        var pV1 = new vect_1.Vector(4, 4);
-        var pV2 = new vect_1.Vector(8, 4);
-        var v1 = new vect_1.Vector(8, 4);
-        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
-        var v3 = new vect_1.Vector(12, 4).rotate(a + 90, v1);
-        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 2 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 2 * step + pV2.y * step)));
-        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 2 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 2 * step + v2.y * step)));
-        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 2 * step + v1.y * step), new vect_1.Vector(100 * index + v3.x * step, 2 * step + v3.y * step)));
-    });
+    // [0].map((a, index) => {
+    //   let pV1 = new Vector(4, 4);
+    //   let pV2 = new Vector(8, 4);
+    //
+    //   let v1 = new Vector(8, 4);
+    //   let v2 = new Vector(12, 4).rotate(a, v1);
+    //   let v3 = new Vector(12, 4).rotate(a + 90, v1);
+    //
+    //   pipes.push(
+    //     new Pipe(
+    //       model,
+    //       new Vector(100 * index + pV1.x * step, 2 * step + pV1.y * step),
+    //       new Vector(100 * index + pV2.x * step, 2 * step + pV2.y * step)
+    //     )
+    //   );
+    //
+    //   pipes.push(
+    //     new Pipe(
+    //       model,
+    //       new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
+    //       new Vector(100 * index + v2.x * step, 2 * step + v2.y * step)
+    //     )
+    //   );
+    //
+    //   pipes.push(
+    //     new Pipe(
+    //       model,
+    //       new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
+    //       new Vector(100 * index + v3.x * step, 2 * step + v3.y * step)
+    //     )
+    //   );
+    // });
+    var pV1 = new pipe_model_1.default(model, new vect_1.Vector(4 * step, 4 * step), new vect_1.Vector(16 * step, 4 * step));
+    var pV2 = new pipe_model_1.default(model, new vect_1.Vector(4 * step, 16 * step), new vect_1.Vector(16 * step, 16 * step));
+    var pV3 = new pipe_model_1.default(model, new vect_1.Vector(16 * step, 16 * step), new vect_1.Vector(16 * step, 4 * step));
+    var pV4 = new pipe_model_1.default(model, new vect_1.Vector(4 * step, 4 * step), new vect_1.Vector(4 * step, 16 * step));
+    pipes.push(pV1, pV2, pV3, pV4);
 };
 
 },{"../2d/models/heating/pipe.model":10,"../geometry/vect":21}],20:[function(require,module,exports){

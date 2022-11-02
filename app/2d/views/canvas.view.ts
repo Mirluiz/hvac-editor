@@ -1,8 +1,5 @@
 import { IVec, Vector } from "../../geometry/vect";
 import CanvasModel from "../models/canvas.model";
-import Valve from "../models/heating/valve.model";
-import Line from "../models/geometry/line.model";
-import Pipe from "../models/heating/pipe.model";
 import PipeView from "./pipe.view";
 import ValveView from "./valve.view";
 import FittingView from "./fitting.view";

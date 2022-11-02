@@ -103,7 +103,7 @@ class Pipe extends Line<IPipeEnd> {
     ) {
       canMerge = true;
     } else {
-      console.warn("cant merge");
+      console.warn("cant merge because of angle");
       // alert("Cant merge");
     }
 
@@ -124,6 +124,7 @@ class Pipe extends Line<IPipeEnd> {
 
       let overlaps = this.model.overlap.pipeOverlap(end.vec);
       overlaps = overlaps.filter((o) => o.id !== end.getPipe().id);
+
       if (overlaps.length > 0) {
         let overlap = overlaps[0];
         if (overlap && overlap.pipeEnd) {
@@ -131,8 +132,8 @@ class Pipe extends Line<IPipeEnd> {
 
           let newFitting = new Fitting(this.model, overlap.pipeEnd.vec);
           this.model.addFitting(newFitting);
-          newFitting.addPipe(pipe);
-          newFitting.addPipe(this);
+          newFitting.addPipe(overlap.pipeEnd.getPipe());
+          newFitting.addPipe(end.getPipe());
 
           overlap.pipeEnd.target = newFitting;
           end.target = newFitting;
@@ -141,19 +142,19 @@ class Pipe extends Line<IPipeEnd> {
 
           let newP1 = new Pipe(
             this.model,
-            new Vector(0, 0).sum(pipe.from.vec),
+            overlap.pipe.object.from.vec.clone(),
             new Vector(mergePoint.x, mergePoint.y)
           );
 
           let newP2 = new Pipe(
             this.model,
             new Vector(mergePoint.x, mergePoint.y),
-            new Vector(pipe.to.vec.x, pipe.to.vec.y)
+            overlap.pipe.object.to.vec.clone()
           );
 
           this.model.addPipe(newP1);
           this.model.addPipe(newP2);
-          pipe.delete();
+          overlap.pipe.object.delete();
 
           let newFitting = new Fitting(this.model, mergePoint);
           this.model.addFitting(newFitting);

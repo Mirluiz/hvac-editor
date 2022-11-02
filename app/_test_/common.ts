@@ -631,36 +631,61 @@ const _2Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
 };
 
 const _3Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
-  [0].map((a, index) => {
-    let pV1 = new Vector(4, 4);
-    let pV2 = new Vector(8, 4);
+  // [0].map((a, index) => {
+  //   let pV1 = new Vector(4, 4);
+  //   let pV2 = new Vector(8, 4);
+  //
+  //   let v1 = new Vector(8, 4);
+  //   let v2 = new Vector(12, 4).rotate(a, v1);
+  //   let v3 = new Vector(12, 4).rotate(a + 90, v1);
+  //
+  //   pipes.push(
+  //     new Pipe(
+  //       model,
+  //       new Vector(100 * index + pV1.x * step, 2 * step + pV1.y * step),
+  //       new Vector(100 * index + pV2.x * step, 2 * step + pV2.y * step)
+  //     )
+  //   );
+  //
+  //   pipes.push(
+  //     new Pipe(
+  //       model,
+  //       new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
+  //       new Vector(100 * index + v2.x * step, 2 * step + v2.y * step)
+  //     )
+  //   );
+  //
+  //   pipes.push(
+  //     new Pipe(
+  //       model,
+  //       new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
+  //       new Vector(100 * index + v3.x * step, 2 * step + v3.y * step)
+  //     )
+  //   );
+  // });
 
-    let v1 = new Vector(8, 4);
-    let v2 = new Vector(12, 4).rotate(a, v1);
-    let v3 = new Vector(12, 4).rotate(a + 90, v1);
+  let pV1 = new Pipe(
+    model,
+    new Vector(4 * step, 4 * step),
+    new Vector(16 * step, 4 * step)
+  );
+  let pV2 = new Pipe(
+    model,
+    new Vector(4 * step, 16 * step),
+    new Vector(16 * step, 16 * step)
+  );
 
-    pipes.push(
-      new Pipe(
-        model,
-        new Vector(100 * index + pV1.x * step, 2 * step + pV1.y * step),
-        new Vector(100 * index + pV2.x * step, 2 * step + pV2.y * step)
-      )
-    );
+  let pV3 = new Pipe(
+    model,
+    new Vector(16 * step, 16 * step),
+    new Vector(16 * step, 4 * step)
+  );
 
-    pipes.push(
-      new Pipe(
-        model,
-        new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
-        new Vector(100 * index + v2.x * step, 2 * step + v2.y * step)
-      )
-    );
+  let pV4 = new Pipe(
+    model,
+    new Vector(4 * step, 4 * step),
+    new Vector(4 * step, 16 * step)
+  );
 
-    pipes.push(
-      new Pipe(
-        model,
-        new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
-        new Vector(100 * index + v3.x * step, 2 * step + v3.y * step)
-      )
-    );
-  });
+  pipes.push(pV1, pV2, pV3, pV4);
 };
