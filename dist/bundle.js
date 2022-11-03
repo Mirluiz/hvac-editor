@@ -1082,14 +1082,14 @@ var Fitting = /** @class */function () {
                     var pipe1Angle = pipe1OppositeEnd.vec.sub(pipe1End.vec).angle();
                     var pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
                     var needBezier = pipe1Angle - pipe2Angle !== 0;
-                    var p1 = this.canvas.model.getWorldCoordinates(fittingNeck1Right.x, fittingNeck1Right.y);
-                    var p2 = this.canvas.model.getWorldCoordinates(fittingNeck1Left.x, fittingNeck1Left.y);
-                    var p3 = this.canvas.model.getWorldCoordinates(fittingNeck2Right.x, fittingNeck2Right.y);
-                    var p4 = this.canvas.model.getWorldCoordinates(fittingNeck2Left.x, fittingNeck2Left.y);
+                    var p1 = this.canvas.model.getLocalCoordinates(fittingNeck1Right.x, fittingNeck1Right.y);
+                    var p2 = this.canvas.model.getLocalCoordinates(fittingNeck1Left.x, fittingNeck1Left.y);
+                    var p3 = this.canvas.model.getLocalCoordinates(fittingNeck2Right.x, fittingNeck2Right.y);
+                    var p4 = this.canvas.model.getLocalCoordinates(fittingNeck2Left.x, fittingNeck2Left.y);
                     this.ctx.moveTo(p1.x, p1.y);
                     if (needBezier) {
                         var curve = fitting1N.perpendicular("right").sum(fitting2N.perpendicular("left")).normalize().multiply(fitting.neck).sum(fitting.center);
-                        var c = this.canvas.model.getWorldCoordinates(curve.x, curve.y);
+                        var c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
                         this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p4.x, p4.y);
                     } else {
                         this.ctx.lineTo(p4.x, p4.y);
@@ -1097,7 +1097,7 @@ var Fitting = /** @class */function () {
                     this.ctx.lineTo(p3.x, p3.y);
                     if (needBezier) {
                         var curve = fitting2N.perpendicular("right").sum(fitting1N.perpendicular("left")).normalize().multiply(fitting.neck).sum(fitting.center);
-                        var c = this.canvas.model.getWorldCoordinates(curve.x, curve.y);
+                        var c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
                         this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p2.x, p2.y);
                     } else {
                         this.ctx.lineTo(p2.x, p2.y);
@@ -1126,57 +1126,23 @@ var Fitting = /** @class */function () {
                     pipe3End = ((_e = pipe3.from.target) === null || _e === void 0 ? void 0 : _e.id) === fitting.id ? pipe3.from : pipe3.to;
                     pipe3OppositeEnd = pipe3End.getOpposite();
                     if (!pipe1End || !pipe2End || !pipe3End || !pipe3OppositeEnd || !pipe1OppositeEnd || !pipe2OppositeEnd) break;
-                    var fitting1N = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
-                    var fitting2N = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
-                    var fitting3N = pipe3OppositeEnd.vec.sub(pipe3End.vec).normalize();
-                    var fittingNeck1 = {
-                        left: fitting1N.multiply(fitting.neck).sub(fitting1N.multiply(fitting.neck).perpendicular("left")).sum(fitting.center),
-                        right: fitting1N.multiply(fitting.neck).sub(fitting1N.multiply(fitting.neck).perpendicular("right")).sum(fitting.center)
-                    };
-                    var fittingNeck2 = {
-                        left: fitting2N.multiply(fitting.neck).sub(fitting2N.perpendicular("left").multiply(fitting.neck)).sum(fitting.center),
-                        right: fitting2N.multiply(fitting.neck).sub(fitting2N.perpendicular("right").multiply(fitting.neck)).sum(fitting.center)
-                    };
-                    var fittingNeck3 = {
-                        left: fitting3N.multiply(fitting.neck).sub(fitting3N.multiply(fitting.neck).perpendicular("left")).sum(fitting.center),
-                        right: fitting3N.multiply(fitting.neck).sub(fitting3N.multiply(fitting.neck).perpendicular("right")).sum(fitting.center)
-                    };
-                    var points = [fittingNeck1.left, fittingNeck1.right];
-                    console.log("");
-                    console.log(fitting1N.angle(fitting2N));
-                    console.log(fitting2N.angle(fitting3N));
-                    console.log(fitting3N.angle(fitting1N));
-                    console.log("");
-                    // if (fitting1N.scalar(fitting2N) === 0) {
-                    //   console.log("-");
-                    //   points.push(fittingNeck2.left, fittingNeck2.right);
-                    // } else {
-                    //   console.log("--");
-                    //   points.push(fittingNeck2.right, fittingNeck2.left);
-                    // }
-                    //
-                    // if (fitting2N.scalar(fitting3N) === 0) {
-                    //   console.log("---");
-                    //   points.push(fittingNeck3.left, fittingNeck3.right);
-                    // } else {
-                    //   console.log("----");
-                    //   points.push(fittingNeck3.right, fittingNeck3.left);
-                    // }
-                    // points = points.sort((a, b) => {
-                    //   return (
-                    //     (a.x - fitting.center.x) * (b.y - fitting.center.y) -
-                    //     (b.x - fitting.center.x) * (a.y - fitting.center.y)
-                    //   );
-                    // });
-                    points.map(function (p, index) {
-                        var wP = _this.canvas.model.getWorldCoordinates(p.x, p.y);
+                    var necks_1 = [];
+                    var fittingNormalized = [pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize(), pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize(), pipe3OppositeEnd.vec.sub(pipe3End.vec).normalize()];
+                    fittingNormalized.sort(function (a, b) {
+                        return a.angle() - b.angle();
+                    });
+                    fittingNormalized.map(function (n) {
+                        necks_1.push(n.multiply(fitting.neck).sub(n.multiply(fitting.neck).perpendicular("right")).sum(fitting.center), n.multiply(fitting.neck).sub(n.multiply(fitting.neck).perpendicular("left")).sum(fitting.center));
+                    });
+                    necks_1.map(function (p, index) {
+                        var wP = _this.canvas.model.getLocalCoordinates(p.x, p.y);
                         if (index === 0) _this.ctx.moveTo(wP.x, wP.y);
                         _this.ctx.lineTo(wP.x, wP.y);
                     });
-                    // this.ctx.closePath();
+                    this.ctx.closePath();
                     this.ctx.stroke();
-                    // this.ctx.fillStyle = "black";
-                    // this.ctx.fill();
+                    this.ctx.fillStyle = "black";
+                    this.ctx.fill();
                 }
                 break;
             case "4d":
@@ -1846,7 +1812,6 @@ var _3Pipes = function _3Pipes(model, pipes, step) {
      *             |
      */
     [[1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1], [-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1]].map(function (combination, combinationIndex) {
-        if (combinationIndex > 0) return;
         combination.map(function (direction, index) {
             var vec1;
             var vec2;
@@ -1884,7 +1849,6 @@ var _3Pipes = function _3Pipes(model, pipes, step) {
             pipes.push(new pipe_model_1.default(model, vec1, vec2));
         });
     });
-    return;
     combinationGroupOffset += yOffsetStep * step;
     /**
      *   90 angle up

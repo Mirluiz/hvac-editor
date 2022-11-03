@@ -651,7 +651,6 @@ const _3Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
     [-1, -1, 1],
     [-1, -1, -1],
   ].map((combination, combinationIndex) => {
-    if (combinationIndex > 0) return;
     combination.map((direction, index) => {
       let vec1: IVec;
       let vec2: IVec;
@@ -693,7 +692,6 @@ const _3Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
       pipes.push(new Pipe(model, vec1, vec2));
     });
   });
-  return;
   combinationGroupOffset += yOffsetStep * step;
 
   /**
