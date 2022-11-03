@@ -7,6 +7,7 @@ import CanvasModel from "../canvas.model";
 class Fitting extends Arc {
   private _pipes: Array<Pipe> = [];
   model: CanvasModel;
+  neck: number = 10;
 
   constructor(model: CanvasModel, center: IVec) {
     super(center);

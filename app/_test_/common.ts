@@ -1,5 +1,5 @@
 import Pipe from "../2d/models/heating/pipe.model";
-import { Vector } from "../geometry/vect";
+import { IVec, Vector } from "../geometry/vect";
 import CanvasModel from "../2d/models/canvas.model";
 import Line from "../2d/models/geometry/line.model";
 
@@ -631,61 +631,257 @@ const _2Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
 };
 
 const _3Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
-  // [0].map((a, index) => {
-  //   let pV1 = new Vector(4, 4);
-  //   let pV2 = new Vector(8, 4);
-  //
-  //   let v1 = new Vector(8, 4);
-  //   let v2 = new Vector(12, 4).rotate(a, v1);
-  //   let v3 = new Vector(12, 4).rotate(a + 90, v1);
-  //
-  //   pipes.push(
-  //     new Pipe(
-  //       model,
-  //       new Vector(100 * index + pV1.x * step, 2 * step + pV1.y * step),
-  //       new Vector(100 * index + pV2.x * step, 2 * step + pV2.y * step)
-  //     )
-  //   );
-  //
-  //   pipes.push(
-  //     new Pipe(
-  //       model,
-  //       new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
-  //       new Vector(100 * index + v2.x * step, 2 * step + v2.y * step)
-  //     )
-  //   );
-  //
-  //   pipes.push(
-  //     new Pipe(
-  //       model,
-  //       new Vector(100 * index + v1.x * step, 2 * step + v1.y * step),
-  //       new Vector(100 * index + v3.x * step, 2 * step + v3.y * step)
-  //     )
-  //   );
-  // });
+  let combinationGroupOffset = step * 2;
+  let yOffsetStep = 10;
+  /**
+   *   90 angle down
+   *
+   *   --------- * ----------
+   *             |
+   *             |
+   *             |
+   */
+  [
+    [1, 1, 1],
+    [1, 1, -1],
+    [1, -1, 1],
+    [1, -1, -1],
+    [-1, 1, 1],
+    [-1, 1, -1],
+    [-1, -1, 1],
+    [-1, -1, -1],
+  ].map((combination, combinationIndex) => {
+    if (combinationIndex > 0) return;
+    combination.map((direction, index) => {
+      let vec1: IVec;
+      let vec2: IVec;
 
-  let pV1 = new Pipe(
-    model,
-    new Vector(4 * step, 4 * step),
-    new Vector(16 * step, 4 * step)
-  );
-  let pV2 = new Pipe(
-    model,
-    new Vector(4 * step, 16 * step),
-    new Vector(16 * step, 16 * step)
-  );
+      if (index === 0) {
+        if (direction === 1) {
+          vec1 = new Vector(4, 4);
+          vec2 = new Vector(8, 4);
+        } else {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(4, 4);
+        }
+      } else if (index === 1) {
+        if (direction === 1) {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(8, 8);
+        } else {
+          vec1 = new Vector(8, 8);
+          vec2 = new Vector(8, 4);
+        }
+      } else {
+        if (direction === 1) {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(12, 4);
+        } else {
+          vec1 = new Vector(12, 4);
+          vec2 = new Vector(8, 4);
+        }
+      }
 
-  let pV3 = new Pipe(
-    model,
-    new Vector(16 * step, 16 * step),
-    new Vector(16 * step, 4 * step)
-  );
+      let offsetX = 100 * (combinationIndex % 8);
+      let offsetY = combinationGroupOffset;
 
-  let pV4 = new Pipe(
-    model,
-    new Vector(4 * step, 4 * step),
-    new Vector(4 * step, 16 * step)
-  );
+      vec1.x = offsetX + vec1.x * step;
+      vec1.y = offsetY + vec1.y * step;
+      vec2.x = offsetX + vec2.x * step;
+      vec2.y = offsetY + vec2.y * step;
 
-  pipes.push(pV1, pV2, pV3, pV4);
+      pipes.push(new Pipe(model, vec1, vec2));
+    });
+  });
+  return;
+  combinationGroupOffset += yOffsetStep * step;
+
+  /**
+   *   90 angle up
+   *
+   *             |
+   *             |
+   *             |
+   *   --------- * ----------
+   */
+  [
+    [1, 1, 1],
+    [1, 1, -1],
+    [1, -1, 1],
+    [1, -1, -1],
+    [-1, 1, 1],
+    [-1, 1, -1],
+    [-1, -1, 1],
+    [-1, -1, -1],
+  ].map((combination, combinationIndex) => {
+    combination.map((direction, index) => {
+      let vec1: IVec;
+      let vec2: IVec;
+
+      if (index === 0) {
+        if (direction === 1) {
+          vec1 = new Vector(4, 4);
+          vec2 = new Vector(8, 4);
+        } else {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(4, 4);
+        }
+      } else if (index === 1) {
+        if (direction === 1) {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(8, 0);
+        } else {
+          vec1 = new Vector(8, 0);
+          vec2 = new Vector(8, 4);
+        }
+      } else {
+        if (direction === 1) {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(12, 4);
+        } else {
+          vec1 = new Vector(12, 4);
+          vec2 = new Vector(8, 4);
+        }
+      }
+
+      let offsetX = 100 * (combinationIndex % 8);
+      let offsetY = combinationGroupOffset;
+
+      vec1.x = offsetX + vec1.x * step;
+      vec1.y = offsetY + vec1.y * step;
+      vec2.x = offsetX + vec2.x * step;
+      vec2.y = offsetY + vec2.y * step;
+
+      pipes.push(new Pipe(model, vec1, vec2));
+    });
+  });
+
+  combinationGroupOffset += yOffsetStep * step;
+
+  /**
+   *   90 angle left
+   *
+   *              |
+   *              |
+   *    --------- *
+   *              |
+   *              |
+   *
+   */
+  [
+    [1, 1, 1],
+    [1, 1, -1],
+    [1, -1, 1],
+    [1, -1, -1],
+    [-1, 1, 1],
+    [-1, 1, -1],
+    [-1, -1, 1],
+    [-1, -1, -1],
+  ].map((combination, combinationIndex) => {
+    combination.map((direction, index) => {
+      let vec1: IVec;
+      let vec2: IVec;
+
+      if (index === 0) {
+        if (direction === 1) {
+          vec1 = new Vector(8, 0);
+          vec2 = new Vector(8, 4);
+        } else {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(8, 0);
+        }
+      } else if (index === 1) {
+        if (direction === 1) {
+          vec1 = new Vector(4, 4);
+          vec2 = new Vector(8, 4);
+        } else {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(4, 4);
+        }
+      } else {
+        if (direction === 1) {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(8, 8);
+        } else {
+          vec1 = new Vector(8, 8);
+          vec2 = new Vector(8, 4);
+        }
+      }
+
+      let offsetX = 100 * (combinationIndex % 8);
+      let offsetY = combinationGroupOffset;
+
+      vec1.x = offsetX + vec1.x * step;
+      vec1.y = offsetY + vec1.y * step;
+      vec2.x = offsetX + vec2.x * step;
+      vec2.y = offsetY + vec2.y * step;
+
+      pipes.push(new Pipe(model, vec1, vec2));
+    });
+  });
+
+  combinationGroupOffset += yOffsetStep * step;
+  /**
+   *   90 angle right
+   *
+   *    |
+   *    |
+   *    *---------
+   *    |
+   *    |
+   *
+   */
+  [
+    [1, 1, 1],
+    [1, 1, -1],
+    [1, -1, 1],
+    [1, -1, -1],
+    [-1, 1, 1],
+    [-1, 1, -1],
+    [-1, -1, 1],
+    [-1, -1, -1],
+  ].map((combination, combinationIndex) => {
+    combination.map((direction, index) => {
+      let vec1: IVec;
+      let vec2: IVec;
+
+      if (index === 0) {
+        if (direction === 1) {
+          vec1 = new Vector(4, 0);
+          vec2 = new Vector(4, 4);
+        } else {
+          vec1 = new Vector(4, 4);
+          vec2 = new Vector(4, 0);
+        }
+      } else if (index === 1) {
+        if (direction === 1) {
+          vec1 = new Vector(4, 4);
+          vec2 = new Vector(8, 4);
+        } else {
+          vec1 = new Vector(8, 4);
+          vec2 = new Vector(4, 4);
+        }
+      } else {
+        if (direction === 1) {
+          vec1 = new Vector(4, 4);
+          vec2 = new Vector(4, 8);
+        } else {
+          vec1 = new Vector(4, 8);
+          vec2 = new Vector(4, 4);
+        }
+      }
+
+      let offsetX = 100 * (combinationIndex % 8);
+      let offsetY = combinationGroupOffset;
+
+      vec1.x = offsetX + vec1.x * step;
+      vec1.y = offsetY + vec1.y * step;
+      vec2.x = offsetX + vec2.x * step;
+      vec2.y = offsetY + vec2.y * step;
+
+      pipes.push(new Pipe(model, vec1, vec2));
+    });
+  });
+
+  combinationGroupOffset += yOffsetStep * step;
 };

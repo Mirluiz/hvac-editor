@@ -28,120 +28,211 @@ class Fitting {
     this.ctx.save();
     this.ctx.beginPath();
 
-    // let c = this.canvas.getWorldCoordinates(fitting.center.x, fitting.center.y);
-
-    // this.ctx.arc(c.x, c.y, fitting.radius, 0, 2 * Math.PI);
-
     switch (fitting.type) {
       case "2d":
-        let pipe1 = fitting.pipes[0];
-        let pipe2 = fitting.pipes[1];
-        let pipe1End, pipe1OppositeEnd, pipe2End, pipe2OppositeEnd;
+        {
+          let pipe1 = fitting.pipes[0];
+          let pipe2 = fitting.pipes[1];
+          let pipe1End, pipe1OppositeEnd, pipe2End, pipe2OppositeEnd;
 
-        if (pipe1.from.target?.id === fitting.id) {
-          pipe1End = pipe1.from;
-          pipe1OppositeEnd = pipe1.to;
-        } else if (pipe1.to.target?.id === fitting.id) {
-          pipe1End = pipe1.to;
-          pipe1OppositeEnd = pipe1.from;
-        }
+          pipe1End =
+            pipe1.from.target?.id === fitting.id ? pipe1.from : pipe1.to;
+          pipe1OppositeEnd = pipe1End.getOpposite();
 
-        if (pipe2.from.target?.id === fitting.id) {
-          pipe2End = pipe2.from;
-          pipe2OppositeEnd = pipe2.to;
-        } else if (pipe2.to.target?.id === fitting.id) {
-          pipe2End = pipe2.to;
-          pipe2OppositeEnd = pipe2.from;
-        }
+          pipe2End =
+            pipe2.from.target?.id === fitting.id ? pipe2.from : pipe2.to;
+          pipe2OppositeEnd = pipe2End.getOpposite();
 
-        if (!pipe1End || !pipe2End || !pipe1OppositeEnd || !pipe2OppositeEnd)
-          break;
+          if (!pipe1End || !pipe2End || !pipe1OppositeEnd || !pipe2OppositeEnd)
+            break;
 
-        let angleBetween = pipe1OppositeEnd.vec
-          .sub(fitting.center)
-          .normalize()
-          .sum(pipe2OppositeEnd.vec.sub(fitting.center).normalize());
+          let fitting1N = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
+          let fitting2N = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
 
-        let v1 = pipe1End.vec
-          .sub(pipe1OppositeEnd.vec)
-          .normalize()
-          .multiply(10);
-        let v2 = pipe2End.vec
-          .sub(pipe2OppositeEnd.vec)
-          .normalize()
-          .multiply(10);
+          let fittingNeck1Left = fitting1N
+            .perpendicular("left")
+            .multiply(fitting.neck)
+            .sum(fitting1N.multiply(fitting.neck))
+            .sum(fitting.center);
+          let fittingNeck1Right = fitting1N
+            .perpendicular("right")
+            .multiply(fitting.neck)
+            .sum(fitting1N.multiply(fitting.neck))
+            .sum(fitting.center);
+          let fittingNeck2Left = fitting2N
+            .perpendicular("left")
+            .multiply(fitting.neck)
+            .sum(fitting2N.multiply(fitting.neck))
+            .sum(fitting.center);
+          let fittingNeck2Right = fitting2N
+            .perpendicular("right")
+            .multiply(fitting.neck)
+            .sum(fitting2N.multiply(fitting.neck))
+            .sum(fitting.center);
 
-        let pipe1Width = v1.perpendicular();
-        let pipe2Width = v2.perpendicular();
-        let pipe1NeckTop = pipe1End.vec.sub(v1).sum(pipe1Width);
-        let pipe1NeckBottom = pipe1End.vec.sub(v1).sub(pipe1Width);
-        let pipe2NeckTop = pipe2End.vec.sub(v2).sub(pipe2Width);
-        let pipe2NeckBottom = pipe2End.vec.sub(v2).sum(pipe2Width);
-        let topCurve = new Vector(-angleBetween.x, -angleBetween.y)
-          .multiply(fitting.width)
-          .sum(fitting.center);
+          let pipe1Angle = pipe1OppositeEnd.vec.sub(pipe1End.vec).angle();
+          let pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
+          let needBezier = pipe1Angle - pipe2Angle !== 0;
 
-        let pipe1Angle = pipe1OppositeEnd.vec.sub(pipe1End.vec).angle();
-        let pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
-        let needBezier = pipe1Angle - pipe2Angle !== 0;
-
-        let points = [
-          pipe1NeckTop,
-          pipe1NeckBottom,
-          pipe2NeckTop,
-          pipe2NeckBottom,
-        ];
-
-        points = points.sort((a, b) => {
-          return (
-            (a.x - fitting.center.x) * (b.y - fitting.center.y) -
-            (b.x - fitting.center.x) * (a.y - fitting.center.y)
+          let p1 = this.canvas.model.getWorldCoordinates(
+            fittingNeck1Right.x,
+            fittingNeck1Right.y
           );
-        });
-
-        let p0 = this.canvas.model.getLocalCoordinates(
-          points[0].x,
-          points[0].y
-        );
-        let p1 = this.canvas.model.getLocalCoordinates(
-          points[1].x,
-          points[1].y
-        );
-        let p2 = this.canvas.model.getLocalCoordinates(
-          points[2].x,
-          points[2].y
-        );
-        let p3 = this.canvas.model.getLocalCoordinates(
-          points[3].x,
-          points[3].y
-        );
-        let curve = this.canvas.model.getLocalCoordinates(
-          topCurve.x,
-          topCurve.y
-        );
-        this.ctx.moveTo(p0.x, p0.y);
-        this.ctx.lineTo(p1.x, p1.y);
-        this.ctx.lineTo(p2.x, p2.y);
-        this.ctx.lineTo(p3.x, p3.y);
-
-        if (needBezier) {
-          this.ctx.bezierCurveTo(
-            curve.x,
-            curve.y,
-            curve.x,
-            curve.y,
-            p0.x,
-            p0.y
+          let p2 = this.canvas.model.getWorldCoordinates(
+            fittingNeck1Left.x,
+            fittingNeck1Left.y
           );
-        }
+          let p3 = this.canvas.model.getWorldCoordinates(
+            fittingNeck2Right.x,
+            fittingNeck2Right.y
+          );
+          let p4 = this.canvas.model.getWorldCoordinates(
+            fittingNeck2Left.x,
+            fittingNeck2Left.y
+          );
 
-        this.ctx.closePath();
-        this.ctx.stroke();
-        this.ctx.fillStyle = "black";
-        this.ctx.fill();
+          this.ctx.moveTo(p1.x, p1.y);
+
+          if (needBezier) {
+            let curve = fitting1N
+              .perpendicular("right")
+              .sum(fitting2N.perpendicular("left"))
+              .normalize()
+              .multiply(fitting.neck)
+              .sum(fitting.center);
+            let c = this.canvas.model.getWorldCoordinates(curve.x, curve.y);
+            this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p4.x, p4.y);
+          } else {
+            this.ctx.lineTo(p4.x, p4.y);
+          }
+
+          this.ctx.lineTo(p3.x, p3.y);
+          if (needBezier) {
+            let curve = fitting2N
+              .perpendicular("right")
+              .sum(fitting1N.perpendicular("left"))
+              .normalize()
+              .multiply(fitting.neck)
+              .sum(fitting.center);
+            let c = this.canvas.model.getWorldCoordinates(curve.x, curve.y);
+            this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p2.x, p2.y);
+          } else {
+            this.ctx.lineTo(p2.x, p2.y);
+          }
+
+          this.ctx.closePath();
+          this.ctx.stroke();
+          this.ctx.fillStyle = "black";
+          this.ctx.fill();
+        }
         break;
       case "3d":
-        console.log("3d");
+        {
+          let pipe1 = fitting.pipes[0];
+          let pipe2 = fitting.pipes[1];
+          let pipe3 = fitting.pipes[2];
+          let pipe1End,
+            pipe1OppositeEnd,
+            pipe2End,
+            pipe2OppositeEnd,
+            pipe3End,
+            pipe3OppositeEnd;
+
+          pipe1End =
+            pipe1.from.target?.id === fitting.id ? pipe1.from : pipe1.to;
+          pipe1OppositeEnd = pipe1End.getOpposite();
+
+          pipe2End =
+            pipe2.from.target?.id === fitting.id ? pipe2.from : pipe2.to;
+          pipe2OppositeEnd = pipe2End.getOpposite();
+
+          pipe3End =
+            pipe3.from.target?.id === fitting.id ? pipe3.from : pipe3.to;
+          pipe3OppositeEnd = pipe3End.getOpposite();
+
+          if (
+            !pipe1End ||
+            !pipe2End ||
+            !pipe3End ||
+            !pipe3OppositeEnd ||
+            !pipe1OppositeEnd ||
+            !pipe2OppositeEnd
+          )
+            break;
+
+          let fitting1N = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
+          let fitting2N = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
+          let fitting3N = pipe3OppositeEnd.vec.sub(pipe3End.vec).normalize();
+
+          let fittingNeck1 = {
+            left: fitting1N
+              .multiply(fitting.neck)
+              .sub(fitting1N.multiply(fitting.neck).perpendicular("left"))
+              .sum(fitting.center),
+            right: fitting1N
+              .multiply(fitting.neck)
+              .sub(fitting1N.multiply(fitting.neck).perpendicular("right"))
+              .sum(fitting.center),
+          };
+          let fittingNeck2 = {
+            left: fitting2N
+              .multiply(fitting.neck)
+              .sub(fitting2N.perpendicular("left").multiply(fitting.neck))
+              .sum(fitting.center),
+            right: fitting2N
+              .multiply(fitting.neck)
+              .sub(fitting2N.perpendicular("right").multiply(fitting.neck))
+              .sum(fitting.center),
+          };
+          let fittingNeck3 = {
+            left: fitting3N
+              .multiply(fitting.neck)
+              .sub(fitting3N.multiply(fitting.neck).perpendicular("left"))
+              .sum(fitting.center),
+            right: fitting3N
+              .multiply(fitting.neck)
+              .sub(fitting3N.multiply(fitting.neck).perpendicular("right"))
+              .sum(fitting.center),
+          };
+
+          let points = [fittingNeck1.left, fittingNeck1.right];
+
+          // if (fitting1N.scalar(fitting2N) === 0) {
+          //   console.log("-");
+          //   points.push(fittingNeck2.left, fittingNeck2.right);
+          // } else {
+          //   console.log("--");
+          //   points.push(fittingNeck2.right, fittingNeck2.left);
+          // }
+          //
+          // if (fitting2N.scalar(fitting3N) === 0) {
+          //   console.log("---");
+          //   points.push(fittingNeck3.left, fittingNeck3.right);
+          // } else {
+          //   console.log("----");
+          //   points.push(fittingNeck3.right, fittingNeck3.left);
+          // }
+
+          // points = points.sort((a, b) => {
+          //   return (
+          //     (a.x - fitting.center.x) * (b.y - fitting.center.y) -
+          //     (b.x - fitting.center.x) * (a.y - fitting.center.y)
+          //   );
+          // });
+
+          points.map((p, index) => {
+            let wP = this.canvas.model.getWorldCoordinates(p.x, p.y);
+
+            if (index === 0) this.ctx.moveTo(wP.x, wP.y);
+
+            this.ctx.lineTo(wP.x, wP.y);
+          });
+
+          // this.ctx.closePath();
+          this.ctx.stroke();
+          // this.ctx.fillStyle = "black";
+          // this.ctx.fill();
+        }
         break;
       case "4d":
         console.log("4d");

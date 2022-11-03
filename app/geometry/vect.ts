@@ -76,6 +76,10 @@ export class Vector implements IVec {
   }
 
   normalize() {
+    if (this.length === 0) {
+      console.warn("v is zero");
+      new Vector(0, 0);
+    }
     return new Vector(this.x / this.length, this.y / this.length);
   }
 
@@ -83,8 +87,16 @@ export class Vector implements IVec {
     return new Vector(this.x * a, this.y * a);
   }
 
-  perpendicular() {
-    return new Vector(this.y, -this.x);
+  perpendicular(side: "left" | "right" = "left") {
+    if (side === "left") {
+      return new Vector(this.y, -this.x);
+    } else {
+      return new Vector(-this.y, this.x);
+    }
+  }
+
+  reverse() {
+    return new Vector(-this.x, -this.y);
   }
 
   clone() {
@@ -137,6 +149,10 @@ export class Vector implements IVec {
 
     return v;
   }
+
+  scalar(v: IVec) {
+    return this.x * v.x + this.y * v.y;
+  }
 }
 
 export interface IVec extends ICoord {
@@ -145,6 +161,8 @@ export interface IVec extends ICoord {
   sub: (v: IVec) => IVec;
   sum: (v: IVec) => IVec;
   distanceToLine: (l: Line) => number;
+  perpendicular: (side: "left" | "right") => IVec;
+  reverse: () => IVec;
   angle: (v?: IVec) => number;
   projection: (v: IVec) => number;
   normalize: () => Vector;
@@ -154,6 +172,7 @@ export interface IVec extends ICoord {
   bindNet: (step: number) => IVec;
   drawVector: () => void;
   rotate: (angle: number, around?: IVec) => IVec;
+  scalar: (v: IVec) => number;
 }
 
 export interface ICoord {
