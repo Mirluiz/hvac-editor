@@ -9,7 +9,9 @@ interface IGhostPipeEnd {
 }
 
 class Pipe extends Line<IGhostPipeEnd> {
-  constructor(from: IVec, to: IVec) {
+  model: CanvasModel;
+
+  constructor(model: CanvasModel, from: IVec, to: IVec) {
     super(
       {
         vec: from,
@@ -30,17 +32,19 @@ class Pipe extends Line<IGhostPipeEnd> {
         },
       }
     );
+
+    this.model = model;
   }
 
   get color() {
     return "pink";
   }
 
-  validation(model: CanvasModel) {
+  validation() {
     let can = true;
 
     [this.from, this.to].map((end) => {
-      let overlaps = model.overlap.pipeOverlap(end.vec);
+      let overlaps = this.model.overlap.pipeOverlap(end.vec);
       if (overlaps.length > 0) {
         let overlap = overlaps[0];
         let angleBetween;
@@ -49,22 +53,24 @@ class Pipe extends Line<IGhostPipeEnd> {
             .getOpposite()
             .vec.sub(end.vec)
             .angle(end.getOpposite().vec.sub(end.vec));
-        }
-        if (angleBetween) {
-          console.log(
-            "Math.abs(angleBetween * (180 / Math.PI))",
-            Math.abs(angleBetween * (180 / Math.PI))
-          );
-        }
-        if (
-          angleBetween !== undefined &&
-          Math.abs(angleBetween * (180 / Math.PI)) < 90
-        ) {
-          console.warn("cant merge because of angle");
+
+          if (
+            angleBetween !== undefined &&
+            Math.abs(angleBetween * (180 / Math.PI)) < 90
+          ) {
+            can = false;
+          }
+        } else if (overlap && overlap.pipe) {
+          can = true;
+        } else {
           can = false;
         }
       }
     });
+
+    if (!can) {
+      console.warn("Cant merge");
+    }
 
     return can;
   }

@@ -55,59 +55,65 @@ class Pipe extends Line<IPipeEnd> {
     return this.to.vec.sub(this.from.vec);
   }
 
-  update(pipe: Pipe) {
+  update() {
     this.model.pipes.map((_pipe) => {
-      if (_pipe.id === pipe.id) return;
+      if (_pipe.id === this.id) return;
 
-      if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
-        pipe.merge(_pipe);
+      if (_pipe.isClose(this.from.vec) || _pipe.isClose(this.to.vec)) {
+        this.merge(_pipe);
       }
     });
 
     this.model.fittings.map((fitting) => {
-      if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
-        pipe.connect(fitting);
+      if (fitting.isClose(this.from.vec) && !this.from.target) {
+        this.connect(fitting);
       }
 
-      if (fitting.isClose(pipe.to.vec) && !pipe.to.target) {
-        pipe.connect(fitting);
+      if (fitting.isClose(this.to.vec) && !this.to.target) {
+        this.connect(fitting);
       }
     });
   }
 
-  beforeMerge(pipe1: Pipe, pipe2: Pipe): boolean {
-    let canMerge = false;
+  validation() {
+    let can = true;
 
-    let mergingVec: IPipeEnd | null = null;
-    let angleBetween;
-
-    [pipe1.from, pipe1.to, pipe2.from, pipe2.to].map((end) => {
-      if (mergingVec) return;
-
+    [this.from, this.to].map((end) => {
       let overlaps = this.model.overlap.pipeOverlap(end.vec);
-      overlaps = overlaps.filter((o) => o.id !== end.getPipe().id);
+      overlaps = overlaps.filter((o) => o.id !== this.id);
       if (overlaps.length > 0) {
         let overlap = overlaps[0];
+        let angleBetween;
         if (overlap && overlap.pipeEnd) {
           angleBetween = overlap.pipeEnd
             .getOpposite()
             .vec.sub(end.vec)
             .angle(end.getOpposite().vec.sub(end.vec));
+          if (
+            angleBetween !== undefined &&
+            Math.abs(angleBetween * (180 / Math.PI)) < 90
+          ) {
+            can = false;
+          }
+        } else if (overlap && overlap.pipe) {
+          can = true;
+        } else {
+          can = false;
         }
       }
     });
 
-    if (
-      angleBetween !== undefined &&
-      Math.abs(angleBetween * (180 / Math.PI)) >= 90
-    ) {
-      canMerge = true;
-    } else {
-      console.warn("cant merge because of angle");
-      // alert("Cant merge");
+    if (!can) {
+      console.warn("Cant merge");
     }
 
-    return canMerge;
+    return can;
+  }
+
+  beforeMerge() {
+    console.log("before merge");
+
+    return this.validation();
   }
 
   afterMerge() {
@@ -117,7 +123,7 @@ class Pipe extends Line<IPipeEnd> {
   merge(pipe: Pipe): boolean {
     let merged = false;
 
-    if (!this.beforeMerge(pipe, this)) return false;
+    if (!this.beforeMerge()) return false;
 
     const run = (end: IPipeEnd) => {
       if (this.id === pipe.id) return;

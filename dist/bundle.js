@@ -183,7 +183,7 @@ var Pipe = /** @class */function () {
         if (this.model.actionObject && this.model.actionObject instanceof pipe_model_1.default) {
             this.model.actionObject.to.vec.x = coord.x;
             this.model.actionObject.to.vec.y = coord.y;
-            if (!this.model.actionObject.validation(this.model)) {
+            if (!this.model.actionObject.validation()) {
                 document.body.style.cursor = "not-allowed";
             } else {
                 document.body.style.cursor = "default";
@@ -197,12 +197,13 @@ var Pipe = /** @class */function () {
         }
         if (this.model.actionObject instanceof pipe_model_1.default) {
             var pipe = new pipe_model_2.default(this.model, this.model.actionObject.from.vec.clone(), this.model.actionObject.to.vec.clone());
-            if (!this.model.actionObject.validation(this.model)) return;
+            if (!this.model.actionObject.validation()) return;
             pipe.type = (_a = this.model.subMode) !== null && _a !== void 0 ? _a : "supply";
-            pipe.update(pipe);
+            if (!pipe.validation()) throw new Error("Cant merge");
+            pipe.update();
             this.model.addPipe(pipe);
         }
-        this.model.actionObject = new pipe_model_1.default(coord.clone(), coord.clone());
+        this.model.actionObject = new pipe_model_1.default(this.model, coord.clone(), coord.clone());
     };
     Pipe.prototype.mouseUp = function (coord) {};
     return Pipe;
@@ -498,7 +499,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var line_model_1 = __importDefault(require("../../geometry/line.model"));
 var Pipe = /** @class */function (_super) {
     __extends(Pipe, _super);
-    function Pipe(from, to) {
+    function Pipe(model, from, to) {
         var _this = _super.call(this, {
             vec: from,
             getPipe: function getPipe() {
@@ -516,6 +517,7 @@ var Pipe = /** @class */function (_super) {
                 return _this.from;
             }
         }) || this;
+        _this.model = model;
         return _this;
     }
     Object.defineProperty(Pipe.prototype, "color", {
@@ -525,25 +527,29 @@ var Pipe = /** @class */function (_super) {
         enumerable: false,
         configurable: true
     });
-    Pipe.prototype.validation = function (model) {
+    Pipe.prototype.validation = function () {
+        var _this = this;
         var can = true;
         [this.from, this.to].map(function (end) {
-            var overlaps = model.overlap.pipeOverlap(end.vec);
+            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
                 var angleBetween = void 0;
                 if (overlap && overlap.pipeEnd) {
                     angleBetween = overlap.pipeEnd.getOpposite().vec.sub(end.vec).angle(end.getOpposite().vec.sub(end.vec));
-                }
-                if (angleBetween) {
-                    console.log("Math.abs(angleBetween * (180 / Math.PI))", Math.abs(angleBetween * (180 / Math.PI)));
-                }
-                if (angleBetween !== undefined && Math.abs(angleBetween * (180 / Math.PI)) < 90) {
-                    console.warn("cant merge because of angle");
+                    if (angleBetween !== undefined && Math.abs(angleBetween * (180 / Math.PI)) < 90) {
+                        can = false;
+                    }
+                } else if (overlap && overlap.pipe) {
+                    can = true;
+                } else {
                     can = false;
                 }
             }
         });
+        if (!can) {
+            console.warn("Cant merge");
+        }
         return can;
     };
     return Pipe;
@@ -691,47 +697,54 @@ var Pipe = /** @class */function (_super) {
     Pipe.prototype.toOrigin = function () {
         return this.to.vec.sub(this.from.vec);
     };
-    Pipe.prototype.update = function (pipe) {
+    Pipe.prototype.update = function () {
+        var _this = this;
         this.model.pipes.map(function (_pipe) {
-            if (_pipe.id === pipe.id) return;
-            if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
-                pipe.merge(_pipe);
+            if (_pipe.id === _this.id) return;
+            if (_pipe.isClose(_this.from.vec) || _pipe.isClose(_this.to.vec)) {
+                _this.merge(_pipe);
             }
         });
         this.model.fittings.map(function (fitting) {
-            if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
-                pipe.connect(fitting);
+            if (fitting.isClose(_this.from.vec) && !_this.from.target) {
+                _this.connect(fitting);
             }
-            if (fitting.isClose(pipe.to.vec) && !pipe.to.target) {
-                pipe.connect(fitting);
+            if (fitting.isClose(_this.to.vec) && !_this.to.target) {
+                _this.connect(fitting);
             }
         });
     };
-    Pipe.prototype.beforeMerge = function (pipe1, pipe2) {
+    Pipe.prototype.validation = function () {
         var _this = this;
-        var canMerge = false;
-        var mergingVec = null;
-        var angleBetween;
-        [pipe1.from, pipe1.to, pipe2.from, pipe2.to].map(function (end) {
-            if (mergingVec) return;
+        var can = true;
+        [this.from, this.to].map(function (end) {
             var overlaps = _this.model.overlap.pipeOverlap(end.vec);
             overlaps = overlaps.filter(function (o) {
-                return o.id !== end.getPipe().id;
+                return o.id !== _this.id;
             });
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
+                var angleBetween = void 0;
                 if (overlap && overlap.pipeEnd) {
                     angleBetween = overlap.pipeEnd.getOpposite().vec.sub(end.vec).angle(end.getOpposite().vec.sub(end.vec));
+                    if (angleBetween !== undefined && Math.abs(angleBetween * (180 / Math.PI)) < 90) {
+                        can = false;
+                    }
+                } else if (overlap && overlap.pipe) {
+                    can = true;
+                } else {
+                    can = false;
                 }
             }
         });
-        if (angleBetween !== undefined && Math.abs(angleBetween * (180 / Math.PI)) >= 90) {
-            canMerge = true;
-        } else {
-            console.warn("cant merge because of angle");
-            // alert("Cant merge");
+        if (!can) {
+            console.warn("Cant merge");
         }
-        return canMerge;
+        return can;
+    };
+    Pipe.prototype.beforeMerge = function () {
+        console.log("before merge");
+        return this.validation();
     };
     Pipe.prototype.afterMerge = function () {
         console.log("after merge");
@@ -739,7 +752,7 @@ var Pipe = /** @class */function (_super) {
     Pipe.prototype.merge = function (pipe) {
         var _this = this;
         var merged = false;
-        if (!this.beforeMerge(pipe, this)) return false;
+        if (!this.beforeMerge()) return false;
         var run = function run(end) {
             if (_this.id === pipe.id) return;
             var overlaps = _this.model.overlap.pipeOverlap(end.vec);

@@ -18,7 +18,7 @@ class Pipe {
       this.model.actionObject.to.vec.x = coord.x;
       this.model.actionObject.to.vec.y = coord.y;
 
-      if (!this.model.actionObject.validation(this.model)) {
+      if (!this.model.actionObject.validation()) {
         document.body.style.cursor = "not-allowed";
       } else {
         document.body.style.cursor = "default";
@@ -37,14 +37,21 @@ class Pipe {
         this.model.actionObject.from.vec.clone(),
         this.model.actionObject.to.vec.clone()
       );
-      if (!this.model.actionObject.validation(this.model)) return;
+      if (!this.model.actionObject.validation()) return;
 
       pipe.type = this.model.subMode ?? "supply";
-      pipe.update(pipe);
+
+      if (!pipe.validation()) throw new Error("Cant merge");
+
+      pipe.update();
       this.model.addPipe(pipe);
     }
 
-    this.model.actionObject = new PipeGhostModel(coord.clone(), coord.clone());
+    this.model.actionObject = new PipeGhostModel(
+      this.model,
+      coord.clone(),
+      coord.clone()
+    );
   }
 
   mouseUp(coord: IVec) {}
