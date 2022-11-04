@@ -17,6 +17,12 @@ class Pipe {
     ) {
       this.model.actionObject.to.vec.x = coord.x;
       this.model.actionObject.to.vec.y = coord.y;
+
+      if (!this.model.actionObject.validation(this.model)) {
+        document.body.style.cursor = "not-allowed";
+      } else {
+        document.body.style.cursor = "default";
+      }
     }
   }
 
@@ -31,10 +37,11 @@ class Pipe {
         this.model.actionObject.from.vec.clone(),
         this.model.actionObject.to.vec.clone()
       );
-      pipe.type = this.model.subMode ?? "supply";
-      this.model.addPipe(pipe);
+      if (!this.model.actionObject.validation(this.model)) return;
 
+      pipe.type = this.model.subMode ?? "supply";
       pipe.update(pipe);
+      this.model.addPipe(pipe);
     }
 
     this.model.actionObject = new PipeGhostModel(coord.clone(), coord.clone());

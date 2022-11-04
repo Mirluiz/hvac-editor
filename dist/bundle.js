@@ -121,6 +121,7 @@ var Canvas = /** @class */function () {
     };
     Canvas.prototype.reset = function () {
         this.model.actionObject = null;
+        document.body.style.cursor = "default";
         this.stats.render();
         this.view.draw();
     };
@@ -182,6 +183,11 @@ var Pipe = /** @class */function () {
         if (this.model.actionObject && this.model.actionObject instanceof pipe_model_1.default) {
             this.model.actionObject.to.vec.x = coord.x;
             this.model.actionObject.to.vec.y = coord.y;
+            if (!this.model.actionObject.validation(this.model)) {
+                document.body.style.cursor = "not-allowed";
+            } else {
+                document.body.style.cursor = "default";
+            }
         }
     };
     Pipe.prototype.mouseDown = function (coord) {
@@ -191,9 +197,10 @@ var Pipe = /** @class */function () {
         }
         if (this.model.actionObject instanceof pipe_model_1.default) {
             var pipe = new pipe_model_2.default(this.model, this.model.actionObject.from.vec.clone(), this.model.actionObject.to.vec.clone());
+            if (!this.model.actionObject.validation(this.model)) return;
             pipe.type = (_a = this.model.subMode) !== null && _a !== void 0 ? _a : "supply";
-            this.model.addPipe(pipe);
             pipe.update(pipe);
+            this.model.addPipe(pipe);
         }
         this.model.actionObject = new pipe_model_1.default(coord.clone(), coord.clone());
     };
@@ -492,7 +499,24 @@ var line_model_1 = __importDefault(require("../../geometry/line.model"));
 var Pipe = /** @class */function (_super) {
     __extends(Pipe, _super);
     function Pipe(from, to) {
-        return _super.call(this, { vec: from }, { vec: to }) || this;
+        var _this = _super.call(this, {
+            vec: from,
+            getPipe: function getPipe() {
+                return _this;
+            },
+            getOpposite: function getOpposite() {
+                return _this.to;
+            }
+        }, {
+            vec: to,
+            getPipe: function getPipe() {
+                return _this;
+            },
+            getOpposite: function getOpposite() {
+                return _this.from;
+            }
+        }) || this;
+        return _this;
     }
     Object.defineProperty(Pipe.prototype, "color", {
         get: function get() {
@@ -501,6 +525,27 @@ var Pipe = /** @class */function (_super) {
         enumerable: false,
         configurable: true
     });
+    Pipe.prototype.validation = function (model) {
+        var can = true;
+        [this.from, this.to].map(function (end) {
+            var overlaps = model.overlap.pipeOverlap(end.vec);
+            if (overlaps.length > 0) {
+                var overlap = overlaps[0];
+                var angleBetween = void 0;
+                if (overlap && overlap.pipeEnd) {
+                    angleBetween = overlap.pipeEnd.getOpposite().vec.sub(end.vec).angle(end.getOpposite().vec.sub(end.vec));
+                }
+                if (angleBetween) {
+                    console.log("Math.abs(angleBetween * (180 / Math.PI))", Math.abs(angleBetween * (180 / Math.PI)));
+                }
+                if (angleBetween !== undefined && Math.abs(angleBetween * (180 / Math.PI)) < 90) {
+                    console.warn("cant merge because of angle");
+                    can = false;
+                }
+            }
+        });
+        return can;
+    };
     return Pipe;
 }(line_model_1.default);
 exports.default = Pipe;
@@ -1075,6 +1120,11 @@ var Fitting = /** @class */function () {
                     if (!pipe1End || !pipe2End || !pipe1OppositeEnd || !pipe2OppositeEnd) break;
                     var fitting1N = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
                     var fitting2N = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
+                    // console.log(
+                    //   "fitting1N.angle();",
+                    //   fitting1N.angle1(fitting2N) * (180 / Math.PI),
+                    //   fitting2N.angle1(fitting1N) * (180 / Math.PI)
+                    // );
                     var fittingNeck1Left = fitting1N.perpendicular("left").multiply(fitting.neck).sum(fitting1N.multiply(fitting.neck)).sum(fitting.center);
                     var fittingNeck1Right = fitting1N.perpendicular("right").multiply(fitting.neck).sum(fitting1N.multiply(fitting.neck)).sum(fitting.center);
                     var fittingNeck2Left = fitting2N.perpendicular("left").multiply(fitting.neck).sum(fitting2N.multiply(fitting.neck)).sum(fitting.center);
@@ -1337,8 +1387,8 @@ var vect_1 = require("../geometry/vect");
 var fittingModel = function fittingModel(model) {
     var pipes = model.pipes;
     var step = model.config.net.step / 2;
-    // _2Pipes(model, pipes, step);
-    _3Pipes(model, pipes, step);
+    _2Pipes(model, pipes, step);
+    // _3Pipes(model, pipes, step);
 };
 exports.fittingModel = fittingModel;
 var _2Pipes = function _2Pipes(model, pipes, step) {
@@ -1755,10 +1805,12 @@ var _2Pipes = function _2Pipes(model, pipes, step) {
         y2: 8
     }]];
     __spreadArray(__spreadArray([], arraysRL90, true), arraysLR90, true).map(function (lines, index) {
+        if (index > 0) return;
         lines.map(function (line) {
             pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, line.y2 * step)));
         });
     });
+    return;
     __spreadArray(__spreadArray([], arraysV90Down, true), arraysV90Up, true).map(function (lines, index) {
         lines.map(function (line) {
             pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 12 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 12 * step + line.y2 * step)));
@@ -2077,6 +2129,9 @@ var Vector = /** @class */function () {
             return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
         }
         return Math.atan2(this.y, this.x);
+    };
+    Vector.prototype.angle1 = function (v) {
+        return Math.atan2(this.x * v.y - v.x * this.y, this.x * v.x + this.y * v.y);
     };
     Vector.prototype.product = function (v) {
         return this.x * v.x + this.y * v.y;

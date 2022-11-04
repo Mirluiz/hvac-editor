@@ -170,6 +170,7 @@ class Canvas {
   reset() {
     this.model.actionObject = null;
 
+    document.body.style.cursor = "default";
     this.stats.render();
     this.view.draw();
   }

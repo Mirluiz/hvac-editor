@@ -49,6 +49,12 @@ class Fitting {
           let fitting1N = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
           let fitting2N = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
 
+          // console.log(
+          //   "fitting1N.angle();",
+          //   fitting1N.angle1(fitting2N) * (180 / Math.PI),
+          //   fitting2N.angle1(fitting1N) * (180 / Math.PI)
+          // );
+
           let fittingNeck1Left = fitting1N
             .perpendicular("left")
             .multiply(fitting.neck)

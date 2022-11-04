@@ -71,6 +71,10 @@ export class Vector implements IVec {
     return Math.atan2(this.y, this.x);
   }
 
+  angle1(v: IVec) {
+    return Math.atan2(this.x * v.y - v.x * this.y, this.x * v.x + this.y * v.y);
+  }
+
   product(v: IVec): number {
     return this.x * v.x + this.y * v.y;
   }
@@ -164,6 +168,7 @@ export interface IVec extends ICoord {
   perpendicular: (side: "left" | "right") => IVec;
   reverse: () => IVec;
   angle: (v?: IVec) => number;
+  angle1: (v: IVec) => number;
   projection: (v: IVec) => number;
   normalize: () => Vector;
   multiply: (n: number) => IVec;
