@@ -24,10 +24,11 @@ class Canvas {
   constructor() {
     this.overlap = new Overlap(this);
 
-    // fittingModel(this);
+    fittingModel(this);
   }
 
-  mouse: ICoord | null = null;
+  mouse: ICoord = { x: 0, y: 0 };
+  netBoundMouse: ICoord = { x: 0, y: 0 };
   canvasSize: ICoord | null = null;
   mouseCanvasRatio: ICoord | null = null;
   scale: {

@@ -67,10 +67,10 @@ class Canvas {
       case "wall":
         break;
       case "pipe":
-        this.pipe.mouseDown(_mouse);
+        this.pipe.mouseDown();
         break;
       case "valve":
-        this.object.mouseDown(_mouse);
+        this.object.mouseDown();
         break;
     }
 
@@ -79,8 +79,13 @@ class Canvas {
   }
 
   mouseMove(e: MouseEvent): void {
-    if (!this.model.mouse) {
+    if (!this.model.mouse || !this.model.netBoundMouse) {
       this.model.mouse = {
+        x: e.offsetX,
+        y: e.offsetY,
+      };
+
+      this.model.netBoundMouse = {
         x: e.offsetX,
         y: e.offsetY,
       };
@@ -101,21 +106,13 @@ class Canvas {
       }
     }
 
-    let worldCoord = this.model.getWorldCoordinates(
-      this.model.mouse.x,
-      this.model.mouse.y
-    );
+    this.model.netBoundMouse.x =
+      Math.round(this.model.mouse.x / this.model.config.net.step) *
+      this.model.config.net.step;
 
-    let _mouse = new Vector(worldCoord.x, worldCoord.y);
-
-    if (this.model.config.net.bind) {
-      _mouse.x =
-        Math.round(_mouse.x / this.model.config.net.step) *
-        this.model.config.net.step;
-      _mouse.y =
-        Math.round(_mouse.y / this.model.config.net.step) *
-        this.model.config.net.step;
-    }
+    this.model.netBoundMouse.y =
+      Math.round(this.model.mouse.y / this.model.config.net.step) *
+      this.model.config.net.step;
 
     switch (this.model.mode) {
       case "default":
@@ -123,14 +120,14 @@ class Canvas {
       case "wall":
         break;
       case "pipe":
-        this.pipe.mouseMove(_mouse);
+        this.pipe.mouseMove();
         break;
       case "valve":
-        this.object.mouseMove(_mouse);
+        this.object.mouseMove();
         break;
     }
 
-    this.model.overlap.update(_mouse);
+    this.model.overlap.update();
 
     this.stats.render();
     this.view.draw();

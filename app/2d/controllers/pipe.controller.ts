@@ -10,7 +10,12 @@ class Pipe {
     this.model = model;
   }
 
-  mouseMove(coord: IVec) {
+  mouseMove() {
+    let coord = new Vector(
+      this.model.netBoundMouse.x,
+      this.model.netBoundMouse.y
+    );
+
     if (
       this.model.actionObject &&
       this.model.actionObject instanceof PipeGhostModel
@@ -26,7 +31,12 @@ class Pipe {
     }
   }
 
-  mouseDown(coord: IVec) {
+  mouseDown() {
+    let coord = new Vector(
+      this.model.netBoundMouse.x,
+      this.model.netBoundMouse.y
+    );
+
     if (!this.model.actionObject) {
       this.model.actionMode = "pipeLaying";
     }

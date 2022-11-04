@@ -45,18 +45,22 @@ var Canvas = /** @class */function () {
             case "wall":
                 break;
             case "pipe":
-                this.pipe.mouseDown(_mouse);
+                this.pipe.mouseDown();
                 break;
             case "valve":
-                this.object.mouseDown(_mouse);
+                this.object.mouseDown();
                 break;
         }
         this.stats.render();
         this.view.draw();
     };
     Canvas.prototype.mouseMove = function (e) {
-        if (!this.model.mouse) {
+        if (!this.model.mouse || !this.model.netBoundMouse) {
             this.model.mouse = {
+                x: e.offsetX,
+                y: e.offsetY
+            };
+            this.model.netBoundMouse = {
                 x: e.offsetX,
                 y: e.offsetY
             };
@@ -75,25 +79,21 @@ var Canvas = /** @class */function () {
                 };
             }
         }
-        var worldCoord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
-        var _mouse = new vect_1.Vector(worldCoord.x, worldCoord.y);
-        if (this.model.config.net.bind) {
-            _mouse.x = Math.round(_mouse.x / this.model.config.net.step) * this.model.config.net.step;
-            _mouse.y = Math.round(_mouse.y / this.model.config.net.step) * this.model.config.net.step;
-        }
+        this.model.netBoundMouse.x = Math.round(this.model.mouse.x / this.model.config.net.step) * this.model.config.net.step;
+        this.model.netBoundMouse.y = Math.round(this.model.mouse.y / this.model.config.net.step) * this.model.config.net.step;
         switch (this.model.mode) {
             case "default":
                 break;
             case "wall":
                 break;
             case "pipe":
-                this.pipe.mouseMove(_mouse);
+                this.pipe.mouseMove();
                 break;
             case "valve":
-                this.object.mouseMove(_mouse);
+                this.object.mouseMove();
                 break;
         }
-        this.model.overlap.update(_mouse);
+        this.model.overlap.update();
         this.stats.render();
         this.view.draw();
     };
@@ -134,7 +134,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":23,"../models/canvas.model":6,"../views/canvas.view":16,"../views/stats.view":20,"./object.controller":3,"./pipe.controller":4}],2:[function(require,module,exports){
+},{"../../geometry/vect":24,"../models/canvas.model":6,"../views/canvas.view":16,"../views/stats.view":20,"./object.controller":3,"./pipe.controller":4}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -178,24 +178,41 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../geometry/vect");
 var valve_model_1 = __importDefault(require("../models/ghost/heating/valve.model"));
 var valve_model_2 = __importDefault(require("../models/heating/valve.model"));
 var Pipe = /** @class */function () {
     function Pipe(model) {
         this.model = model;
     }
-    Pipe.prototype.mouseMove = function (coord) {
+    Pipe.prototype.mouseMove = function () {
+        var bV = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+        var v = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
         if (this.model.placingObject && this.model.placingObject instanceof valve_model_1.default) {
-            this.model.placingObject.center.x = coord.x;
-            this.model.placingObject.center.y = coord.y;
-            // if (!this.model.placingObject.validation()) {
-            //   document.body.style.cursor = "not-allowed";
-            // } else {
-            //   document.body.style.cursor = "default";
-            // }
+            var overlaps = this.model.overlap.pipeOverlap(v);
+            var pipeFound = null;
+            this.model.placingObject.pipes = [];
+            for (var _i = 0, overlaps_1 = overlaps; _i < overlaps_1.length; _i++) {
+                var overlap = overlaps_1[_i];
+                if (overlap.pipe) {
+                    pipeFound = new vect_1.Vector(overlap.pipe.vec.x, overlap.pipe.vec.y);
+                    this.model.placingObject.addPipe(overlap.pipe.object);
+                    break;
+                }
+            }
+            if (pipeFound) {
+                document.body.style.cursor = "default";
+                this.model.placingObject.center.x = pipeFound.x;
+                this.model.placingObject.center.y = pipeFound.y;
+            } else {
+                this.model.placingObject.center.x = bV.x;
+                this.model.placingObject.center.y = bV.y;
+                document.body.style.cursor = "not-allowed";
+            }
         }
     };
-    Pipe.prototype.mouseDown = function (coord) {
+    Pipe.prototype.mouseDown = function () {
+        // let v = new Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y)
         if (this.model.placingObject instanceof valve_model_1.default) {
             if (!this.model.placingObject.validation()) {
                 console.log("Validation error");
@@ -210,20 +227,22 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../models/ghost/heating/valve.model":10,"../models/heating/valve.model":13}],4:[function(require,module,exports){
+},{"../../geometry/vect":24,"../models/ghost/heating/valve.model":10,"../models/heating/valve.model":13}],4:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../geometry/vect");
 var pipe_model_1 = __importDefault(require("../models/ghost/heating/pipe.model"));
 var pipe_model_2 = __importDefault(require("../models/heating/pipe.model"));
 var Pipe = /** @class */function () {
     function Pipe(model) {
         this.model = model;
     }
-    Pipe.prototype.mouseMove = function (coord) {
+    Pipe.prototype.mouseMove = function () {
+        var coord = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
         if (this.model.actionObject && this.model.actionObject instanceof pipe_model_1.default) {
             this.model.actionObject.to.vec.x = coord.x;
             this.model.actionObject.to.vec.y = coord.y;
@@ -234,8 +253,9 @@ var Pipe = /** @class */function () {
             }
         }
     };
-    Pipe.prototype.mouseDown = function (coord) {
+    Pipe.prototype.mouseDown = function () {
         var _a;
+        var coord = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
         if (!this.model.actionObject) {
             this.model.actionMode = "pipeLaying";
         }
@@ -254,7 +274,7 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../models/ghost/heating/pipe.model":9,"../models/heating/pipe.model":12}],5:[function(require,module,exports){
+},{"../../geometry/vect":24,"../models/ghost/heating/pipe.model":9,"../models/heating/pipe.model":12}],5:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -283,6 +303,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var valve_model_1 = __importDefault(require("./ghost/heating/valve.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
+var common_1 = require("../../_test_/common");
 var Canvas = /** @class */function () {
     function Canvas() {
         this._walls = [];
@@ -294,7 +315,8 @@ var Canvas = /** @class */function () {
         this.actionMode = null;
         this.actionObject = null;
         this.placingObject = null;
-        this.mouse = null;
+        this.mouse = { x: 0, y: 0 };
+        this.netBoundMouse = { x: 0, y: 0 };
         this.canvasSize = null;
         this.mouseCanvasRatio = null;
         this.scale = {
@@ -319,7 +341,7 @@ var Canvas = /** @class */function () {
             }
         };
         this.overlap = new overlap_model_1.default(this);
-        // fittingModel(this);
+        (0, common_1.fittingModel)(this);
     }
     Object.defineProperty(Canvas.prototype, "walls", {
         get: function get() {
@@ -446,7 +468,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":23,"../overlap.model":15,"./ghost/heating/valve.model":10}],7:[function(require,module,exports){
+},{"../../_test_/common":22,"../../geometry/vect":24,"../overlap.model":15,"./ghost/heating/valve.model":10}],7:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -649,14 +671,32 @@ var Valve = /** @class */function (_super) {
     __extends(Valve, _super);
     function Valve(model, center) {
         var _this = _super.call(this, center) || this;
+        _this._pipes = [];
+        _this.width = 10;
+        _this.length = 20;
         _this.model = model;
         return _this;
     }
+    Object.defineProperty(Valve.prototype, "pipes", {
+        get: function get() {
+            return this._pipes;
+        },
+        set: function set(value) {
+            this._pipes = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Valve.prototype.validation = function () {
         var overlaps = this.model.overlap.pipeOverlap(this.center);
-        return overlaps.length > 0 && !overlaps.find(function (o) {
+        return overlaps.length > 0 && Boolean(overlaps.find(function (o) {
             return o.pipe;
-        });
+        }));
+    };
+    Valve.prototype.addPipe = function (pipe) {
+        this._pipes.push(pipe);
+        this.pipes = this._pipes;
+        return this.pipes[this.pipes.length - 1];
     };
     return Valve;
 }(arc_model_1.default);
@@ -929,7 +969,7 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../../../geometry/vect":23,"../geometry/line.model":8,"./fitting.model":11}],13:[function(require,module,exports){
+},{"../../../geometry/vect":24,"../geometry/line.model":8,"./fitting.model":11}],13:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -964,7 +1004,8 @@ var Valve = /** @class */function (_super) {
     function Valve(model, center) {
         var _this = _super.call(this, center) || this;
         _this._pipes = [];
-        _this.neck = 10;
+        _this.width = 10;
+        _this.length = 20;
         _this.model = model;
         return _this;
     }
@@ -1025,7 +1066,7 @@ var Valve = /** @class */function (_super) {
 }(arc_model_1.default);
 exports.default = Valve;
 
-},{"../../../geometry/vect":23,"../geometry/arc.model":7,"./pipe.model":12}],14:[function(require,module,exports){
+},{"../../../geometry/vect":24,"../geometry/arc.model":7,"./pipe.model":12}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1038,7 +1079,7 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":25}],15:[function(require,module,exports){
+},{"../../utils":26}],15:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -1051,6 +1092,7 @@ var __spreadArray = undefined && undefined.__spreadArray || function (to, from, 
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../geometry/vect");
 var Overlap = /** @class */function () {
     function Overlap(model) {
         this.mouse = null;
@@ -1062,10 +1104,10 @@ var Overlap = /** @class */function () {
         this.netBoundList = [];
         this.model = model;
     }
-    Overlap.prototype.update = function (mouse) {
-        this.mouse = mouse;
+    Overlap.prototype.update = function () {
+        var v = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
         this.wallsOverlap();
-        this.list = __spreadArray([], this.pipeOverlap(this.mouse), true);
+        this.list = __spreadArray([], this.pipeOverlap(v), true);
         this.updateList();
         // this.updateNetBoundList();
     };
@@ -1117,7 +1159,7 @@ var Overlap = /** @class */function () {
 }();
 exports.default = Overlap;
 
-},{}],16:[function(require,module,exports){
+},{"../geometry/vect":24}],16:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1300,7 +1342,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":23,"./fitting.view":17,"./pipe.view":19,"./valve.view":21}],17:[function(require,module,exports){
+},{"../../geometry/vect":24,"./fitting.view":17,"./pipe.view":19,"./valve.view":21}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1560,22 +1602,45 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var valve_model_1 = __importDefault(require("../models/ghost/heating/valve.model"));
+var vect_1 = require("../../geometry/vect");
 var Valve = /** @class */function () {
     function Valve(view, model, ctx) {
         this.canvas = view;
         this.ctx = ctx;
     }
     Valve.prototype.drawGhost = function (valve) {
+        var _this = this;
+        var _a;
         this.ctx.save();
         this.ctx.beginPath();
-        this.ctx.save();
-        this.ctx.beginPath();
-        var c = this.canvas.model.getLocalCoordinates(valve.center.x, valve.center.y);
-        this.ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
-        this.ctx.fillStyle = "grey";
-        this.ctx.fill();
-        this.ctx.restore();
+        var normVector, normVectorReversed;
+        if (valve.pipes.length == 0) {
+            normVector = new vect_1.Vector(1, 0);
+            normVectorReversed = normVector.reverse();
+        } else {
+            var valvePipe = valve.pipes[0]; // get one from two pipe for angle detection
+            var pipeEnd = ((_a = valvePipe.from.target) === null || _a === void 0 ? void 0 : _a.id) === valve.id ? valvePipe.from : valvePipe.to;
+            var pipeOppositeEnd = pipeEnd.getOpposite();
+            normVector = pipeOppositeEnd.vec.sub(pipeEnd.vec).normalize();
+            normVectorReversed = normVector.reverse();
+        }
+        var points = [];
+        points.push(normVector.multiply(valve.width).perpendicular("left").sum(normVector.multiply(valve.length)).sum(valve.center), normVector.multiply(valve.width).perpendicular("right").sum(normVector.multiply(valve.length)).sum(valve.center), normVector.sum(valve.center), normVectorReversed.multiply(valve.width).perpendicular("left").sum(normVectorReversed.multiply(valve.length)).sum(valve.center), normVectorReversed.multiply(valve.width).perpendicular("right").sum(normVectorReversed.multiply(valve.length)).sum(valve.center), normVector.sum(valve.center));
+        points.map(function (p, index) {
+            var wP = _this.canvas.model.getLocalCoordinates(p.x, p.y);
+            if (index === 0) _this.ctx.moveTo(wP.x, wP.y);
+            _this.ctx.lineTo(wP.x, wP.y);
+        });
+        this.ctx.lineWidth = 2;
+        this.ctx.closePath();
         this.ctx.stroke();
+        this.ctx.beginPath();
+        var wP = this.canvas.model.getLocalCoordinates(valve.center.x, valve.center.y);
+        this.ctx.moveTo(wP.x, wP.y);
+        this.ctx.arc(wP.x, wP.y, valve.radius, 0, 2 * Math.PI);
+        this.ctx.stroke();
+        this.ctx.fillStyle = "white";
+        this.ctx.fill();
         this.ctx.restore();
     };
     Valve.prototype.drawValves = function () {
@@ -1585,11 +1650,32 @@ var Valve = /** @class */function () {
         });
     };
     Valve.prototype.drawValve = function (valve) {
+        var _this = this;
+        var _a;
+        if (valve.pipes.length == 0) return;
         this.ctx.save();
         this.ctx.beginPath();
-        var c = this.canvas.model.getLocalCoordinates(valve.center.x, valve.center.y);
-        this.ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
-        this.ctx.fillStyle = valve.color;
+        var valvePipe = valve.pipes[0]; // get one from two pipe for angle detection
+        var pipeEnd = ((_a = valvePipe.from.target) === null || _a === void 0 ? void 0 : _a.id) === valve.id ? valvePipe.from : valvePipe.to;
+        var pipeOppositeEnd = pipeEnd.getOpposite();
+        var normVector = pipeOppositeEnd.vec.sub(pipeEnd.vec).normalize();
+        var normVectorReversed = normVector.reverse();
+        var points = [];
+        points.push(normVector.multiply(valve.width).perpendicular("left").sum(normVector.multiply(valve.length)).sum(valve.center), normVector.multiply(valve.width).perpendicular("right").sum(normVector.multiply(valve.length)).sum(valve.center), normVector.sum(valve.center), normVectorReversed.multiply(valve.width).perpendicular("left").sum(normVectorReversed.multiply(valve.length)).sum(valve.center), normVectorReversed.multiply(valve.width).perpendicular("right").sum(normVectorReversed.multiply(valve.length)).sum(valve.center), normVector.sum(valve.center));
+        points.map(function (p, index) {
+            var wP = _this.canvas.model.getLocalCoordinates(p.x, p.y);
+            if (index === 0) _this.ctx.moveTo(wP.x, wP.y);
+            _this.ctx.lineTo(wP.x, wP.y);
+        });
+        this.ctx.lineWidth = 2;
+        this.ctx.closePath();
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        var wP = this.canvas.model.getLocalCoordinates(valve.center.x, valve.center.y);
+        this.ctx.moveTo(wP.x, wP.y);
+        this.ctx.arc(wP.x, wP.y, valve.radius, 0, 2 * Math.PI);
+        this.ctx.stroke();
+        this.ctx.fillStyle = "white";
         this.ctx.fill();
         this.ctx.restore();
     };
@@ -1603,7 +1689,691 @@ var Valve = /** @class */function () {
 }();
 exports.default = Valve;
 
-},{"../models/ghost/heating/valve.model":10}],22:[function(require,module,exports){
+},{"../../geometry/vect":24,"../models/ghost/heating/valve.model":10}],22:[function(require,module,exports){
+"use strict";
+
+var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fittingModel = void 0;
+var pipe_model_1 = __importDefault(require("../2d/models/heating/pipe.model"));
+var vect_1 = require("../geometry/vect");
+var fittingModel = function fittingModel(model) {
+    var pipes = model.pipes;
+    var step = model.config.net.step / 2;
+    _2Pipes(model, pipes, step);
+    // _3Pipes(model, pipes, step);
+};
+exports.fittingModel = fittingModel;
+var _2Pipes = function _2Pipes(model, pipes, step) {
+    /**
+     * 90 angle from right to left
+     * ------ *
+     *        |
+     *        |
+     *        |
+     *
+     * Y+ is bottom
+     */
+    var arraysRL90 = [
+    /*
+      1 - from left to right
+      2 - from top to bottom
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 10,
+        y1: 4,
+        x2: 10,
+        y2: 10
+    }],
+    /*
+      1 - from right to left
+      2 - from top to bottom
+     */
+    [{
+        x1: 10,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 10,
+        y1: 4,
+        x2: 10,
+        y2: 10
+    }],
+    /*
+      1 - from left to right
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 10,
+        y1: 10,
+        x2: 10,
+        y2: 4
+    }],
+    /*
+      1 - from right to left
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 10,
+        y1: 10,
+        x2: 10,
+        y2: 4
+    }]];
+    /**
+     *  90 angle from left to right
+     *    * -------
+     *    |
+     *    |
+     *    |
+     */
+    var arraysLR90 = [
+    /*
+      2 - from left to right
+      1 - from top to bottom
+     */
+    [{
+        x1: 10,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 4,
+        x2: 4,
+        y2: 10
+    }],
+    /*
+      1 - from left top to right
+      2 - from top to bottom
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 4,
+        x2: 4,
+        y2: 10
+    }],
+    /*
+      1 - from right to left
+      2 - from bottom to top
+     */
+    [{
+        x1: 10,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 10,
+        x2: 4,
+        y2: 4
+    }],
+    /*
+      1 - from left to right
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 10,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 10,
+        x2: 4,
+        y2: 4
+    }]];
+    /**
+     *  Down V from 90 angle
+     *           *
+     *          / \
+     *        /    \
+     *      /       \
+     *    /          \
+     */
+    var arraysV90Down = [
+    /*
+      1 - from left to right,
+      2 - from left to right
+     */
+    [{
+        x1: 4,
+        y1: 6,
+        x2: 8,
+        y2: 2
+    }, {
+        x1: 8,
+        y1: 2,
+        x2: 12,
+        y2: 6
+    }],
+    /*
+      1 - from right to left,
+      2 - from left to right,
+     */
+    [{
+        x1: 8,
+        y1: 2,
+        x2: 4,
+        y2: 6
+    }, {
+        x1: 8,
+        y1: 2,
+        x2: 12,
+        y2: 6
+    }],
+    /*
+     1 - from left to right,
+     2 - from right to left,
+    */
+    [{
+        x1: 4,
+        y1: 6,
+        x2: 8,
+        y2: 2
+    }, {
+        x1: 12,
+        y1: 6,
+        x2: 8,
+        y2: 2
+    }],
+    /*
+     1 - from right to left,
+     2 - from right to left,
+    */
+    [{
+        x1: 8,
+        y1: 2,
+        x2: 4,
+        y2: 6
+    }, {
+        x1: 12,
+        y1: 6,
+        x2: 8,
+        y2: 2
+    }]];
+    /**
+     *  V form 90 angle
+     *   \       /
+     *    \     /
+     *     \   /
+     *      \ /
+     *       *
+     */
+    var arraysV90Up = [
+    /*
+      1 - from left to right,
+      2 - from left to right
+     */
+    [{
+        x1: 4,
+        y1: 2,
+        x2: 8,
+        y2: 6
+    }, {
+        x1: 8,
+        y1: 6,
+        x2: 12,
+        y2: 2
+    }],
+    /*
+      1 - from right to left,
+      2 - from left to right,
+     */
+    [{
+        x1: 8,
+        y1: 6,
+        x2: 4,
+        y2: 2
+    }, {
+        x1: 8,
+        y1: 6,
+        x2: 12,
+        y2: 2
+    }],
+    /*
+     1 - from left to right,
+     2 - from right to left,
+    */
+    [{
+        x1: 4,
+        y1: 2,
+        x2: 8,
+        y2: 6
+    }, {
+        x1: 12,
+        y1: 2,
+        x2: 8,
+        y2: 6
+    }],
+    /*
+     1 - from right to left,
+     2 - from right to left,
+    */
+    [{
+        x1: 8,
+        y1: 6,
+        x2: 4,
+        y2: 2
+    }, {
+        x1: 12,
+        y1: 2,
+        x2: 8,
+        y2: 6
+    }]];
+    /**
+     * Horizontal same angle
+     *  --------- * ----------
+     */
+    var arrays90H = [
+    /*
+      1 - from left to right
+      2 - from left to right,
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 8,
+        y2: 4
+    }, {
+        x1: 8,
+        y1: 4,
+        x2: 12,
+        y2: 4
+    }],
+    /*
+      1 - from right to left
+      2 - from left to right,
+     */
+    [{
+        x1: 8,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 8,
+        y1: 4,
+        x2: 12,
+        y2: 4
+    }],
+    /*
+      1 - from left to right
+      2 - from right to left,
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 8,
+        y2: 4
+    }, {
+        x1: 12,
+        y1: 4,
+        x2: 8,
+        y2: 4
+    }],
+    /*
+      1 - from right to left
+      2 - from right to left,
+     */
+    [{
+        x1: 8,
+        y1: 4,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 12,
+        y1: 4,
+        x2: 8,
+        y2: 4
+    }]];
+    /**
+     *  Vertical same angle
+     *    |
+     *    |
+     *    |
+     *    *
+     *    |
+     *    |
+     *    |
+     */
+    var arrays90V = [
+    /*
+      1 - from top to bottom
+      2 - from top to bottom
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 4,
+        y2: 8
+    }, {
+        x1: 4,
+        y1: 8,
+        x2: 4,
+        y2: 12
+    }],
+    /*
+      1 - from bottom to top
+      2 - from top to bottom
+     */
+    [{
+        x1: 4,
+        y1: 8,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 8,
+        x2: 4,
+        y2: 12
+    }],
+    /*
+      1 - from top to bottom
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 4,
+        x2: 4,
+        y2: 8
+    }, {
+        x1: 4,
+        y1: 12,
+        x2: 4,
+        y2: 8
+    }],
+    /*
+      1 - from bottom to top
+      2 - from bottom to top
+     */
+    [{
+        x1: 4,
+        y1: 8,
+        x2: 4,
+        y2: 4
+    }, {
+        x1: 4,
+        y1: 12,
+        x2: 4,
+        y2: 8
+    }]];
+    __spreadArray(__spreadArray([], arraysRL90, true), arraysLR90, true).map(function (lines, index) {
+        if (index > 0) return;
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, line.y2 * step)));
+        });
+    });
+    return;
+    __spreadArray(__spreadArray([], arraysV90Down, true), arraysV90Up, true).map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 12 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 12 * step + line.y2 * step)));
+        });
+    });
+    arrays90H.map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 18 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 18 * step + line.y2 * step)));
+        });
+    });
+    arrays90V.map(function (lines, index) {
+        lines.map(function (line) {
+            pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 22 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 22 * step + line.y2 * step)));
+        });
+    });
+    [0, 30, 60, 90].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4).rotate(a, pV1);
+        var v1 = new vect_1.Vector(pV2.x, pV2.y);
+        var v2 = new vect_1.Vector(pV2.x + 4, pV2.y).rotate(a, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(400 + 100 * index + pV1.x * step, 22 * step + pV1.y * step), new vect_1.Vector(400 + 100 * index + pV2.x * step, 22 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(400 + 100 * index + v1.x * step, 22 * step + v1.y * step), new vect_1.Vector(400 + 100 * index + v2.x * step, 22 * step + v2.y * step)));
+    });
+    // horizontal line with angles
+    [0, 30, 60, 90, 120, 150, 180].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4);
+        var v1 = new vect_1.Vector(8, 4);
+        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 32 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 32 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 32 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 32 * step + v2.y * step)));
+    });
+    [0, -30, -60, -90, -120, -150, -180].map(function (a, index) {
+        var pV1 = new vect_1.Vector(4, 4);
+        var pV2 = new vect_1.Vector(8, 4);
+        var v1 = new vect_1.Vector(8, 4);
+        var v2 = new vect_1.Vector(12, 4).rotate(a, v1);
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + pV1.x * step, 42 * step + pV1.y * step), new vect_1.Vector(100 * index + pV2.x * step, 42 * step + pV2.y * step)));
+        pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + v1.x * step, 42 * step + v1.y * step), new vect_1.Vector(100 * index + v2.x * step, 42 * step + v2.y * step)));
+    });
+};
+var _3Pipes = function _3Pipes(model, pipes, step) {
+    var combinationGroupOffset = step * 2;
+    var yOffsetStep = 10;
+    /**
+     *   90 angle down
+     *
+     *   --------- * ----------
+     *             |
+     *             |
+     *             |
+     */
+    [[1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1], [-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1]].map(function (combination, combinationIndex) {
+        combination.map(function (direction, index) {
+            var vec1;
+            var vec2;
+            if (index === 0) {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(4, 4);
+                    vec2 = new vect_1.Vector(8, 4);
+                } else {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(4, 4);
+                }
+            } else if (index === 1) {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(8, 8);
+                } else {
+                    vec1 = new vect_1.Vector(8, 8);
+                    vec2 = new vect_1.Vector(8, 4);
+                }
+            } else {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(12, 4);
+                } else {
+                    vec1 = new vect_1.Vector(12, 4);
+                    vec2 = new vect_1.Vector(8, 4);
+                }
+            }
+            var offsetX = 100 * (combinationIndex % 8);
+            var offsetY = combinationGroupOffset;
+            vec1.x = offsetX + vec1.x * step;
+            vec1.y = offsetY + vec1.y * step;
+            vec2.x = offsetX + vec2.x * step;
+            vec2.y = offsetY + vec2.y * step;
+            pipes.push(new pipe_model_1.default(model, vec1, vec2));
+        });
+    });
+    combinationGroupOffset += yOffsetStep * step;
+    /**
+     *   90 angle up
+     *
+     *             |
+     *             |
+     *             |
+     *   --------- * ----------
+     */
+    [[1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1], [-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1]].map(function (combination, combinationIndex) {
+        combination.map(function (direction, index) {
+            var vec1;
+            var vec2;
+            if (index === 0) {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(4, 4);
+                    vec2 = new vect_1.Vector(8, 4);
+                } else {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(4, 4);
+                }
+            } else if (index === 1) {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(8, 0);
+                } else {
+                    vec1 = new vect_1.Vector(8, 0);
+                    vec2 = new vect_1.Vector(8, 4);
+                }
+            } else {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(12, 4);
+                } else {
+                    vec1 = new vect_1.Vector(12, 4);
+                    vec2 = new vect_1.Vector(8, 4);
+                }
+            }
+            var offsetX = 100 * (combinationIndex % 8);
+            var offsetY = combinationGroupOffset;
+            vec1.x = offsetX + vec1.x * step;
+            vec1.y = offsetY + vec1.y * step;
+            vec2.x = offsetX + vec2.x * step;
+            vec2.y = offsetY + vec2.y * step;
+            pipes.push(new pipe_model_1.default(model, vec1, vec2));
+        });
+    });
+    combinationGroupOffset += yOffsetStep * step;
+    /**
+     *   90 angle left
+     *
+     *              |
+     *              |
+     *    --------- *
+     *              |
+     *              |
+     *
+     */
+    [[1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1], [-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1]].map(function (combination, combinationIndex) {
+        combination.map(function (direction, index) {
+            var vec1;
+            var vec2;
+            if (index === 0) {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(8, 0);
+                    vec2 = new vect_1.Vector(8, 4);
+                } else {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(8, 0);
+                }
+            } else if (index === 1) {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(4, 4);
+                    vec2 = new vect_1.Vector(8, 4);
+                } else {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(4, 4);
+                }
+            } else {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(8, 8);
+                } else {
+                    vec1 = new vect_1.Vector(8, 8);
+                    vec2 = new vect_1.Vector(8, 4);
+                }
+            }
+            var offsetX = 100 * (combinationIndex % 8);
+            var offsetY = combinationGroupOffset;
+            vec1.x = offsetX + vec1.x * step;
+            vec1.y = offsetY + vec1.y * step;
+            vec2.x = offsetX + vec2.x * step;
+            vec2.y = offsetY + vec2.y * step;
+            pipes.push(new pipe_model_1.default(model, vec1, vec2));
+        });
+    });
+    combinationGroupOffset += yOffsetStep * step;
+    /**
+     *   90 angle right
+     *
+     *    |
+     *    |
+     *    *---------
+     *    |
+     *    |
+     *
+     */
+    [[1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1], [-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1]].map(function (combination, combinationIndex) {
+        combination.map(function (direction, index) {
+            var vec1;
+            var vec2;
+            if (index === 0) {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(4, 0);
+                    vec2 = new vect_1.Vector(4, 4);
+                } else {
+                    vec1 = new vect_1.Vector(4, 4);
+                    vec2 = new vect_1.Vector(4, 0);
+                }
+            } else if (index === 1) {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(4, 4);
+                    vec2 = new vect_1.Vector(8, 4);
+                } else {
+                    vec1 = new vect_1.Vector(8, 4);
+                    vec2 = new vect_1.Vector(4, 4);
+                }
+            } else {
+                if (direction === 1) {
+                    vec1 = new vect_1.Vector(4, 4);
+                    vec2 = new vect_1.Vector(4, 8);
+                } else {
+                    vec1 = new vect_1.Vector(4, 8);
+                    vec2 = new vect_1.Vector(4, 4);
+                }
+            }
+            var offsetX = 100 * (combinationIndex % 8);
+            var offsetY = combinationGroupOffset;
+            vec1.x = offsetX + vec1.x * step;
+            vec1.y = offsetY + vec1.y * step;
+            vec2.x = offsetX + vec2.x * step;
+            vec2.y = offsetY + vec2.y * step;
+            pipes.push(new pipe_model_1.default(model, vec1, vec2));
+        });
+    });
+    combinationGroupOffset += yOffsetStep * step;
+};
+
+},{"../2d/models/heating/pipe.model":12,"../geometry/vect":24}],23:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1622,7 +2392,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":5}],23:[function(require,module,exports){
+},{"./2d":5}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1760,7 +2530,7 @@ var Vector = /** @class */function () {
 }();
 exports.Vector = Vector;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1771,7 +2541,7 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":22}],25:[function(require,module,exports){
+},{"./app":23}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1794,6 +2564,6 @@ function getProperty(obj, key) {
 }
 exports.getProperty = getProperty;
 
-},{}]},{},[24])
+},{}]},{},[25])
 
 //# sourceMappingURL=bundle.js.map

@@ -3,6 +3,7 @@ import PipeModel from "../models/heating/pipe.model";
 import CanvasView from "./canvas.view";
 import ValveModel from "../models/heating/valve.model";
 import ValveGhostModel from "../models/ghost/heating/valve.model";
+import { Vector } from "../../geometry/vect";
 
 class Valve {
   canvas: CanvasView;
@@ -21,22 +22,69 @@ class Valve {
     this.ctx.save();
     this.ctx.beginPath();
 
-    this.ctx.save();
-    this.ctx.beginPath();
+    let normVector, normVectorReversed;
 
-    let c = this.canvas.model.getLocalCoordinates(
+    if (valve.pipes.length == 0) {
+      normVector = new Vector(1, 0);
+      normVectorReversed = normVector.reverse();
+    } else {
+      let valvePipe = valve.pipes[0]; // get one from two pipe for angle detection
+      let pipeEnd =
+        valvePipe.from.target?.id === valve.id ? valvePipe.from : valvePipe.to;
+      let pipeOppositeEnd = pipeEnd.getOpposite();
+      normVector = pipeOppositeEnd.vec.sub(pipeEnd.vec).normalize();
+      normVectorReversed = normVector.reverse();
+    }
+
+    let points = [];
+
+    points.push(
+      normVector
+        .multiply(valve.width)
+        .perpendicular("left")
+        .sum(normVector.multiply(valve.length))
+        .sum(valve.center),
+      normVector
+        .multiply(valve.width)
+        .perpendicular("right")
+        .sum(normVector.multiply(valve.length))
+        .sum(valve.center),
+      normVector.sum(valve.center),
+      normVectorReversed
+        .multiply(valve.width)
+        .perpendicular("left")
+        .sum(normVectorReversed.multiply(valve.length))
+        .sum(valve.center),
+      normVectorReversed
+        .multiply(valve.width)
+        .perpendicular("right")
+        .sum(normVectorReversed.multiply(valve.length))
+        .sum(valve.center),
+      normVector.sum(valve.center)
+    );
+
+    points.map((p, index) => {
+      let wP = this.canvas.model.getLocalCoordinates(p.x, p.y);
+
+      if (index === 0) this.ctx.moveTo(wP.x, wP.y);
+
+      this.ctx.lineTo(wP.x, wP.y);
+    });
+
+    this.ctx.lineWidth = 2;
+    this.ctx.closePath();
+    this.ctx.stroke();
+
+    this.ctx.beginPath();
+    let wP = this.canvas.model.getLocalCoordinates(
       valve.center.x,
       valve.center.y
     );
-
-    this.ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
-
-    this.ctx.fillStyle = "grey";
-
-    this.ctx.fill();
-    this.ctx.restore();
-
+    this.ctx.moveTo(wP.x, wP.y);
+    this.ctx.arc(wP.x, wP.y, valve.radius, 0, 2 * Math.PI);
     this.ctx.stroke();
+    this.ctx.fillStyle = "white";
+    this.ctx.fill();
     this.ctx.restore();
   }
 
@@ -47,18 +95,66 @@ class Valve {
   }
 
   drawValve(valve: ValveModel) {
+    if (valve.pipes.length == 0) return;
+
     this.ctx.save();
     this.ctx.beginPath();
 
-    let c = this.canvas.model.getLocalCoordinates(
+    let valvePipe = valve.pipes[0]; // get one from two pipe for angle detection
+    let pipeEnd =
+      valvePipe.from.target?.id === valve.id ? valvePipe.from : valvePipe.to;
+    let pipeOppositeEnd = pipeEnd.getOpposite();
+    let normVector = pipeOppositeEnd.vec.sub(pipeEnd.vec).normalize();
+    let normVectorReversed = normVector.reverse();
+
+    let points = [];
+
+    points.push(
+      normVector
+        .multiply(valve.width)
+        .perpendicular("left")
+        .sum(normVector.multiply(valve.length))
+        .sum(valve.center),
+      normVector
+        .multiply(valve.width)
+        .perpendicular("right")
+        .sum(normVector.multiply(valve.length))
+        .sum(valve.center),
+      normVector.sum(valve.center),
+      normVectorReversed
+        .multiply(valve.width)
+        .perpendicular("left")
+        .sum(normVectorReversed.multiply(valve.length))
+        .sum(valve.center),
+      normVectorReversed
+        .multiply(valve.width)
+        .perpendicular("right")
+        .sum(normVectorReversed.multiply(valve.length))
+        .sum(valve.center),
+      normVector.sum(valve.center)
+    );
+
+    points.map((p, index) => {
+      let wP = this.canvas.model.getLocalCoordinates(p.x, p.y);
+
+      if (index === 0) this.ctx.moveTo(wP.x, wP.y);
+
+      this.ctx.lineTo(wP.x, wP.y);
+    });
+
+    this.ctx.lineWidth = 2;
+    this.ctx.closePath();
+    this.ctx.stroke();
+
+    this.ctx.beginPath();
+    let wP = this.canvas.model.getLocalCoordinates(
       valve.center.x,
       valve.center.y
     );
-
-    this.ctx.arc(c.x, c.y, valve.radius, 0, 2 * Math.PI);
-
-    this.ctx.fillStyle = valve.color;
-
+    this.ctx.moveTo(wP.x, wP.y);
+    this.ctx.arc(wP.x, wP.y, valve.radius, 0, 2 * Math.PI);
+    this.ctx.stroke();
+    this.ctx.fillStyle = "white";
     this.ctx.fill();
     this.ctx.restore();
   }

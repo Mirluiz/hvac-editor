@@ -22,11 +22,11 @@ class Overlap {
     this.model = model;
   }
 
-  update(mouse: IVec) {
-    this.mouse = mouse;
+  update() {
+    let v = new Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
 
     this.wallsOverlap();
-    this.list = [...this.pipeOverlap(this.mouse)];
+    this.list = [...this.pipeOverlap(v)];
     this.updateList();
     // this.updateNetBoundList();
   }

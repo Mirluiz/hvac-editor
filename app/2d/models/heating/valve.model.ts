@@ -1,14 +1,13 @@
 import { IVec, Vector } from "../../../geometry/vect";
-import Line from "../geometry/line.model";
 import Arc from "../geometry/arc.model";
 import Pipe from "./pipe.model";
 import CanvasModel from "../canvas.model";
-import Fitting from "./fitting.model";
 
 class Valve extends Arc {
   private _pipes: Array<Pipe> = [];
   model: CanvasModel;
-  neck: number = 10;
+  width: number = 10;
+  length: number = 20;
 
   constructor(model: CanvasModel, center: IVec) {
     super(center);
