@@ -32,7 +32,10 @@ class Stats {
         <div>ratio x ${this.model.mouseCanvasRatio?.x} / y ${
       this.model.mouseCanvasRatio?.y
     }</div>
-        <div>mode is ${this.model.actionMode}</div>
+        <div>action mode is ${this.model.actionMode}</div>
+      </div>
+      </div>
+        <div>mode is ${this.model.mode}</div>
       </div>
       
       </div>

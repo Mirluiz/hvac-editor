@@ -3,6 +3,7 @@ import Wall from "./architecture/wall.model";
 import Pipe from "./heating/pipe.model";
 import GhostPipe from "./ghost/heating/pipe.model";
 import Valve from "./heating/valve.model";
+import ValveGhostModel from "./ghost/heating/valve.model";
 import Overlap from "../overlap.model";
 import Fitting from "./heating/fitting.model";
 import { fittingModel } from "../../_test_/common";
@@ -18,12 +19,12 @@ class Canvas {
   subMode: "supply" | "return" | null = null;
   actionMode: "pipeLaying" | "wallLaying" | null = null;
   actionObject: Wall | Pipe | null | GhostPipe = null;
-  placingObject: Valve | null = null;
+  placingObject: Valve | ValveGhostModel | null = null;
 
   constructor() {
     this.overlap = new Overlap(this);
 
-    fittingModel(this);
+    // fittingModel(this);
   }
 
   mouse: ICoord | null = null;
@@ -108,6 +109,13 @@ class Canvas {
     return this.fittings[this.fittings.length - 1];
   }
 
+  addValve(valve: Valve) {
+    this.valves.push(valve);
+    this.valves = this.valves;
+
+    return this.fittings[this.valves.length - 1];
+  }
+
   getPipeByID(id: string) {
     return this.pipes.find((p) => p.id === id);
   }
@@ -161,6 +169,26 @@ class Canvas {
     t = translate(t);
 
     return t;
+  }
+
+  updateMode(mode: "default" | "wall" | "pipe" | "valve") {
+    if (!this.mouse) return;
+
+    this.mode = mode;
+
+    this.placingObject = null;
+    this.actionObject = null;
+
+    if (mode === "valve") {
+      this.placingObject = new ValveGhostModel(
+        this,
+        new Vector(this.mouse.x, this.mouse.y)
+      );
+    }
+  }
+
+  updateSubMode(subMode: "supply" | "return") {
+    this.subMode = subMode;
   }
 
   deletePipe(id: string) {

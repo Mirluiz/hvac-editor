@@ -4,12 +4,14 @@ import StatsView from "../views/stats.view";
 import { IVec, Vector } from "../../geometry/vect";
 import PipeController from "./pipe.controller";
 import Overlap from "../overlap.model";
+import ObjectController from "./object.controller";
 
 class Canvas {
   view: CanvasView;
   stats: StatsView;
   model: CanvasModel;
   pipe: PipeController;
+  object: ObjectController;
 
   constructor() {
     this.model = new CanvasModel();
@@ -17,6 +19,7 @@ class Canvas {
     this.stats = new StatsView(this.model);
 
     this.pipe = new PipeController(this.model);
+    this.object = new ObjectController(this.model);
 
     if (this.view.container) {
       this.view.container.addEventListener(
@@ -67,6 +70,7 @@ class Canvas {
         this.pipe.mouseDown(_mouse);
         break;
       case "valve":
+        this.object.mouseDown(_mouse);
         break;
     }
 
@@ -122,6 +126,7 @@ class Canvas {
         this.pipe.mouseMove(_mouse);
         break;
       case "valve":
+        this.object.mouseMove(_mouse);
         break;
     }
 
@@ -156,6 +161,7 @@ class Canvas {
         this.pipe.mouseUp(_mouse);
         break;
       case "valve":
+        this.object.mouseUp(_mouse);
         break;
     }
   }

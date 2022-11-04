@@ -91,14 +91,14 @@ class Pipe {
   }
 
   drawOverLaps() {
-    // this.canvas.model.overlap.list.map((l) => {
-    //   if (l) {
-    //     let _p = this.canvas.model.getPipeByID(l.id);
-    //     if (_p && l.ioVector) {
-    //       this.drawOverLap(l.ioVector);
-    //     }
-    //   }
-    // });
+    this.canvas.model.overlap.list.map((l) => {
+      if (l) {
+        let _p = this.canvas.model.getPipeByID(l.id);
+        if (_p && l.pipe?.vec) {
+          this.drawOverLap(l.pipe.vec);
+        }
+      }
+    });
   }
 
   draw() {

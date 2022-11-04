@@ -33,7 +33,7 @@ class Mode {
       value === "pipe" ||
       value === "valve"
     ) {
-      this.model.mode = value;
+      this.model.updateMode(value);
     }
   }
 
@@ -42,7 +42,7 @@ class Mode {
     let value = cT.value;
 
     if (value === "supply" || value === "return") {
-      this.model.subMode = value;
+      this.model.updateSubMode(value);
     }
   }
 }

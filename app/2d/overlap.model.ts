@@ -35,6 +35,7 @@ class Overlap {
     this.model.walls.map(() => {});
   }
 
+  //Todo: currently all project use this, split it.
   pipeOverlap(vec: IVec): Array<IOverlap> {
     let ret: Array<IOverlap> = [];
 
