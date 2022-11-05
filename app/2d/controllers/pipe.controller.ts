@@ -11,10 +11,12 @@ class Pipe {
   }
 
   mouseMove() {
-    let coord = new Vector(
-      this.model.netBoundMouse.x,
-      this.model.netBoundMouse.y
+    let coord = this.model.getWorldCoordinates(
+      this.model.mouse.x,
+      this.model.mouse.y
     );
+
+    coord = coord.bindNet(this.model.config.net.step);
 
     if (
       this.model.actionObject &&
@@ -32,10 +34,12 @@ class Pipe {
   }
 
   mouseDown() {
-    let coord = new Vector(
-      this.model.netBoundMouse.x,
-      this.model.netBoundMouse.y
+    let coord = this.model.getWorldCoordinates(
+      this.model.mouse.x,
+      this.model.mouse.y
     );
+
+    coord = coord.bindNet(this.model.config.net.step);
 
     if (!this.model.actionObject) {
       this.model.actionMode = "pipeLaying";

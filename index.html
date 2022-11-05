@@ -27,7 +27,7 @@
             Selection
           </span>
         </div>
-        <div class="menuItem tooltip" id="toolbar_arch">
+        <div class="menuItem tooltip" id="toolbar_architecture">
           <i class="fa-solid fa-cubes-stacked"></i>
           <span class="tooltiptext">
             Architecture
@@ -47,49 +47,42 @@
         </div>
       </div>
       <div class="subMenu" data-tab="toolbar_heating">
-        <div class="subMenuItem tooltip">
+        <div class="subMenuItem tooltip" data-value="pipe">
           <i class="fa-regular fa-circle"></i>
           <span class="tooltiptext">
             Pipe
           </span>
         </div>
 
+        <div class="subMenuItem tooltip" data-value="valve">
+          <i class="fa-solid fa-left-right"></i>
+          <span class="tooltiptext">
+            Valve
+          </span>
+        </div>
+
       </div>
       <div class="subMenu" data-tab="toolbar_architecture">
-        <div class="subMenuItem">
-          <i class="fa-solid fa-lines-leaning"></i>
-        </div>
-        <div class="subMenuItem">
-          <i class="fa-solid fa-lines-leaning"></i>
-        </div>
       </div>
       <div class="subMenu" data-tab="toolbar_ventilation">
-        <div class="subMenuItem">
-          <i class="fa-solid fa-lines-leaning"></i>
-        </div>
-        <div class="subMenuItem">
-          <i class="fa-solid fa-lines-leaning"></i>
-        </div>
-        <div class="subMenuItem">
-          <i class="fa-solid fa-lines-leaning"></i>
+        <div class="subMenuItem tooltip" data-value="duct">
+          <i class="fa-regular fa-square"></i>
+          <span class="tooltiptext">
+            Duct
+          </span>
         </div>
       </div>
     </div>
+    <canvas id="editor"></canvas>
 <!--    <canvas id="editor"></canvas>-->
     <div class="infoPanel"></div>
     <div class="state"></div>
 <!--    <div id="stats"></div>-->
-<!--    <div id="mode">-->
-<!--      <button value="default">Default</button>-->
-<!--      <button value="wall">Wall</button>-->
-<!--      <button value="pipe">Pipe</button>-->
-<!--      <button value="valve">Valve</button>-->
-<!--      <button value="radiator">Radiator</button>-->
-<!--    </div>-->
 <!--    <div id="subMode">-->
 <!--      <button value="supply">Supply</button>-->
 <!--      <button value="return">Return</button>-->
 <!--    </div>-->
+
   </div>
 
   <script type="module" src="dist/bundle.js"></script>

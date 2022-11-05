@@ -1,8 +1,5 @@
-import CanvasView from "../views/canvas.view";
 import CanvasModel from "../models/canvas.model";
-import StatsView from "../views/stats.view";
 import ToolbarView from "../views/toolbar.view";
-import { getProperty } from "../../utils";
 
 class Toolbar {
   view: ToolbarView;
@@ -19,9 +16,9 @@ class Toolbar {
       });
     }
 
-    if (this.view.subMenus) {
-      Array.from(this.view.subMenus).map((e) => {
-        e.addEventListener("click", this.handleSubMenu.bind(this));
+    if (this.view.subMenuItems) {
+      Array.from(this.view.subMenuItems).map((e) => {
+        e.addEventListener("click", this.handleMode.bind(this));
       });
     }
   }
@@ -32,49 +29,39 @@ class Toolbar {
 
     switch (value) {
       case "toolbar_selection":
+        this.model.updateMode("default");
         this.toolbarModel.menu = "default";
         break;
       case "toolbar_heating":
         this.toolbarModel.menu = "heating";
         break;
-      case "toolbar_arch":
+      case "toolbar_architecture":
         this.toolbarModel.menu = "architecture";
         break;
       case "toolbar_ventilation":
         this.toolbarModel.menu = "ventilation";
         break;
-
       default:
+        this.model.updateMode("default");
         this.toolbarModel.menu = "default";
     }
 
     this.view.render();
   }
 
-  handleSubMenu(e: Event) {
-    let cT = e.target as HTMLInputElement;
-    let value = cT.value;
+  handleMode(e: Event) {
+    let cT = e.currentTarget as HTMLInputElement;
+    let value = cT.getAttribute("data-value");
 
-    // if (isInUnion<Array<"supply" | "return">>(["supply", "return"], value)) {
-    //   value;
-    //   this.model.updateSubMode(value);
-    //   this.view.render();
-    // }
+    if (
+      value === "default" ||
+      value === "wall" ||
+      value === "pipe" ||
+      value === "valve"
+    ) {
+      this.model.updateMode(value);
+    }
   }
-
-  // handleMode(e: Event) {
-  //   let cT = e.target as HTMLInputElement;
-  //   let value = cT.value;
-  //
-  //   if (
-  //     value === "default" ||
-  //     value === "wall" ||
-  //     value === "pipe" ||
-  //     value === "valve"
-  //   ) {
-  //     this.model.updateMode(value);
-  //   }
-  // }
 }
 
 export type ToolbarMenu =
@@ -83,12 +70,5 @@ export type ToolbarMenu =
   | "heating"
   | "ventilation";
 export type ToolbarMode = "default" | "wall" | "pipe" | "valve";
-
-const menus: Array<ToolbarMenu> = [
-  "heating",
-  "architecture",
-  "ventilation",
-  "default",
-];
 
 export default Toolbar;

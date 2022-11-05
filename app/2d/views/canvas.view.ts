@@ -219,15 +219,21 @@ class Canvas {
   initCanvasContainer(): void {
     if (!this.container) return;
 
-    this.container.style.height = "600px";
-    this.container.style.width = "900px";
-    this.container.height = 600;
-    this.container.width = 900;
-    this.container.style.border = "1px solid black";
+    let h =
+      Math.ceil(screen.height / this.model.config.net.step) *
+      this.model.config.net.step;
+    let w =
+      Math.ceil(screen.width / this.model.config.net.step) *
+      this.model.config.net.step;
+
+    this.container.style.height = h + "px";
+    this.container.style.width = w + "px";
+    this.container.height = h;
+    this.container.width = w;
 
     this.model.canvasSize = {
-      y: 600,
-      x: 900,
+      y: h,
+      x: w,
     };
   }
 }

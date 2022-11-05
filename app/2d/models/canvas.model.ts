@@ -16,7 +16,7 @@ class Canvas {
   private _fittings: Array<Fitting> = [];
   overlap: Overlap;
 
-  mode: ToolbarMode = "pipe";
+  mode: ToolbarMode = "default";
   subMode: "supply" | "return" | null = null;
   actionMode: "pipeLaying" | "wallLaying" | null = null;
   actionObject: Wall | Pipe | null | GhostPipe = null;
@@ -174,9 +174,9 @@ class Canvas {
   }
 
   updateMode(mode: "default" | "wall" | "pipe" | "valve") {
-    if (!this.mouse) return;
+    this.mode = mode;
 
-    // this.mode = mode;
+    if (!this.mouse) return;
 
     this.placingObject = null;
     this.actionObject = null;
