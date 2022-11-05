@@ -1,0 +1,66 @@
+.container{
+    font-family: 'Baloo 2', cursive;
+}
+
+.toolbar {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    background-color: black;
+    height: 50px;
+}
+
+.toolbar .menu {
+    display: flex;
+    height: 100%;
+}
+
+.toolbar .menu .menuItem {
+    width: 50px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.toolbar .menu .menuItem svg {
+    font-size: 26px;
+    color: white;
+}
+
+.toolbar .menu .menuItem:hover {
+    width: 50px;
+    height: 100%;
+    background-color: cadetblue;
+}
+
+.toolbar .subMenu {
+    padding-left: 50px;
+    display: none;
+    position: absolute;
+    top: 102%;
+    left: 0px;
+    right: 0px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.78);
+}
+
+.toolbar .subMenu .subMenuItem {
+    width: 50px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.toolbar .subMenu .subMenuItem svg {
+    font-size: 26px;
+    color: white;
+}
+
+.toolbar .subMenu .subMenuItem:hover {
+    background-color: cadetblue;
+}

@@ -18,18 +18,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var arc_model_1 = __importDefault(require("../geometry/arc.model"));
-var Fitting = /** @class */ (function (_super) {
-    __extends(Fitting, _super);
-    function Fitting(model, center) {
+var arc_model_1 = __importDefault(require("../../geometry/arc.model"));
+var Valve = /** @class */ (function (_super) {
+    __extends(Valve, _super);
+    function Valve(model, center) {
         var _this = _super.call(this, center) || this;
         _this._pipes = [];
-        _this.neck = 10;
-        _this.color = "black";
+        _this.width = 10;
+        _this.length = 20;
         _this.model = model;
         return _this;
     }
-    Object.defineProperty(Fitting.prototype, "pipes", {
+    Object.defineProperty(Valve.prototype, "pipes", {
         get: function () {
             return this._pipes;
         },
@@ -39,29 +39,15 @@ var Fitting = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(Fitting.prototype, "type", {
-        get: function () {
-            var ret = null;
-            if (this.pipes.length === 2)
-                ret = "2d";
-            if (this.pipes.length === 3)
-                ret = "3d";
-            if (this.pipes.length === 4)
-                ret = "4d";
-            return ret;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Fitting.prototype.isClose = function (v) {
-        var distance = this.model.config.overlap.bindDistance;
-        return this.center.sub(v).length <= distance;
+    Valve.prototype.validation = function () {
+        var overlaps = this.model.overlap.pipeOverlap(this.center);
+        return overlaps.length > 0 && Boolean(overlaps.find(function (o) { return o.pipe; }));
     };
-    Fitting.prototype.addPipe = function (pipe) {
+    Valve.prototype.addPipe = function (pipe) {
         this._pipes.push(pipe);
         this.pipes = this._pipes;
         return this.pipes[this.pipes.length - 1];
     };
-    return Fitting;
+    return Valve;
 }(arc_model_1.default));
-exports.default = Fitting;
+exports.default = Valve;

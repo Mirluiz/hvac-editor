@@ -1,14 +1,14 @@
 import CanvasController from "./controllers/canvas.controller";
-import ModeController from "./controllers/mode.controller";
+import Toolbar from "./controllers/toolbar.controller";
 import StatsView from "./views/stats.view";
 
 class Controller {
   canvas: CanvasController = new CanvasController();
 
-  mode: ModeController;
+  toolbar: Toolbar;
 
   constructor() {
-    this.mode = new ModeController(this.canvas.model);
+    this.toolbar = new Toolbar(this.canvas.model);
     this.canvas.model.update();
   }
 }

@@ -9,6 +9,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../geometry/vect");
 var Overlap = /** @class */ (function () {
     function Overlap(model) {
         this.mouse = null;
@@ -20,16 +21,17 @@ var Overlap = /** @class */ (function () {
         this.netBoundList = [];
         this.model = model;
     }
-    Overlap.prototype.update = function (mouse) {
-        this.mouse = mouse;
+    Overlap.prototype.update = function () {
+        var v = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
         this.wallsOverlap();
-        this.list = __spreadArray([], this.pipeOverlap(this.mouse), true);
+        this.list = __spreadArray([], this.pipeOverlap(v), true);
         this.updateList();
         // this.updateNetBoundList();
     };
     Overlap.prototype.wallsOverlap = function () {
         this.model.walls.map(function () { });
     };
+    //Todo: currently all project use this, split it.
     Overlap.prototype.pipeOverlap = function (vec) {
         var ret = [];
         var bind = this.model.config.overlap.bindDistance;

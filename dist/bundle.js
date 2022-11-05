@@ -134,44 +134,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":24,"../models/canvas.model":6,"../views/canvas.view":16,"../views/stats.view":20,"./object.controller":3,"./pipe.controller":4}],2:[function(require,module,exports){
-"use strict";
-
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var mode_view_1 = __importDefault(require("../views/mode.view"));
-var Mode = /** @class */function () {
-    function Mode(model) {
-        this.model = model;
-        this.view = new mode_view_1.default(this.model);
-        if (this.view.container) {
-            this.view.container.addEventListener("click", this.handleMode.bind(this));
-        }
-        if (this.view.subContainer) {
-            this.view.subContainer.addEventListener("click", this.handleSubMode.bind(this));
-        }
-    }
-    Mode.prototype.handleMode = function (e) {
-        var cT = e.target;
-        var value = cT.value;
-        if (value === "default" || value === "wall" || value === "pipe" || value === "valve") {
-            this.model.updateMode(value);
-        }
-    };
-    Mode.prototype.handleSubMode = function (e) {
-        var cT = e.target;
-        var value = cT.value;
-        if (value === "supply" || value === "return") {
-            this.model.updateSubMode(value);
-        }
-    };
-    return Mode;
-}();
-exports.default = Mode;
-
-},{"../views/mode.view":18}],3:[function(require,module,exports){
+},{"../../geometry/vect":24,"../models/canvas.model":6,"../views/canvas.view":16,"../views/stats.view":19,"./object.controller":2,"./pipe.controller":3}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -227,7 +190,7 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../../geometry/vect":24,"../models/ghost/heating/valve.model":10,"../models/heating/valve.model":13}],4:[function(require,module,exports){
+},{"../../geometry/vect":24,"../models/ghost/heating/valve.model":10,"../models/heating/valve.model":13}],3:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -274,7 +237,67 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../../geometry/vect":24,"../models/ghost/heating/pipe.model":9,"../models/heating/pipe.model":12}],5:[function(require,module,exports){
+},{"../../geometry/vect":24,"../models/ghost/heating/pipe.model":9,"../models/heating/pipe.model":12}],4:[function(require,module,exports){
+"use strict";
+
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var toolbar_view_1 = __importDefault(require("../views/toolbar.view"));
+var Toolbar = /** @class */function () {
+    function Toolbar(model) {
+        var _this = this;
+        this.toolbarModel = { menu: "default" }; // now it is small object. if it gets bigger move it
+        this.model = model;
+        this.view = new toolbar_view_1.default(this.toolbarModel);
+        if (this.view.menuItems) {
+            Array.from(this.view.menuItems).map(function (e) {
+                e.addEventListener("click", _this.handleMenu.bind(_this));
+            });
+        }
+        if (this.view.subMenus) {
+            Array.from(this.view.subMenus).map(function (e) {
+                e.addEventListener("click", _this.handleSubMenu.bind(_this));
+            });
+        }
+    }
+    Toolbar.prototype.handleMenu = function (e) {
+        var cT = e.currentTarget;
+        var value = cT.id;
+        switch (value) {
+            case "toolbar_selection":
+                this.toolbarModel.menu = "default";
+                break;
+            case "toolbar_heating":
+                this.toolbarModel.menu = "heating";
+                break;
+            case "toolbar_arch":
+                this.toolbarModel.menu = "architecture";
+                break;
+            case "toolbar_ventilation":
+                this.toolbarModel.menu = "ventilation";
+                break;
+            default:
+                this.toolbarModel.menu = "default";
+        }
+        this.view.render();
+    };
+    Toolbar.prototype.handleSubMenu = function (e) {
+        var cT = e.target;
+        var value = cT.value;
+        // if (isInUnion<Array<"supply" | "return">>(["supply", "return"], value)) {
+        //   value;
+        //   this.model.updateSubMode(value);
+        //   this.view.render();
+        // }
+    };
+    return Toolbar;
+}();
+var menus = ["heating", "architecture", "ventilation", "default"];
+exports.default = Toolbar;
+
+},{"../views/toolbar.view":20}],5:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -282,18 +305,18 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_controller_1 = __importDefault(require("./controllers/canvas.controller"));
-var mode_controller_1 = __importDefault(require("./controllers/mode.controller"));
+var toolbar_controller_1 = __importDefault(require("./controllers/toolbar.controller"));
 var Controller = /** @class */function () {
     function Controller() {
         this.canvas = new canvas_controller_1.default();
-        this.mode = new mode_controller_1.default(this.canvas.model);
+        this.toolbar = new toolbar_controller_1.default(this.canvas.model);
         this.canvas.model.update();
     }
     return Controller;
 }();
 exports.default = Controller;
 
-},{"./controllers/canvas.controller":1,"./controllers/mode.controller":2}],6:[function(require,module,exports){
+},{"./controllers/canvas.controller":1,"./controllers/toolbar.controller":4}],6:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -449,7 +472,7 @@ var Canvas = /** @class */function () {
     };
     Canvas.prototype.updateMode = function (mode) {
         if (!this.mouse) return;
-        this.mode = mode;
+        // this.mode = mode;
         this.placingObject = null;
         this.actionObject = null;
         if (mode === "valve") {
@@ -1342,7 +1365,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":24,"./fitting.view":17,"./pipe.view":19,"./valve.view":21}],17:[function(require,module,exports){
+},{"../../geometry/vect":24,"./fitting.view":17,"./pipe.view":18,"./valve.view":21}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1471,20 +1494,6 @@ exports.default = Fitting;
 },{}],18:[function(require,module,exports){
 "use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var Mode = /** @class */function () {
-    function Mode(model) {
-        this.model = model;
-        this.container = document.querySelector("#mode");
-        this.subContainer = document.querySelector("#subMode");
-    }
-    return Mode;
-}();
-exports.default = Mode;
-
-},{}],19:[function(require,module,exports){
-"use strict";
-
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
@@ -1565,7 +1574,7 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../models/ghost/heating/pipe.model":9}],20:[function(require,module,exports){
+},{"../models/ghost/heating/pipe.model":9}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1593,6 +1602,56 @@ var Stats = /** @class */function () {
     return Stats;
 }();
 exports.default = Stats;
+
+},{}],20:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Toolbar = /** @class */function () {
+    function Toolbar(model) {
+        this.model = model;
+        this.container = document.querySelector(".toolbar");
+        this.menu = document.querySelector(".menu");
+        this.menuItems = document.querySelectorAll(".menuItem");
+        this.subMenus = document.querySelectorAll(".subMenu");
+        this.subMenuItems = document.querySelectorAll(".subMenuItem");
+    }
+    Toolbar.prototype.render = function () {
+        var _this = this;
+        if (!this.subMenus || !this.menu || !this.container) return;
+        console.log("clicked", this.model.menu);
+        Array.from(this.subMenus).map(function (subMenu) {
+            subMenu.style.display = "none";
+            if (_this.model.menu === "default") {
+                subMenu.style.display = "none";
+            } else {
+                console.log(' subMenu.getAttribute("data-tab")', subMenu.getAttribute("data-tab"), _this.model.menu);
+                if ("toolbar_" + _this.model.menu === subMenu.getAttribute("data-tab")) {
+                    subMenu.style.display = "flex";
+                }
+                // switch () {
+                //   case "toolbar_architecture":
+                //     console.log("architecture");
+                //     break;
+                //   case "toolbar_heating":
+                //     console.log("heating");
+                //     break;
+                //   case "toolbar_ventilation":
+                //     console.log("ventilation");
+                //     break;
+                // }
+                // let menuContainer: { [key in ToolbarMenu]: string } = {
+                //   default: "toolbar_default",
+                //   architecture: "toolbar_arch",
+                //   heating: "toolbar_heating",
+                //   ventilation: "toolbar_ventilation",
+                // };
+            }
+        });
+    };
+    return Toolbar;
+}();
+exports.default = Toolbar;
 
 },{}],21:[function(require,module,exports){
 "use strict";

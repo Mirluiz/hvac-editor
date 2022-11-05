@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
+var valve_model_1 = __importDefault(require("./ghost/heating/valve.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
 var common_1 = require("../../_test_/common");
 var Canvas = /** @class */ (function () {
@@ -17,7 +18,8 @@ var Canvas = /** @class */ (function () {
         this.actionMode = null;
         this.actionObject = null;
         this.placingObject = null;
-        this.mouse = null;
+        this.mouse = { x: 0, y: 0 };
+        this.netBoundMouse = { x: 0, y: 0 };
         this.canvasSize = null;
         this.mouseCanvasRatio = null;
         this.scale = {
@@ -99,6 +101,11 @@ var Canvas = /** @class */ (function () {
         this.fittings = this.fittings;
         return this.fittings[this.fittings.length - 1];
     };
+    Canvas.prototype.addValve = function (valve) {
+        this.valves.push(valve);
+        this.valves = this.valves;
+        return this.fittings[this.valves.length - 1];
+    };
     Canvas.prototype.getPipeByID = function (id) {
         return this.pipes.find(function (p) { return p.id === id; });
     };
@@ -141,6 +148,19 @@ var Canvas = /** @class */ (function () {
         // t = rotation(t); TODO order is scaling rotation translation
         t = translate(t);
         return t;
+    };
+    Canvas.prototype.updateMode = function (mode) {
+        if (!this.mouse)
+            return;
+        // this.mode = mode;
+        this.placingObject = null;
+        this.actionObject = null;
+        if (mode === "valve") {
+            this.placingObject = new valve_model_1.default(this, new vect_1.Vector(this.mouse.x, this.mouse.y));
+        }
+    };
+    Canvas.prototype.updateSubMode = function (subMode) {
+        this.subMode = subMode;
     };
     Canvas.prototype.deletePipe = function (id) {
         this.pipes = this.pipes.filter(function (p) { return p.id !== id; });

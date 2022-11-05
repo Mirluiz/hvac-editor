@@ -5,21 +5,91 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/js/all.min.js" integrity="sha512-naukR7I+Nk6gp7p5TMA4ycgfxaZBJ7MO5iC3Fp6ySQyKFHOGfpkSZkYVWV5R7u7cfAicxanwYQ5D1e17EfJcMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="tooltip.css">
+  <link rel="stylesheet" href="icons.css">
 </head>
 <body>
-  <div style="display: flex; justify-content: flex-start; align-items: flex-start">
-    <canvas id="editor"></canvas>
-    <div id="stats"></div>
-    <div id="mode">
-      <button value="default">Default</button>
-      <button value="wall">Wall</button>
-      <button value="pipe">Pipe</button>
-      <button value="valve">Valve</button>
+  <div class="container">
+    <div class="toolbar">
+      <div class="menu">
+        <div class="menuItem" id="toolbar_menu">
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </div>
+        <div class="menuItem tooltip" id="toolbar_selection">
+          <i class="fa-solid fa-arrow-pointer"></i>
+          <span class="tooltiptext">
+            Selection
+          </span>
+        </div>
+        <div class="menuItem tooltip" id="toolbar_arch">
+          <i class="fa-solid fa-cubes-stacked"></i>
+          <span class="tooltiptext">
+            Architecture
+          </span>
+        </div>
+        <div class="menuItem tooltip" id="toolbar_heating">
+          <i class="fa-solid fa-water"></i>
+          <span class="tooltiptext">
+            Heating
+          </span>
+        </div>
+        <div class="menuItem tooltip" id="toolbar_ventilation">
+          <i class="fa-solid fa-fan"></i>
+          <span class="tooltiptext">
+            Ventilation
+          </span>
+        </div>
+      </div>
+      <div class="subMenu" data-tab="toolbar_heating">
+        <div class="subMenuItem tooltip">
+          <i class="fa-regular fa-circle"></i>
+          <span class="tooltiptext">
+            Pipe
+          </span>
+        </div>
+
+      </div>
+      <div class="subMenu" data-tab="toolbar_architecture">
+        <div class="subMenuItem">
+          <i class="fa-solid fa-lines-leaning"></i>
+        </div>
+        <div class="subMenuItem">
+          <i class="fa-solid fa-lines-leaning"></i>
+        </div>
+      </div>
+      <div class="subMenu" data-tab="toolbar_ventilation">
+        <div class="subMenuItem">
+          <i class="fa-solid fa-lines-leaning"></i>
+        </div>
+        <div class="subMenuItem">
+          <i class="fa-solid fa-lines-leaning"></i>
+        </div>
+        <div class="subMenuItem">
+          <i class="fa-solid fa-lines-leaning"></i>
+        </div>
+      </div>
     </div>
-    <div id="subMode">
-      <button value="supply">Supply</button>
-      <button value="return">Return</button>
-    </div>
+<!--    <canvas id="editor"></canvas>-->
+    <div class="infoPanel"></div>
+    <div class="state"></div>
+<!--    <div id="stats"></div>-->
+<!--    <div id="mode">-->
+<!--      <button value="default">Default</button>-->
+<!--      <button value="wall">Wall</button>-->
+<!--      <button value="pipe">Pipe</button>-->
+<!--      <button value="valve">Valve</button>-->
+<!--      <button value="radiator">Radiator</button>-->
+<!--    </div>-->
+<!--    <div id="subMode">-->
+<!--      <button value="supply">Supply</button>-->
+<!--      <button value="return">Return</button>-->
+<!--    </div>-->
   </div>
 
   <script type="module" src="dist/bundle.js"></script>

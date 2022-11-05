@@ -60,109 +60,109 @@ var Pipe = /** @class */ (function (_super) {
     Pipe.prototype.toOrigin = function () {
         return this.to.vec.sub(this.from.vec);
     };
-    Pipe.prototype.update = function (pipe) {
+    Pipe.prototype.update = function () {
+        var _this = this;
         this.model.pipes.map(function (_pipe) {
-            if (_pipe.id === pipe.id)
+            if (_pipe.id === _this.id)
                 return;
-            if (_pipe.isClose(pipe.from.vec) || _pipe.isClose(pipe.to.vec)) {
-                pipe.merge(_pipe);
+            if (_pipe.isClose(_this.from.vec) || _pipe.isClose(_this.to.vec)) {
+                _this.merge(_pipe);
             }
         });
         this.model.fittings.map(function (fitting) {
-            if (fitting.isClose(pipe.from.vec) && !pipe.from.target) {
-                pipe.connect(fitting);
+            if (fitting.isClose(_this.from.vec) && !_this.from.target) {
+                _this.connect(fitting);
             }
-            if (fitting.isClose(pipe.to.vec) && !pipe.to.target) {
-                pipe.connect(fitting);
+            if (fitting.isClose(_this.to.vec) && !_this.to.target) {
+                _this.connect(fitting);
             }
         });
     };
-    Pipe.prototype.beforeMerge = function (pipe1, pipe2) {
+    Pipe.prototype.validation = function () {
         var _this = this;
-        var canMerge = false;
-        var mergingVec = null;
-        var angleBetween;
-        [pipe1.from, pipe1.to, pipe2.from, pipe2.to].map(function (end) {
-            if (mergingVec)
-                return;
-            var overlap = _this.model.overlap.pipeOverlap(end.vec);
-            if (overlap.length > 0) {
-                var _end = overlap.find(function (p) { return "pipeEnd" in p && end.getPipe().id !== p.id; });
-                if (_end && _end.pipeEnd) {
-                    angleBetween = _end.pipeEnd
+        var can = true;
+        [this.from, this.to].map(function (end) {
+            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
+            overlaps = overlaps.filter(function (o) { return o.id !== _this.id; });
+            if (overlaps.length > 0) {
+                var overlap = overlaps[0];
+                var angleBetween = void 0;
+                if (overlap && overlap.pipeEnd) {
+                    angleBetween = overlap.pipeEnd
                         .getOpposite()
                         .vec.sub(end.vec)
                         .angle(end.getOpposite().vec.sub(end.vec));
+                    if (angleBetween !== undefined &&
+                        Math.abs(angleBetween * (180 / Math.PI)) < 90) {
+                        can = false;
+                    }
+                }
+                else if (overlap && overlap.pipe) {
+                    can = true;
+                }
+                else {
+                    can = false;
                 }
             }
         });
-        if (angleBetween !== undefined &&
-            Math.abs(angleBetween * (180 / Math.PI)) >= 90) {
-            canMerge = true;
+        if (!can) {
+            console.warn("Cant merge");
         }
-        else {
-            alert("Cant merge");
-        }
-        return canMerge;
+        return can;
     };
-    Pipe.prototype.afterMerge = function () { };
+    Pipe.prototype.beforeMerge = function () {
+        console.log("before merge");
+        return this.validation();
+    };
+    Pipe.prototype.afterMerge = function () {
+        console.log("after merge");
+    };
     Pipe.prototype.merge = function (pipe) {
         var _this = this;
-        var distance = this.model.config.overlap.bindDistance;
         var merged = false;
-        if (!this.beforeMerge(pipe, this))
+        if (!this.beforeMerge())
             return false;
         var run = function (end) {
             if (_this.id === pipe.id)
                 return;
-            if (pipe.isClose(end.vec)) {
-                var mergePoint = void 0;
-                if (pipe.from.vec.sub(end.vec).length <= distance) {
-                    if (pipe.from.target)
+            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
+            overlaps = overlaps.filter(function (o) { return o.id !== end.getPipe().id; });
+            if (overlaps.length > 0) {
+                var overlap = overlaps[0];
+                if (overlap && overlap.pipeEnd) {
+                    if (overlap.pipeEnd.target)
                         return;
-                    mergePoint = pipe.from.vec.clone();
-                    var newFitting_1 = new fitting_model_1.default(_this.model, mergePoint);
-                    _this.model.addFitting(newFitting_1);
-                    newFitting_1.addPipe(pipe);
-                    newFitting_1.addPipe(_this);
-                    pipe.from.target = newFitting_1;
-                    end.target = newFitting_1;
-                    return;
+                    var newFitting = new fitting_model_1.default(_this.model, overlap.pipeEnd.vec);
+                    _this.model.addFitting(newFitting);
+                    newFitting.addPipe(overlap.pipeEnd.getPipe());
+                    newFitting.addPipe(end.getPipe());
+                    overlap.pipeEnd.target = newFitting;
+                    end.target = newFitting;
                 }
-                else if (pipe.to.vec.sub(end.vec).length <= distance) {
-                    if (pipe.to.target)
-                        return;
-                    mergePoint = pipe.to.vec.clone();
-                    var newFitting_2 = new fitting_model_1.default(_this.model, mergePoint);
-                    _this.model.addFitting(newFitting_2);
-                    newFitting_2.addPipe(pipe);
-                    newFitting_2.addPipe(_this);
-                    pipe.to.target = newFitting_2;
-                    end.target = newFitting_2;
-                    return;
+                else if (overlap && overlap.pipe) {
+                    var mergePoint = overlap.pipe.vec.bindNet(_this.model.config.net.step);
+                    var newP1 = new Pipe(_this.model, overlap.pipe.object.from.vec.clone(), new vect_1.Vector(mergePoint.x, mergePoint.y));
+                    var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), overlap.pipe.object.to.vec.clone());
+                    _this.model.addPipe(newP1);
+                    _this.model.addPipe(newP2);
+                    overlap.pipe.object.delete();
+                    var newFitting = new fitting_model_1.default(_this.model, mergePoint);
+                    _this.model.addFitting(newFitting);
+                    newFitting.addPipe(newP1);
+                    newFitting.addPipe(newP2);
+                    newP1.from.target = pipe.from.target;
+                    newP1.to.target = newFitting;
+                    newP2.from.target = newFitting;
+                    newP2.to.target = pipe.to.target;
+                    merged = true;
                 }
-                var normPipe = pipe.toOrigin().normalize();
-                var projPipe = pipe.toOrigin().projection(end.vec.sub(pipe.from.vec));
-                mergePoint = normPipe.multiply(projPipe).sum(pipe.from.vec);
-                mergePoint = mergePoint.bindNet(_this.model.config.net.step);
-                var newP1 = new Pipe(_this.model, new vect_1.Vector(0, 0).sum(pipe.from.vec), new vect_1.Vector(mergePoint.x, mergePoint.y));
-                var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), new vect_1.Vector(pipe.to.vec.x, pipe.to.vec.y));
-                _this.model.addPipe(newP1);
-                _this.model.addPipe(newP2);
-                pipe.delete();
-                var newFitting = new fitting_model_1.default(_this.model, mergePoint);
-                _this.model.addFitting(newFitting);
-                newFitting.addPipe(newP1);
-                newFitting.addPipe(newP2);
-                newP1.from.target = pipe.from.target;
-                newP1.to.target = newFitting;
-                newP2.from.target = newFitting;
-                newP2.to.target = pipe.to.target;
-                merged = true;
             }
         };
-        run(this.from);
-        run(this.to);
+        if (!this.from.target)
+            run(this.from);
+        if (!this.to.target)
+            run(this.to);
+        this.afterMerge();
         return merged;
     };
     Pipe.prototype.connect = function (target) {

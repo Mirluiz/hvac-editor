@@ -21,8 +21,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var line_model_1 = __importDefault(require("../../geometry/line.model"));
 var Pipe = /** @class */ (function (_super) {
     __extends(Pipe, _super);
-    function Pipe(from, to) {
-        return _super.call(this, { vec: from }, { vec: to }) || this;
+    function Pipe(model, from, to) {
+        var _this = _super.call(this, {
+            vec: from,
+            getPipe: function () {
+                return _this;
+            },
+            getOpposite: function () {
+                return _this.to;
+            },
+        }, {
+            vec: to,
+            getPipe: function () {
+                return _this;
+            },
+            getOpposite: function () {
+                return _this.from;
+            },
+        }) || this;
+        _this.model = model;
+        return _this;
     }
     Object.defineProperty(Pipe.prototype, "color", {
         get: function () {
@@ -31,6 +49,37 @@ var Pipe = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Pipe.prototype.validation = function () {
+        var _this = this;
+        var can = true;
+        [this.from, this.to].map(function (end) {
+            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
+            if (overlaps.length > 0) {
+                var overlap = overlaps[0];
+                var angleBetween = void 0;
+                if (overlap && overlap.pipeEnd) {
+                    angleBetween = overlap.pipeEnd
+                        .getOpposite()
+                        .vec.sub(end.vec)
+                        .angle(end.getOpposite().vec.sub(end.vec));
+                    if (angleBetween !== undefined &&
+                        Math.abs(angleBetween * (180 / Math.PI)) < 90) {
+                        can = false;
+                    }
+                }
+                else if (overlap && overlap.pipe) {
+                    can = true;
+                }
+                else {
+                    can = false;
+                }
+            }
+        });
+        if (!can) {
+            console.warn("Cant merge");
+        }
+        return can;
+    };
     return Pipe;
 }(line_model_1.default));
 exports.default = Pipe;

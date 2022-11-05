@@ -55,14 +55,16 @@ var Pipe = /** @class */ (function () {
         this.ctx.restore();
     };
     Pipe.prototype.drawOverLaps = function () {
-        // this.canvas.model.overlap.list.map((l) => {
-        //   if (l) {
-        //     let _p = this.canvas.model.getPipeByID(l.id);
-        //     if (_p && l.ioVector) {
-        //       this.drawOverLap(l.ioVector);
-        //     }
-        //   }
-        // });
+        var _this = this;
+        this.canvas.model.overlap.list.map(function (l) {
+            var _a;
+            if (l) {
+                var _p = _this.canvas.model.getPipeByID(l.id);
+                if (_p && ((_a = l.pipe) === null || _a === void 0 ? void 0 : _a.vec)) {
+                    _this.drawOverLap(l.pipe.vec);
+                }
+            }
+        });
     };
     Pipe.prototype.draw = function () {
         this.drawPipes();

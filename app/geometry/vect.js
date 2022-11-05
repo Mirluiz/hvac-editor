@@ -60,17 +60,33 @@ var Vector = /** @class */ (function () {
         }
         return Math.atan2(this.y, this.x);
     };
+    Vector.prototype.angle1 = function (v) {
+        return Math.atan2(this.x * v.y - v.x * this.y, this.x * v.x + this.y * v.y);
+    };
     Vector.prototype.product = function (v) {
         return this.x * v.x + this.y * v.y;
     };
     Vector.prototype.normalize = function () {
+        if (this.length === 0) {
+            console.warn("v is zero");
+            new Vector(0, 0);
+        }
         return new Vector(this.x / this.length, this.y / this.length);
     };
     Vector.prototype.multiply = function (a) {
         return new Vector(this.x * a, this.y * a);
     };
-    Vector.prototype.perpendicular = function () {
-        return new Vector(this.y, -this.x);
+    Vector.prototype.perpendicular = function (side) {
+        if (side === void 0) { side = "left"; }
+        if (side === "left") {
+            return new Vector(this.y, -this.x);
+        }
+        else {
+            return new Vector(-this.y, this.x);
+        }
+    };
+    Vector.prototype.reverse = function () {
+        return new Vector(-this.x, -this.y);
     };
     Vector.prototype.clone = function () {
         return new Vector(this.x, this.y);
@@ -108,6 +124,9 @@ var Vector = /** @class */ (function () {
             v = v.sum(around);
         }
         return v;
+    };
+    Vector.prototype.scalar = function (v) {
+        return this.x * v.x + this.y * v.y;
     };
     return Vector;
 }());

@@ -7,6 +7,7 @@ import ValveGhostModel from "./ghost/heating/valve.model";
 import Overlap from "../overlap.model";
 import Fitting from "./heating/fitting.model";
 import { fittingModel } from "../../_test_/common";
+import { ToolbarMode } from "../controllers/toolbar.controller";
 
 class Canvas {
   private _walls: Array<Wall> = [];
@@ -15,7 +16,7 @@ class Canvas {
   private _fittings: Array<Fitting> = [];
   overlap: Overlap;
 
-  mode: "default" | "wall" | "pipe" | "valve" = "pipe";
+  mode: ToolbarMode = "pipe";
   subMode: "supply" | "return" | null = null;
   actionMode: "pipeLaying" | "wallLaying" | null = null;
   actionObject: Wall | Pipe | null | GhostPipe = null;
@@ -175,7 +176,7 @@ class Canvas {
   updateMode(mode: "default" | "wall" | "pipe" | "valve") {
     if (!this.mouse) return;
 
-    this.mode = mode;
+    // this.mode = mode;
 
     this.placingObject = null;
     this.actionObject = null;
