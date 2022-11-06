@@ -50,6 +50,7 @@ var Canvas = /** @class */ (function () {
             case "pipe":
                 this.pipe.mouseDown();
                 break;
+            case "radiator":
             case "valve":
                 this.object.mouseDown();
                 break;
@@ -98,6 +99,7 @@ var Canvas = /** @class */ (function () {
             case "pipe":
                 this.pipe.mouseMove();
                 break;
+            case "radiator":
             case "valve":
                 this.object.mouseMove();
                 break;

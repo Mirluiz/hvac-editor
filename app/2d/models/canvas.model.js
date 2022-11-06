@@ -7,13 +7,15 @@ var vect_1 = require("../../geometry/vect");
 var valve_model_1 = __importDefault(require("./ghost/heating/valve.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
 var common_1 = require("../../_test_/common");
+var radiator_model_1 = __importDefault(require("./ghost/heating/radiator.model"));
 var Canvas = /** @class */ (function () {
     function Canvas() {
         this._walls = [];
         this._pipes = [];
         this._valves = [];
         this._fittings = [];
-        this.mode = "pipe";
+        this._radiators = [];
+        this.mode = "default";
         this.subMode = null;
         this.actionMode = null;
         this.actionObject = null;
@@ -86,6 +88,21 @@ var Canvas = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Canvas.prototype, "radiators", {
+        get: function () {
+            return this._radiators;
+        },
+        set: function (value) {
+            this._radiators = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Canvas.prototype.addRadiator = function (radiator) {
+        this.radiators.push(radiator);
+        this.radiators = this.radiators;
+        return this.radiators[this.radiators.length - 1];
+    };
     Canvas.prototype.addWall = function (wall) {
         this.walls.push(wall);
         this.walls = this.walls;
@@ -150,13 +167,17 @@ var Canvas = /** @class */ (function () {
         return t;
     };
     Canvas.prototype.updateMode = function (mode) {
+        this.mode = mode;
         if (!this.mouse)
             return;
-        // this.mode = mode;
         this.placingObject = null;
         this.actionObject = null;
         if (mode === "valve") {
             this.placingObject = new valve_model_1.default(this, new vect_1.Vector(this.mouse.x, this.mouse.y));
+        }
+        if (mode === "radiator") {
+            console.log("-", mode);
+            this.placingObject = new radiator_model_1.default(this, new vect_1.Vector(this.mouse.x, this.mouse.y));
         }
     };
     Canvas.prototype.updateSubMode = function (subMode) {

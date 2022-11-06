@@ -3,6 +3,7 @@ import CanvasModel from "../models/canvas.model";
 import PipeView from "./pipe.view";
 import ValveView from "./valve.view";
 import FittingView from "./fitting.view";
+import RadiatorView from "./radiator.view";
 
 class Canvas {
   model: CanvasModel;
@@ -10,6 +11,7 @@ class Canvas {
   pipe: PipeView | null = null;
   valve: ValveView | null = null;
   fitting: FittingView | null = null;
+  radiator: RadiatorView | null = null;
 
   constructor(model: CanvasModel) {
     this.model = model;
@@ -27,6 +29,7 @@ class Canvas {
       this.pipe = new PipeView(this, this.model, ctx);
       this.valve = new ValveView(this, this.model, ctx);
       this.fitting = new FittingView(this, this.model, ctx);
+      this.radiator = new RadiatorView(this, this.model, ctx);
     }
   }
 
@@ -38,6 +41,7 @@ class Canvas {
     this.pipe?.draw();
     this.valve?.draw();
     this.fitting?.draw();
+    this.radiator?.draw();
   }
 
   clear() {

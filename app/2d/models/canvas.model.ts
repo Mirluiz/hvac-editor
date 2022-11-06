@@ -8,19 +8,22 @@ import Overlap from "../overlap.model";
 import Fitting from "./heating/fitting.model";
 import { fittingModel } from "../../_test_/common";
 import { ToolbarMode } from "../controllers/toolbar.controller";
+import RadiatorModel from "./heating/radiator.model";
+import RadiatorGhostModel from "./ghost/heating/radiator.model";
 
 class Canvas {
   private _walls: Array<Wall> = [];
   private _pipes: Array<Pipe> = [];
   private _valves: Array<Valve> = [];
   private _fittings: Array<Fitting> = [];
+  private _radiators: Array<RadiatorModel> = [];
   overlap: Overlap;
 
   mode: ToolbarMode = "default";
   subMode: "supply" | "return" | null = null;
   actionMode: "pipeLaying" | "wallLaying" | null = null;
   actionObject: Wall | Pipe | null | GhostPipe = null;
-  placingObject: Valve | ValveGhostModel | null = null;
+  placingObject: Valve | ValveGhostModel | RadiatorGhostModel | null = null;
 
   constructor() {
     this.overlap = new Overlap(this);
@@ -88,6 +91,21 @@ class Canvas {
 
   set fittings(value: Array<Fitting>) {
     this._fittings = value;
+  }
+
+  get radiators(): Array<RadiatorModel> {
+    return this._radiators;
+  }
+
+  set radiators(value: Array<RadiatorModel>) {
+    this._radiators = value;
+  }
+
+  addRadiator(radiator: RadiatorModel) {
+    this.radiators.push(radiator);
+    this.radiators = this.radiators;
+
+    return this.radiators[this.radiators.length - 1];
   }
 
   addWall(wall: Wall) {
@@ -173,7 +191,7 @@ class Canvas {
     return t;
   }
 
-  updateMode(mode: "default" | "wall" | "pipe" | "valve") {
+  updateMode(mode: ToolbarMode) {
     this.mode = mode;
 
     if (!this.mouse) return;
@@ -183,6 +201,14 @@ class Canvas {
 
     if (mode === "valve") {
       this.placingObject = new ValveGhostModel(
+        this,
+        new Vector(this.mouse.x, this.mouse.y)
+      );
+    }
+
+    if (mode === "radiator") {
+      console.log("-", mode);
+      this.placingObject = new RadiatorGhostModel(
         this,
         new Vector(this.mouse.x, this.mouse.y)
       );

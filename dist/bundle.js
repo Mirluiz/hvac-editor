@@ -47,6 +47,7 @@ var Canvas = /** @class */function () {
             case "pipe":
                 this.pipe.mouseDown();
                 break;
+            case "radiator":
             case "valve":
                 this.object.mouseDown();
                 break;
@@ -89,6 +90,7 @@ var Canvas = /** @class */function () {
             case "pipe":
                 this.pipe.mouseMove();
                 break;
+            case "radiator":
             case "valve":
                 this.object.mouseMove();
                 break;
@@ -134,7 +136,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":24,"../models/canvas.model":6,"../views/canvas.view":16,"../views/stats.view":19,"./object.controller":2,"./pipe.controller":3}],2:[function(require,module,exports){
+},{"../../geometry/vect":27,"../models/canvas.model":6,"../views/canvas.view":18,"../views/stats.view":22,"./object.controller":2,"./pipe.controller":3}],2:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -144,6 +146,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var valve_model_1 = __importDefault(require("../models/ghost/heating/valve.model"));
 var valve_model_2 = __importDefault(require("../models/heating/valve.model"));
+var radiator_model_1 = __importDefault(require("../models/ghost/heating/radiator.model"));
+var radiator_model_2 = __importDefault(require("../models/heating/radiator.model"));
 var Pipe = /** @class */function () {
     function Pipe(model) {
         this.model = model;
@@ -151,6 +155,8 @@ var Pipe = /** @class */function () {
     Pipe.prototype.mouseMove = function () {
         var bV = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
         var v = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        v = v.bindNet(this.model.config.net.step);
+        bV = bV.bindNet(this.model.config.net.step);
         if (this.model.placingObject && this.model.placingObject instanceof valve_model_1.default) {
             var overlaps = this.model.overlap.pipeOverlap(v);
             var pipeFound = null;
@@ -159,7 +165,6 @@ var Pipe = /** @class */function () {
                 var overlap = overlaps_1[_i];
                 if (overlap.pipe) {
                     pipeFound = new vect_1.Vector(overlap.pipe.vec.x, overlap.pipe.vec.y);
-                    this.model.placingObject.addPipe(overlap.pipe.object);
                     break;
                 }
             }
@@ -173,9 +178,12 @@ var Pipe = /** @class */function () {
                 document.body.style.cursor = "not-allowed";
             }
         }
+        if (this.model.placingObject && this.model.placingObject instanceof radiator_model_1.default) {
+            this.model.placingObject.center.x = bV.x;
+            this.model.placingObject.center.y = bV.y;
+        }
     };
     Pipe.prototype.mouseDown = function () {
-        // let v = new Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y)
         if (this.model.placingObject instanceof valve_model_1.default) {
             if (!this.model.placingObject.validation()) {
                 console.log("Validation error");
@@ -184,13 +192,22 @@ var Pipe = /** @class */function () {
             var valve = new valve_model_2.default(this.model, this.model.placingObject.center.clone());
             valve.merge();
         }
+        if (this.model.placingObject instanceof radiator_model_1.default) {
+            if (!this.model.placingObject.validation()) {
+                console.log("Validation error");
+                return;
+            }
+            var radiator = new radiator_model_2.default(this.model, this.model.placingObject.center.clone());
+            radiator.merge();
+            this.model.addRadiator(radiator);
+        }
     };
     Pipe.prototype.mouseUp = function (coord) {};
     return Pipe;
 }();
 exports.default = Pipe;
 
-},{"../../geometry/vect":24,"../models/ghost/heating/valve.model":10,"../models/heating/valve.model":13}],3:[function(require,module,exports){
+},{"../../geometry/vect":27,"../models/ghost/heating/radiator.model":10,"../models/ghost/heating/valve.model":11,"../models/heating/radiator.model":14,"../models/heating/valve.model":15}],3:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -238,7 +255,7 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../models/ghost/heating/pipe.model":9,"../models/heating/pipe.model":12}],4:[function(require,module,exports){
+},{"../models/ghost/heating/pipe.model":9,"../models/heating/pipe.model":13}],4:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -289,7 +306,7 @@ var Toolbar = /** @class */function () {
     Toolbar.prototype.handleMode = function (e) {
         var cT = e.currentTarget;
         var value = cT.getAttribute("data-value");
-        if (value === "default" || value === "wall" || value === "pipe" || value === "valve") {
+        if (value === "default" || value === "wall" || value === "pipe" || value === "radiator" || value === "valve") {
             this.model.updateMode(value);
         }
     };
@@ -297,7 +314,7 @@ var Toolbar = /** @class */function () {
 }();
 exports.default = Toolbar;
 
-},{"../views/toolbar.view":20}],5:[function(require,module,exports){
+},{"../views/toolbar.view":23}],5:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -327,12 +344,14 @@ var vect_1 = require("../../geometry/vect");
 var valve_model_1 = __importDefault(require("./ghost/heating/valve.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
 var common_1 = require("../../_test_/common");
+var radiator_model_1 = __importDefault(require("./ghost/heating/radiator.model"));
 var Canvas = /** @class */function () {
     function Canvas() {
         this._walls = [];
         this._pipes = [];
         this._valves = [];
         this._fittings = [];
+        this._radiators = [];
         this.mode = "default";
         this.subMode = null;
         this.actionMode = null;
@@ -406,6 +425,21 @@ var Canvas = /** @class */function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Canvas.prototype, "radiators", {
+        get: function get() {
+            return this._radiators;
+        },
+        set: function set(value) {
+            this._radiators = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Canvas.prototype.addRadiator = function (radiator) {
+        this.radiators.push(radiator);
+        this.radiators = this.radiators;
+        return this.radiators[this.radiators.length - 1];
+    };
     Canvas.prototype.addWall = function (wall) {
         this.walls.push(wall);
         this.walls = this.walls;
@@ -478,6 +512,10 @@ var Canvas = /** @class */function () {
         if (mode === "valve") {
             this.placingObject = new valve_model_1.default(this, new vect_1.Vector(this.mouse.x, this.mouse.y));
         }
+        if (mode === "radiator") {
+            console.log("-", mode);
+            this.placingObject = new radiator_model_1.default(this, new vect_1.Vector(this.mouse.x, this.mouse.y));
+        }
     };
     Canvas.prototype.updateSubMode = function (subMode) {
         this.subMode = subMode;
@@ -491,7 +529,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../_test_/common":22,"../../geometry/vect":24,"../overlap.model":15,"./ghost/heating/valve.model":10}],7:[function(require,module,exports){
+},{"../../_test_/common":25,"../../geometry/vect":27,"../overlap.model":17,"./ghost/heating/radiator.model":10,"./ghost/heating/valve.model":11}],7:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -533,7 +571,7 @@ var Arc = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Arc;
 
-},{"../main.model":14}],8:[function(require,module,exports){
+},{"../main.model":16}],8:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -575,7 +613,7 @@ var Line = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Line;
 
-},{"../main.model":14}],9:[function(require,module,exports){
+},{"../main.model":16}],9:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -689,6 +727,65 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../../../geometry/vect");
+var main_model_1 = __importDefault(require("../../main.model"));
+var Radiator = /** @class */function (_super) {
+    __extends(Radiator, _super);
+    function Radiator(model, center) {
+        var _this = _super.call(this) || this;
+        _this.width = 80;
+        _this.height = 40;
+        _this.IOs = [{
+            type: "return",
+            getRadiator: function getRadiator() {
+                return _this;
+            },
+            vec: new vect_1.Vector(-10, 0)
+        }, {
+            type: "supply",
+            getRadiator: function getRadiator() {
+                return _this;
+            },
+            vec: new vect_1.Vector(-10, 40)
+        }];
+        _this.center = center;
+        _this.model = model;
+        return _this;
+    }
+    Radiator.prototype.validation = function () {
+        return true;
+    };
+    return Radiator;
+}(main_model_1.default);
+exports.default = Radiator;
+
+},{"../../../../geometry/vect":27,"../../main.model":16}],11:[function(require,module,exports){
+"use strict";
+
+var __extends = undefined && undefined.__extends || function () {
+    var _extendStatics = function extendStatics(d, b) {
+        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
+            d.__proto__ = b;
+        } || function (d, b) {
+            for (var p in b) {
+                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+            }
+        };
+        return _extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        _extendStatics(d, b);
+        function __() {
+            this.constructor = d;
+        }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+}();
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 var arc_model_1 = __importDefault(require("../../geometry/arc.model"));
 var Valve = /** @class */function (_super) {
     __extends(Valve, _super);
@@ -716,16 +813,11 @@ var Valve = /** @class */function (_super) {
             return o.pipe;
         }));
     };
-    Valve.prototype.addPipe = function (pipe) {
-        this._pipes.push(pipe);
-        this.pipes = this._pipes;
-        return this.pipes[this.pipes.length - 1];
-    };
     return Valve;
 }(arc_model_1.default);
 exports.default = Valve;
 
-},{"../../geometry/arc.model":7}],11:[function(require,module,exports){
+},{"../../geometry/arc.model":7}],12:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -797,7 +889,7 @@ var Fitting = /** @class */function (_super) {
 }(arc_model_1.default);
 exports.default = Fitting;
 
-},{"../geometry/arc.model":7}],12:[function(require,module,exports){
+},{"../geometry/arc.model":7}],13:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -992,7 +1084,84 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../../../geometry/vect":24,"../geometry/line.model":8,"./fitting.model":11}],13:[function(require,module,exports){
+},{"../../../geometry/vect":27,"../geometry/line.model":8,"./fitting.model":12}],14:[function(require,module,exports){
+"use strict";
+
+var __extends = undefined && undefined.__extends || function () {
+    var _extendStatics = function extendStatics(d, b) {
+        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
+            d.__proto__ = b;
+        } || function (d, b) {
+            for (var p in b) {
+                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+            }
+        };
+        return _extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        _extendStatics(d, b);
+        function __() {
+            this.constructor = d;
+        }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+}();
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../../geometry/vect");
+var main_model_1 = __importDefault(require("../main.model"));
+var Radiator = /** @class */function (_super) {
+    __extends(Radiator, _super);
+    function Radiator(model, center) {
+        var _this = _super.call(this) || this;
+        _this.width = 80;
+        _this.height = 40;
+        _this.IOs = [{
+            type: "return",
+            getRadiator: function getRadiator() {
+                return _this;
+            },
+            vec: new vect_1.Vector(-10, 0)
+        }, {
+            type: "supply",
+            getRadiator: function getRadiator() {
+                return _this;
+            },
+            vec: new vect_1.Vector(-10, 40)
+        }];
+        _this.center = center;
+        _this.model = model;
+        return _this;
+    }
+    Object.defineProperty(Radiator.prototype, "pipes", {
+        get: function get() {
+            return [];
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Radiator.prototype.beforeMerge = function () {
+        return true;
+    };
+    Radiator.prototype.merge = function () {
+        var merged = false;
+        if (!this.beforeMerge()) return false;
+        this.afterMerge();
+        return merged;
+    };
+    Radiator.prototype.afterMerge = function () {};
+    Radiator.prototype.isClose = function (v) {
+        var distance = this.model.config.overlap.bindDistance;
+        return this.center.sub(v).length <= distance;
+    };
+    return Radiator;
+}(main_model_1.default);
+exports.default = Radiator;
+
+},{"../../../geometry/vect":27,"../main.model":16}],15:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -1089,7 +1258,7 @@ var Valve = /** @class */function (_super) {
 }(arc_model_1.default);
 exports.default = Valve;
 
-},{"../../../geometry/vect":24,"../geometry/arc.model":7,"./pipe.model":12}],14:[function(require,module,exports){
+},{"../../../geometry/vect":27,"../geometry/arc.model":7,"./pipe.model":13}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1102,7 +1271,7 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":26}],15:[function(require,module,exports){
+},{"../../utils":29}],17:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -1182,7 +1351,7 @@ var Overlap = /** @class */function () {
 }();
 exports.default = Overlap;
 
-},{"../geometry/vect":24}],16:[function(require,module,exports){
+},{"../geometry/vect":27}],18:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1193,11 +1362,13 @@ var vect_1 = require("../../geometry/vect");
 var pipe_view_1 = __importDefault(require("./pipe.view"));
 var valve_view_1 = __importDefault(require("./valve.view"));
 var fitting_view_1 = __importDefault(require("./fitting.view"));
+var radiator_view_1 = __importDefault(require("./radiator.view"));
 var Canvas = /** @class */function () {
     function Canvas(model) {
         this.pipe = null;
         this.valve = null;
         this.fitting = null;
+        this.radiator = null;
         this.model = model;
         this.container = document.querySelector("#editor");
         this.init();
@@ -1210,16 +1381,18 @@ var Canvas = /** @class */function () {
             this.pipe = new pipe_view_1.default(this, this.model, ctx);
             this.valve = new valve_view_1.default(this, this.model, ctx);
             this.fitting = new fitting_view_1.default(this, this.model, ctx);
+            this.radiator = new radiator_view_1.default(this, this.model, ctx);
         }
     };
     Canvas.prototype.draw = function () {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         this.clear();
         this.drawNet();
         this.drawWalls();
         (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.draw();
         (_b = this.valve) === null || _b === void 0 ? void 0 : _b.draw();
         (_c = this.fitting) === null || _c === void 0 ? void 0 : _c.draw();
+        (_d = this.radiator) === null || _d === void 0 ? void 0 : _d.draw();
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -1366,7 +1539,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":24,"./fitting.view":17,"./pipe.view":18,"./valve.view":21}],17:[function(require,module,exports){
+},{"../../geometry/vect":27,"./fitting.view":19,"./pipe.view":20,"./radiator.view":21,"./valve.view":24}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1492,7 +1665,7 @@ var Fitting = /** @class */function () {
 }();
 exports.default = Fitting;
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1575,7 +1748,80 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../models/ghost/heating/pipe.model":9}],19:[function(require,module,exports){
+},{"../models/ghost/heating/pipe.model":9}],21:[function(require,module,exports){
+"use strict";
+
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../geometry/vect");
+var radiator_model_1 = __importDefault(require("../models/ghost/heating/radiator.model"));
+var Radiator = /** @class */function () {
+    function Radiator(view, model, ctx) {
+        this.canvas = view;
+        this.ctx = ctx;
+    }
+    Radiator.prototype.drawRadiators = function () {
+        var _this = this;
+        this.canvas.model.radiators.map(function (radiator) {
+            _this.drawRadiator(radiator);
+        });
+    };
+    Radiator.prototype.drawRadiator = function (radiator) {
+        var _this = this;
+        this.ctx.save();
+        this.ctx.beginPath();
+        var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center);
+        var wP = this.canvas.model.getLocalCoordinates(radiator.center.x, radiator.center.y);
+        this.ctx.rect(toCenter.x, toCenter.y, radiator.width, radiator.height);
+        this.ctx.stroke();
+        this.ctx.restore();
+        radiator.IOs.map(function (io) {
+            var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center.sum(io.vec));
+            var wP = _this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
+            _this.ctx.save();
+            _this.ctx.beginPath();
+            _this.ctx.strokeStyle = "red";
+            _this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
+            _this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
+            _this.ctx.fill();
+            _this.ctx.restore();
+        });
+    };
+    Radiator.prototype.drawGhost = function (radiator) {
+        var _this = this;
+        this.ctx.save();
+        this.ctx.beginPath();
+        var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center);
+        var wP = this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
+        this.ctx.strokeStyle = "red";
+        this.ctx.rect(wP.x, wP.y, radiator.width, radiator.height);
+        this.ctx.stroke();
+        this.ctx.restore();
+        radiator.IOs.map(function (io) {
+            var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center.sum(io.vec));
+            var wP = _this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
+            _this.ctx.save();
+            _this.ctx.beginPath();
+            _this.ctx.strokeStyle = "red";
+            _this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
+            _this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
+            _this.ctx.fill();
+            _this.ctx.restore();
+        });
+    };
+    Radiator.prototype.draw = function () {
+        this.drawRadiators();
+        if (this.canvas.model.placingObject && this.canvas.model.placingObject instanceof radiator_model_1.default) {
+            this.drawGhost(this.canvas.model.placingObject);
+        }
+    };
+    return Radiator;
+}();
+exports.default = Radiator;
+
+},{"../../geometry/vect":27,"../models/ghost/heating/radiator.model":10}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1604,7 +1850,7 @@ var Stats = /** @class */function () {
 }();
 exports.default = Stats;
 
-},{}],20:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1642,7 +1888,7 @@ var Toolbar = /** @class */function () {
 }();
 exports.default = Toolbar;
 
-},{}],21:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1737,7 +1983,7 @@ var Valve = /** @class */function () {
 }();
 exports.default = Valve;
 
-},{"../../geometry/vect":24,"../models/ghost/heating/valve.model":10}],22:[function(require,module,exports){
+},{"../../geometry/vect":27,"../models/ghost/heating/valve.model":11}],25:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -2421,7 +2667,7 @@ var _3Pipes = function _3Pipes(model, pipes, step) {
     combinationGroupOffset += yOffsetStep * step;
 };
 
-},{"../2d/models/heating/pipe.model":12,"../geometry/vect":24}],23:[function(require,module,exports){
+},{"../2d/models/heating/pipe.model":13,"../geometry/vect":27}],26:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -2440,7 +2686,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":5}],24:[function(require,module,exports){
+},{"./2d":5}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2578,7 +2824,7 @@ var Vector = /** @class */function () {
 }();
 exports.Vector = Vector;
 
-},{}],25:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -2589,7 +2835,7 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":23}],26:[function(require,module,exports){
+},{"./app":26}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2612,6 +2858,6 @@ function getProperty(obj, key) {
 }
 exports.getProperty = getProperty;
 
-},{}]},{},[25])
+},{}]},{},[28])
 
 //# sourceMappingURL=bundle.js.map

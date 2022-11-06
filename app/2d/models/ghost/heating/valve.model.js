@@ -43,11 +43,6 @@ var Valve = /** @class */ (function (_super) {
         var overlaps = this.model.overlap.pipeOverlap(this.center);
         return overlaps.length > 0 && Boolean(overlaps.find(function (o) { return o.pipe; }));
     };
-    Valve.prototype.addPipe = function (pipe) {
-        this._pipes.push(pipe);
-        this.pipes = this._pipes;
-        return this.pipes[this.pipes.length - 1];
-    };
     return Valve;
 }(arc_model_1.default));
 exports.default = Valve;

@@ -57,6 +57,7 @@ class Toolbar {
       value === "default" ||
       value === "wall" ||
       value === "pipe" ||
+      value === "radiator" ||
       value === "valve"
     ) {
       this.model.updateMode(value);
@@ -69,6 +70,6 @@ export type ToolbarMenu =
   | "architecture"
   | "heating"
   | "ventilation";
-export type ToolbarMode = "default" | "wall" | "pipe" | "valve";
+export type ToolbarMode = "default" | "wall" | "pipe" | "valve" | "radiator";
 
 export default Toolbar;

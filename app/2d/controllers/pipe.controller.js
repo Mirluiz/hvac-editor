@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var vect_1 = require("../../geometry/vect");
 var pipe_model_1 = __importDefault(require("../models/ghost/heating/pipe.model"));
 var pipe_model_2 = __importDefault(require("../models/heating/pipe.model"));
 var Pipe = /** @class */ (function () {
@@ -11,7 +10,8 @@ var Pipe = /** @class */ (function () {
         this.model = model;
     }
     Pipe.prototype.mouseMove = function () {
-        var coord = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+        var coord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        coord = coord.bindNet(this.model.config.net.step);
         if (this.model.actionObject &&
             this.model.actionObject instanceof pipe_model_1.default) {
             this.model.actionObject.to.vec.x = coord.x;
@@ -26,7 +26,8 @@ var Pipe = /** @class */ (function () {
     };
     Pipe.prototype.mouseDown = function () {
         var _a;
-        var coord = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+        var coord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        coord = coord.bindNet(this.model.config.net.step);
         if (!this.model.actionObject) {
             this.model.actionMode = "pipeLaying";
         }

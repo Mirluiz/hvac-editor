@@ -29,13 +29,6 @@ class Valve extends Arc {
 
     return overlaps.length > 0 && Boolean(overlaps.find((o) => o.pipe));
   }
-
-  addPipe(pipe: Pipe) {
-    this._pipes.push(pipe);
-    this.pipes = this._pipes;
-
-    return this.pipes[this.pipes.length - 1];
-  }
 }
 
 export default Valve;

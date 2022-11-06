@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var valve_model_1 = __importDefault(require("../models/ghost/heating/valve.model"));
 var valve_model_2 = __importDefault(require("../models/heating/valve.model"));
+var radiator_model_1 = __importDefault(require("../models/ghost/heating/radiator.model"));
+var radiator_model_2 = __importDefault(require("../models/heating/radiator.model"));
 var Pipe = /** @class */ (function () {
     function Pipe(model) {
         this.model = model;
@@ -13,6 +15,8 @@ var Pipe = /** @class */ (function () {
     Pipe.prototype.mouseMove = function () {
         var bV = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
         var v = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        v = v.bindNet(this.model.config.net.step);
+        bV = bV.bindNet(this.model.config.net.step);
         if (this.model.placingObject &&
             this.model.placingObject instanceof valve_model_1.default) {
             var overlaps = this.model.overlap.pipeOverlap(v);
@@ -22,7 +26,6 @@ var Pipe = /** @class */ (function () {
                 var overlap = overlaps_1[_i];
                 if (overlap.pipe) {
                     pipeFound = new vect_1.Vector(overlap.pipe.vec.x, overlap.pipe.vec.y);
-                    this.model.placingObject.addPipe(overlap.pipe.object);
                     break;
                 }
             }
@@ -37,9 +40,13 @@ var Pipe = /** @class */ (function () {
                 document.body.style.cursor = "not-allowed";
             }
         }
+        if (this.model.placingObject &&
+            this.model.placingObject instanceof radiator_model_1.default) {
+            this.model.placingObject.center.x = bV.x;
+            this.model.placingObject.center.y = bV.y;
+        }
     };
     Pipe.prototype.mouseDown = function () {
-        // let v = new Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y)
         if (this.model.placingObject instanceof valve_model_1.default) {
             if (!this.model.placingObject.validation()) {
                 console.log("Validation error");
@@ -47,6 +54,15 @@ var Pipe = /** @class */ (function () {
             }
             var valve = new valve_model_2.default(this.model, this.model.placingObject.center.clone());
             valve.merge();
+        }
+        if (this.model.placingObject instanceof radiator_model_1.default) {
+            if (!this.model.placingObject.validation()) {
+                console.log("Validation error");
+                return;
+            }
+            var radiator = new radiator_model_2.default(this.model, this.model.placingObject.center.clone());
+            radiator.merge();
+            this.model.addRadiator(radiator);
         }
     };
     Pipe.prototype.mouseUp = function (coord) { };

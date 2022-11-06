@@ -7,11 +7,13 @@ var vect_1 = require("../../geometry/vect");
 var pipe_view_1 = __importDefault(require("./pipe.view"));
 var valve_view_1 = __importDefault(require("./valve.view"));
 var fitting_view_1 = __importDefault(require("./fitting.view"));
+var radiator_view_1 = __importDefault(require("./radiator.view"));
 var Canvas = /** @class */ (function () {
     function Canvas(model) {
         this.pipe = null;
         this.valve = null;
         this.fitting = null;
+        this.radiator = null;
         this.model = model;
         this.container = document.querySelector("#editor");
         this.init();
@@ -24,16 +26,18 @@ var Canvas = /** @class */ (function () {
             this.pipe = new pipe_view_1.default(this, this.model, ctx);
             this.valve = new valve_view_1.default(this, this.model, ctx);
             this.fitting = new fitting_view_1.default(this, this.model, ctx);
+            this.radiator = new radiator_view_1.default(this, this.model, ctx);
         }
     };
     Canvas.prototype.draw = function () {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         this.clear();
         this.drawNet();
         this.drawWalls();
         (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.draw();
         (_b = this.valve) === null || _b === void 0 ? void 0 : _b.draw();
         (_c = this.fitting) === null || _c === void 0 ? void 0 : _c.draw();
+        (_d = this.radiator) === null || _d === void 0 ? void 0 : _d.draw();
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -176,14 +180,17 @@ var Canvas = /** @class */ (function () {
     Canvas.prototype.initCanvasContainer = function () {
         if (!this.container)
             return;
-        this.container.style.height = "600px";
-        this.container.style.width = "900px";
-        this.container.height = 600;
-        this.container.width = 900;
-        this.container.style.border = "1px solid black";
+        var h = Math.ceil(screen.height / this.model.config.net.step) *
+            this.model.config.net.step;
+        var w = Math.ceil(screen.width / this.model.config.net.step) *
+            this.model.config.net.step;
+        this.container.style.height = h + "px";
+        this.container.style.width = w + "px";
+        this.container.height = h;
+        this.container.width = w;
         this.model.canvasSize = {
-            y: 600,
-            x: 900,
+            y: h,
+            x: w,
         };
     };
     return Canvas;
