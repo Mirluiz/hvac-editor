@@ -29,21 +29,30 @@ var Radiator = /** @class */ (function (_super) {
         _this.IOs = [
             {
                 type: "return",
+                getVecAbs: function () {
+                    var v = new vect_1.Vector(-10, 0);
+                    return v.sum(_this.objectCenter).sum(_this.center);
+                },
                 getRadiator: function () {
                     return _this;
                 },
-                vec: new vect_1.Vector(10, 10),
+                vec: new vect_1.Vector(-10, 0),
             },
             {
                 type: "supply",
+                getVecAbs: function () {
+                    var v = new vect_1.Vector(-10, 40);
+                    return v.sum(_this.objectCenter).sum(_this.center);
+                },
                 getRadiator: function () {
                     return _this;
                 },
-                vec: new vect_1.Vector(10, 20),
+                vec: new vect_1.Vector(-10, 40),
             },
         ];
         _this.center = center;
         _this.model = model;
+        _this.objectCenter = new vect_1.Vector(_this.width / 2, _this.height / 2).reverse();
         return _this;
     }
     Object.defineProperty(Radiator.prototype, "pipes", {

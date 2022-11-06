@@ -1,7 +1,7 @@
 import CanvasModel from "../models/canvas.model";
 import { IVec, Vector } from "../../geometry/vect";
 import PipeGhostModel from "../models/ghost/heating/pipe.model";
-import PipeModel from "../models/heating/pipe.model";
+import PipeModel, { PipeTarget } from "../models/heating/pipe.model";
 
 class Pipe {
   model: CanvasModel;
@@ -11,19 +11,35 @@ class Pipe {
   }
 
   mouseMove() {
-    let coord = this.model.getWorldCoordinates(
+    let v = this.model.getWorldCoordinates(
       this.model.mouse.x,
       this.model.mouse.y
     );
 
-    coord = coord.bindNet(this.model.config.net.step);
+    v = v.bindNet(this.model.config.net.step);
 
     if (
       this.model.actionObject &&
       this.model.actionObject instanceof PipeGhostModel
     ) {
-      this.model.actionObject.to.vec.x = coord.x;
-      this.model.actionObject.to.vec.y = coord.y;
+      let target: null | PipeTarget = null;
+
+      for (let overlap of [
+        ...this.model.overlap.list,
+        ...this.model.overlap.boundList,
+      ]) {
+        if (overlap.io) {
+          target = overlap.io;
+        }
+      }
+
+      if (target) {
+        this.model.actionObject.to.vec.x = target.getVecAbs().x;
+        this.model.actionObject.to.vec.y = target.getVecAbs().y;
+      } else {
+        this.model.actionObject.to.vec.x = v.x;
+        this.model.actionObject.to.vec.y = v.y;
+      }
 
       if (!this.model.actionObject.validation()) {
         document.body.style.cursor = "not-allowed";

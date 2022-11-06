@@ -6,6 +6,7 @@ import RadiatorModel from "../ghost/heating/radiator.model";
 
 export interface IRadiatorIO<T> {
   vec: IVec;
+  getVecAbs: () => IVec;
   type: "return" | "supply";
   getRadiator: () => T;
 }
@@ -14,7 +15,8 @@ class Radiator extends Main {
   model: CanvasModel;
   width: number = 80;
   height: number = 40;
-  center: IVec;
+  center: IVec; // left top position
+  objectCenter: IVec; // center of object
   IOs: [IRadiatorIO<Radiator>, IRadiatorIO<Radiator>];
 
   constructor(model: CanvasModel, center: IVec) {
@@ -23,6 +25,10 @@ class Radiator extends Main {
     this.IOs = [
       {
         type: "return",
+        getVecAbs: () => {
+          let v = new Vector(-10, 0);
+          return v.sum(this.objectCenter).sum(this.center);
+        },
         getRadiator: () => {
           return this;
         },
@@ -31,6 +37,10 @@ class Radiator extends Main {
 
       {
         type: "supply",
+        getVecAbs: () => {
+          let v = new Vector(-10, 40);
+          return v.sum(this.objectCenter).sum(this.center);
+        },
         getRadiator: () => {
           return this;
         },
@@ -40,6 +50,7 @@ class Radiator extends Main {
 
     this.center = center;
     this.model = model;
+    this.objectCenter = new Vector(this.width / 2, this.height / 2).reverse();
   }
 
   get pipes(): Array<Pipe> {

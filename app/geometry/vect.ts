@@ -125,7 +125,8 @@ export class Vector implements IVec {
 
         if (!ctx) return;
         ctx.save();
-        ctx.arc(this.x, this.y, 2, 0, 2 * Math.PI);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 5, 0, 2 * Math.PI);
         ctx.fillStyle = "black";
         ctx.fill();
         ctx.restore();

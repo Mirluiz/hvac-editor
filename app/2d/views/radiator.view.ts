@@ -27,9 +27,7 @@ class Radiator {
     this.ctx.save();
     this.ctx.beginPath();
 
-    let toCenter = new Vector(-radiator.width / 2, -radiator.height / 2).sum(
-      radiator.center
-    );
+    let toCenter = radiator.objectCenter.sum(radiator.center);
 
     let wP = this.canvas.model.getLocalCoordinates(
       radiator.center.x,
@@ -41,10 +39,7 @@ class Radiator {
     this.ctx.restore();
 
     radiator.IOs.map((io) => {
-      let toCenter = new Vector(-radiator.width / 2, -radiator.height / 2).sum(
-        radiator.center.sum(io.vec)
-      );
-
+      let toCenter = io.getVecAbs();
       let wP = this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
 
       this.ctx.save();
@@ -79,13 +74,13 @@ class Radiator {
 
       let wP = this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
 
-      this.ctx.save();
-      this.ctx.beginPath();
-      this.ctx.strokeStyle = "red";
-      this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
-      this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
-      this.ctx.fill();
-      this.ctx.restore();
+      // this.ctx.save();
+      // this.ctx.beginPath();
+      // this.ctx.strokeStyle = "red";
+      // this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
+      // this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
+      // this.ctx.fill();
+      // this.ctx.restore();
     });
   }
 

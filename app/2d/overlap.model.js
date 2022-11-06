@@ -17,16 +17,17 @@ var Overlap = /** @class */ (function () {
         this.walls = [];
         this.pipes = [];
         this.valves = [];
+        this.objectIOs = [];
         this.list = [];
-        this.netBoundList = [];
+        this.boundList = [];
         this.model = model;
     }
     Overlap.prototype.update = function () {
-        var v = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+        var bV = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+        var v = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
         this.wallsOverlap();
-        this.list = __spreadArray([], this.pipeOverlap(v), true);
-        this.updateList();
-        // this.updateNetBoundList();
+        this.list = __spreadArray(__spreadArray([], this.pipeOverlap(v), true), this.IOOverlap(v), true);
+        this.boundList = __spreadArray(__spreadArray([], this.pipeOverlap(bV), true), this.IOOverlap(bV), true);
     };
     Overlap.prototype.wallsOverlap = function () {
         this.model.walls.map(function () { });
@@ -68,10 +69,29 @@ var Overlap = /** @class */ (function () {
         });
         return ret;
     };
-    Overlap.prototype.updateList = function () {
-        var _a;
-        this.list = [];
-        (_a = this.list).push.apply(_a, this.pipes);
+    Overlap.prototype.IOOverlap = function (vec) {
+        var ret = [];
+        var bind = this.model.config.overlap.bindDistance;
+        this.model.radiators.map(function (radiator) {
+            radiator.IOs.map(function (io) {
+                var _r = null;
+                if (io.getVecAbs().sub(vec).length <= bind) {
+                    _r = {
+                        id: radiator.id,
+                        io: io,
+                    };
+                }
+                if (_r)
+                    ret.push(_r);
+            });
+        });
+        if (ret.length > 1) {
+            ret.sort(function (a, b) {
+                return 1;
+                // return a.io?.vec.x -
+            });
+        }
+        return ret;
     };
     return Overlap;
 }());

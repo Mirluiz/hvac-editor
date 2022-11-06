@@ -1,8 +1,10 @@
 import Line from "../../geometry/line.model";
 import { IVec } from "../../../../geometry/vect";
 import CanvasModel from "../../canvas.model";
+import { PipeTarget } from "../../heating/pipe.model";
 
 interface IGhostPipeEnd {
+  target: PipeTarget;
   vec: IVec;
   getPipe: () => Pipe;
   getOpposite: () => IGhostPipeEnd;
@@ -14,6 +16,7 @@ class Pipe extends Line<IGhostPipeEnd> {
   constructor(model: CanvasModel, from: IVec, to: IVec) {
     super(
       {
+        target: null,
         vec: from,
         getPipe: () => {
           return this;
@@ -23,6 +26,7 @@ class Pipe extends Line<IGhostPipeEnd> {
         },
       },
       {
+        target: null,
         vec: to,
         getPipe: () => {
           return this;

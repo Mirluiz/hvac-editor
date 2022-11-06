@@ -17,24 +17,47 @@ var Radiator = /** @class */ (function () {
         });
     };
     Radiator.prototype.drawRadiator = function (radiator) {
+        var _this = this;
         this.ctx.save();
         this.ctx.beginPath();
-        var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center);
+        var toCenter = radiator.objectCenter.sum(radiator.center);
         var wP = this.canvas.model.getLocalCoordinates(radiator.center.x, radiator.center.y);
-        this.ctx.strokeStyle = "red";
         this.ctx.rect(toCenter.x, toCenter.y, radiator.width, radiator.height);
         this.ctx.stroke();
         this.ctx.restore();
+        radiator.IOs.map(function (io) {
+            var toCenter = io.getVecAbs();
+            var wP = _this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
+            _this.ctx.save();
+            _this.ctx.beginPath();
+            _this.ctx.strokeStyle = "red";
+            _this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
+            _this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
+            _this.ctx.fill();
+            _this.ctx.restore();
+        });
     };
     Radiator.prototype.drawGhost = function (radiator) {
+        var _this = this;
         this.ctx.save();
         this.ctx.beginPath();
         var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center);
-        var wP = this.canvas.model.getLocalCoordinates(radiator.center.x, radiator.center.y);
+        var wP = this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
         this.ctx.strokeStyle = "red";
-        this.ctx.rect(toCenter.x, toCenter.y, radiator.width, radiator.height);
+        this.ctx.rect(wP.x, wP.y, radiator.width, radiator.height);
         this.ctx.stroke();
         this.ctx.restore();
+        radiator.IOs.map(function (io) {
+            var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center.sum(io.vec));
+            var wP = _this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
+            // this.ctx.save();
+            // this.ctx.beginPath();
+            // this.ctx.strokeStyle = "red";
+            // this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
+            // this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
+            // this.ctx.fill();
+            // this.ctx.restore();
+        });
     };
     Radiator.prototype.draw = function () {
         this.drawRadiators();

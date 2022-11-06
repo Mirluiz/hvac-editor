@@ -23,6 +23,7 @@ var Pipe = /** @class */ (function (_super) {
     __extends(Pipe, _super);
     function Pipe(model, from, to) {
         var _this = _super.call(this, {
+            target: null,
             vec: from,
             getPipe: function () {
                 return _this;
@@ -31,6 +32,7 @@ var Pipe = /** @class */ (function (_super) {
                 return _this.to;
             },
         }, {
+            target: null,
             vec: to,
             getPipe: function () {
                 return _this;

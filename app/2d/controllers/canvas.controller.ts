@@ -115,6 +115,8 @@ class Canvas {
       Math.round(this.model.mouse.y / this.model.config.net.step) *
       this.model.config.net.step;
 
+    this.model.overlap.update();
+
     switch (this.model.mode) {
       case "default":
         break;
@@ -128,8 +130,6 @@ class Canvas {
         this.object.mouseMove();
         break;
     }
-
-    this.model.overlap.update();
 
     this.stats.render();
     this.view.draw();

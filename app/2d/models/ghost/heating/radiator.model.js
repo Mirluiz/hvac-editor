@@ -29,44 +29,33 @@ var Radiator = /** @class */ (function (_super) {
         _this.IOs = [
             {
                 type: "return",
+                getVecAbs: function () {
+                    var v = new vect_1.Vector(-10, 0);
+                    return v.sum(_this.center);
+                },
                 getRadiator: function () {
                     return _this;
                 },
-                vec: new vect_1.Vector(10, 10),
+                vec: new vect_1.Vector(-10, 0),
             },
             {
                 type: "supply",
+                getVecAbs: function () {
+                    var v = new vect_1.Vector(-10, 40);
+                    return v.sum(_this.center);
+                },
                 getRadiator: function () {
                     return _this;
                 },
-                vec: new vect_1.Vector(10, 20),
+                vec: new vect_1.Vector(-10, 40),
             },
         ];
         _this.center = center;
         _this.model = model;
         return _this;
     }
-    Object.defineProperty(Radiator.prototype, "pipes", {
-        get: function () {
-            return [];
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Radiator.prototype.beforeMerge = function () {
+    Radiator.prototype.validation = function () {
         return true;
-    };
-    Radiator.prototype.merge = function () {
-        var merged = false;
-        if (!this.beforeMerge())
-            return false;
-        this.afterMerge();
-        return merged;
-    };
-    Radiator.prototype.afterMerge = function () { };
-    Radiator.prototype.isClose = function (v) {
-        var distance = this.model.config.overlap.bindDistance;
-        return this.center.sub(v).length <= distance;
     };
     return Radiator;
 }(main_model_1.default));

@@ -104,7 +104,8 @@ var Vector = /** @class */ (function () {
                 if (!ctx)
                     return;
                 ctx.save();
-                ctx.arc(_this.x, _this.y, 2, 0, 2 * Math.PI);
+                ctx.beginPath();
+                ctx.arc(_this.x, _this.y, 5, 0, 2 * Math.PI);
                 ctx.fillStyle = "black";
                 ctx.fill();
                 ctx.restore();

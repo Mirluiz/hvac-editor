@@ -4,6 +4,7 @@ import Valve from "./models/heating/valve.model";
 import CanvasModel from "./models/canvas.model";
 import { IVec, Vector } from "../geometry/vect";
 import Fitting from "./models/heating/fitting.model";
+import Radiator, { IRadiatorIO } from "./models/heating/radiator.model";
 
 class Overlap {
   readonly model: CanvasModel;
@@ -14,21 +15,22 @@ class Overlap {
   private walls: Array<IOverlap> = [];
   private pipes: Array<IOverlap> = [];
   private valves: Array<IOverlapValve> = [];
+  private objectIOs: Array<IOverlap> = [];
 
   list: Array<IOverlap> = [];
-  netBoundList: Array<IOverlap> = [];
+  boundList: Array<IOverlap> = [];
 
   constructor(model: CanvasModel) {
     this.model = model;
   }
 
   update() {
-    let v = new Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+    let bV = new Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+    let v = new Vector(this.model.mouse.x, this.model.mouse.y);
 
     this.wallsOverlap();
-    this.list = [...this.pipeOverlap(v)];
-    this.updateList();
-    // this.updateNetBoundList();
+    this.list = [...this.pipeOverlap(v), ...this.IOOverlap(v)];
+    this.boundList = [...this.pipeOverlap(bV), ...this.IOOverlap(bV)];
   }
 
   wallsOverlap() {
@@ -81,10 +83,33 @@ class Overlap {
     return ret;
   }
 
-  updateList() {
-    this.list = [];
+  IOOverlap(vec: IVec): Array<IOverlap> {
+    let ret: Array<IOverlap> = [];
 
-    this.list.push(...this.pipes);
+    let bind = this.model.config.overlap.bindDistance;
+
+    this.model.radiators.map((radiator) => {
+      radiator.IOs.map((io) => {
+        let _r: IOverlap | null = null;
+        if (io.getVecAbs().sub(vec).length <= bind) {
+          _r = {
+            id: radiator.id,
+            io: io,
+          };
+        }
+
+        if (_r) ret.push(_r);
+      });
+    });
+
+    if (ret.length > 1) {
+      ret.sort((a, b) => {
+        return 1;
+        // return a.io?.vec.x -
+      });
+    }
+
+    return ret;
   }
 }
 
@@ -93,6 +118,7 @@ export interface IOverlap {
   pipe?: { object: Pipe; vec: IVec };
   pipeEnd?: IPipeEnd;
   fitting?: Fitting;
+  io?: IRadiatorIO<Radiator>;
 }
 
 export interface IOverlapValve extends IOverlap {}

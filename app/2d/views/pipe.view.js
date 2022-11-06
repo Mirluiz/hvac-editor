@@ -44,6 +44,30 @@ var Pipe = /** @class */ (function () {
         this.ctx.lineWidth = pipe.width * 2;
         this.ctx.stroke();
         this.ctx.restore();
+        if (pipe.from && pipe.from.target && pipe.from.target) {
+            if ("getRadiator" in pipe.from.target) {
+                var _wp = pipe.from.target.getVecAbs();
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.strokeStyle = "red";
+                this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+                this.ctx.fillStyle = "#ADD8E6";
+                this.ctx.fill();
+                this.ctx.restore();
+            }
+        }
+        if (pipe.to && pipe.to.target && pipe.to.target) {
+            if ("getRadiator" in pipe.to.target) {
+                var _wp = pipe.to.target.getVecAbs();
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.strokeStyle = "red";
+                this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+                this.ctx.fillStyle = "#ADD8E6";
+                this.ctx.fill();
+                this.ctx.restore();
+            }
+        }
     };
     Pipe.prototype.drawOverLap = function (coordinate) {
         this.ctx.save();

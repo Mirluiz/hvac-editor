@@ -3,8 +3,9 @@ import Line from "../geometry/line.model";
 import CanvasModel from "../canvas.model";
 import Fitting from "./fitting.model";
 import Valve from "./valve.model";
+import Radiator, { IRadiatorIO } from "./radiator.model";
 
-export type PipeTarget = null | Fitting | Valve;
+export type PipeTarget = null | Fitting | Valve | IRadiatorIO<Radiator>;
 
 export interface IPipeEnd {
   target: PipeTarget;

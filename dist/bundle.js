@@ -82,6 +82,7 @@ var Canvas = /** @class */function () {
         }
         this.model.netBoundMouse.x = Math.round(this.model.mouse.x / this.model.config.net.step) * this.model.config.net.step;
         this.model.netBoundMouse.y = Math.round(this.model.mouse.y / this.model.config.net.step) * this.model.config.net.step;
+        this.model.overlap.update();
         switch (this.model.mode) {
             case "default":
                 break;
@@ -95,7 +96,6 @@ var Canvas = /** @class */function () {
                 this.object.mouseMove();
                 break;
         }
-        this.model.overlap.update();
         this.stats.render();
         this.view.draw();
     };
@@ -221,11 +221,21 @@ var Pipe = /** @class */function () {
         this.model = model;
     }
     Pipe.prototype.mouseMove = function () {
-        var coord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
-        coord = coord.bindNet(this.model.config.net.step);
+        var v = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        v = v.bindNet(this.model.config.net.step);
         if (this.model.actionObject && this.model.actionObject instanceof pipe_model_1.default) {
-            this.model.actionObject.to.vec.x = coord.x;
-            this.model.actionObject.to.vec.y = coord.y;
+            this.model.overlap.list.map(function (overlap) {
+                if (overlap.pipeEnd) {}
+            });
+            console.log("this.model.overlap", this.model.overlap.list);
+            // for (let overlap of overlaps) {
+            //   if (overlap.pipe) {
+            //     pipeFound = new Vector(overlap.pipe.vec.x, overlap.pipe.vec.y);
+            //     break;
+            //   }
+            // }
+            this.model.actionObject.to.vec.x = v.x;
+            this.model.actionObject.to.vec.y = v.y;
             if (!this.model.actionObject.validation()) {
                 document.body.style.cursor = "not-allowed";
             } else {
@@ -737,12 +747,20 @@ var Radiator = /** @class */function (_super) {
         _this.height = 40;
         _this.IOs = [{
             type: "return",
+            getVecAbs: function getVecAbs() {
+                var v = new vect_1.Vector(-10, 0);
+                return v.sum(_this.center);
+            },
             getRadiator: function getRadiator() {
                 return _this;
             },
             vec: new vect_1.Vector(-10, 0)
         }, {
             type: "supply",
+            getVecAbs: function getVecAbs() {
+                var v = new vect_1.Vector(-10, 40);
+                return v.sum(_this.center);
+            },
             getRadiator: function getRadiator() {
                 return _this;
             },
@@ -1121,12 +1139,20 @@ var Radiator = /** @class */function (_super) {
         _this.height = 40;
         _this.IOs = [{
             type: "return",
+            getVecAbs: function getVecAbs() {
+                var v = new vect_1.Vector(-10, 0);
+                return v.sum(_this.objectCenter).sum(_this.center);
+            },
             getRadiator: function getRadiator() {
                 return _this;
             },
             vec: new vect_1.Vector(-10, 0)
         }, {
             type: "supply",
+            getVecAbs: function getVecAbs() {
+                var v = new vect_1.Vector(-10, 40);
+                return v.sum(_this.objectCenter).sum(_this.center);
+            },
             getRadiator: function getRadiator() {
                 return _this;
             },
@@ -1134,6 +1160,7 @@ var Radiator = /** @class */function (_super) {
         }];
         _this.center = center;
         _this.model = model;
+        _this.objectCenter = new vect_1.Vector(_this.width / 2, _this.height / 2).reverse();
         return _this;
     }
     Object.defineProperty(Radiator.prototype, "pipes", {
@@ -1292,16 +1319,17 @@ var Overlap = /** @class */function () {
         this.walls = [];
         this.pipes = [];
         this.valves = [];
+        this.objectIOs = [];
         this.list = [];
-        this.netBoundList = [];
+        this.boundList = [];
         this.model = model;
     }
     Overlap.prototype.update = function () {
-        var v = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+        var bV = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+        var v = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
         this.wallsOverlap();
-        this.list = __spreadArray([], this.pipeOverlap(v), true);
-        this.updateList();
-        // this.updateNetBoundList();
+        this.list = __spreadArray(__spreadArray([], this.pipeOverlap(v), true), this.IOOverlap(v), true);
+        this.boundList = __spreadArray(__spreadArray([], this.pipeOverlap(bV), true), this.IOOverlap(bV), true);
     };
     Overlap.prototype.wallsOverlap = function () {
         this.model.walls.map(function () {});
@@ -1342,10 +1370,28 @@ var Overlap = /** @class */function () {
         });
         return ret;
     };
-    Overlap.prototype.updateList = function () {
-        var _a;
-        this.list = [];
-        (_a = this.list).push.apply(_a, this.pipes);
+    Overlap.prototype.IOOverlap = function (vec) {
+        var ret = [];
+        var bind = this.model.config.overlap.bindDistance;
+        this.model.radiators.map(function (radiator) {
+            radiator.IOs.map(function (io) {
+                var _r = null;
+                if (io.getVecAbs().sub(vec).length <= bind) {
+                    _r = {
+                        id: radiator.id,
+                        io: io
+                    };
+                }
+                if (_r) ret.push(_r);
+            });
+        });
+        if (ret.length > 1) {
+            ret.sort(function (a, b) {
+                return 1;
+                // return a.io?.vec.x -
+            });
+        }
+        return ret;
     };
     return Overlap;
 }();
@@ -1772,13 +1818,13 @@ var Radiator = /** @class */function () {
         var _this = this;
         this.ctx.save();
         this.ctx.beginPath();
-        var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center);
+        var toCenter = radiator.objectCenter.sum(radiator.center);
         var wP = this.canvas.model.getLocalCoordinates(radiator.center.x, radiator.center.y);
         this.ctx.rect(toCenter.x, toCenter.y, radiator.width, radiator.height);
         this.ctx.stroke();
         this.ctx.restore();
         radiator.IOs.map(function (io) {
-            var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center.sum(io.vec));
+            var toCenter = io.getVecAbs();
             var wP = _this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
             _this.ctx.save();
             _this.ctx.beginPath();
@@ -1802,13 +1848,13 @@ var Radiator = /** @class */function () {
         radiator.IOs.map(function (io) {
             var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center.sum(io.vec));
             var wP = _this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
-            _this.ctx.save();
-            _this.ctx.beginPath();
-            _this.ctx.strokeStyle = "red";
-            _this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
-            _this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
-            _this.ctx.fill();
-            _this.ctx.restore();
+            // this.ctx.save();
+            // this.ctx.beginPath();
+            // this.ctx.strokeStyle = "red";
+            // this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
+            // this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
+            // this.ctx.fill();
+            // this.ctx.restore();
         });
     };
     Radiator.prototype.draw = function () {
@@ -2792,7 +2838,8 @@ var Vector = /** @class */function () {
                 var ctx = container.getContext("2d");
                 if (!ctx) return;
                 ctx.save();
-                ctx.arc(_this.x, _this.y, 2, 0, 2 * Math.PI);
+                ctx.beginPath();
+                ctx.arc(_this.x, _this.y, 5, 0, 2 * Math.PI);
                 ctx.fillStyle = "black";
                 ctx.fill();
                 ctx.restore();

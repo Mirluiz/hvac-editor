@@ -91,6 +91,7 @@ var Canvas = /** @class */ (function () {
         this.model.netBoundMouse.y =
             Math.round(this.model.mouse.y / this.model.config.net.step) *
                 this.model.config.net.step;
+        this.model.overlap.update();
         switch (this.model.mode) {
             case "default":
                 break;
@@ -104,7 +105,6 @@ var Canvas = /** @class */ (function () {
                 this.object.mouseMove();
                 break;
         }
-        this.model.overlap.update();
         this.stats.render();
         this.view.draw();
     };

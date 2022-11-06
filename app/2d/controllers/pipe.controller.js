@@ -1,4 +1,13 @@
 "use strict";
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -10,12 +19,25 @@ var Pipe = /** @class */ (function () {
         this.model = model;
     }
     Pipe.prototype.mouseMove = function () {
-        var coord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
-        coord = coord.bindNet(this.model.config.net.step);
+        var v = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        v = v.bindNet(this.model.config.net.step);
         if (this.model.actionObject &&
             this.model.actionObject instanceof pipe_model_1.default) {
-            this.model.actionObject.to.vec.x = coord.x;
-            this.model.actionObject.to.vec.y = coord.y;
+            var target = null;
+            for (var _i = 0, _a = __spreadArray(__spreadArray([], this.model.overlap.list, true), this.model.overlap.boundList, true); _i < _a.length; _i++) {
+                var overlap = _a[_i];
+                if (overlap.io) {
+                    target = overlap.io;
+                }
+            }
+            if (target) {
+                this.model.actionObject.to.vec.x = target.getVecAbs().x;
+                this.model.actionObject.to.vec.y = target.getVecAbs().y;
+            }
+            else {
+                this.model.actionObject.to.vec.x = v.x;
+                this.model.actionObject.to.vec.y = v.y;
+            }
             if (!this.model.actionObject.validation()) {
                 document.body.style.cursor = "not-allowed";
             }

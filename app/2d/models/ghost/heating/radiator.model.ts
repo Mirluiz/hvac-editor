@@ -22,6 +22,10 @@ class Radiator extends Main {
     this.IOs = [
       {
         type: "return",
+        getVecAbs: () => {
+          let v = new Vector(-10, 0);
+          return v.sum(this.center);
+        },
         getRadiator: () => {
           return this;
         },
@@ -30,6 +34,10 @@ class Radiator extends Main {
 
       {
         type: "supply",
+        getVecAbs: () => {
+          let v = new Vector(-10, 40);
+          return v.sum(this.center);
+        },
         getRadiator: () => {
           return this;
         },

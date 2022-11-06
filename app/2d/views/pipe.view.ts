@@ -74,6 +74,32 @@ class Pipe {
 
     this.ctx.stroke();
     this.ctx.restore();
+
+    if (pipe.from && pipe.from.target && pipe.from.target) {
+      if ("getRadiator" in pipe.from.target) {
+        let _wp = pipe.from.target.getVecAbs();
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = "red";
+        this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "#ADD8E6";
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+    }
+
+    if (pipe.to && pipe.to.target && pipe.to.target) {
+      if ("getRadiator" in pipe.to.target) {
+        let _wp = pipe.to.target.getVecAbs();
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = "red";
+        this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "#ADD8E6";
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+    }
   }
 
   drawOverLap(coordinate: IVec) {
