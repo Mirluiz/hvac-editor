@@ -19,6 +19,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var line_model_1 = __importDefault(require("../../geometry/line.model"));
+var fitting_model_1 = __importDefault(require("../../heating/fitting.model"));
 var Pipe = /** @class */ (function (_super) {
     __extends(Pipe, _super);
     function Pipe(model, from, to) {
@@ -59,8 +60,8 @@ var Pipe = /** @class */ (function (_super) {
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
                 var angleBetween = void 0;
-                if (overlap && overlap.pipeEnd) {
-                    angleBetween = overlap.pipeEnd
+                if (overlap && overlap.end) {
+                    angleBetween = overlap.end
                         .getOpposite()
                         .vec.sub(end.vec)
                         .angle(end.getOpposite().vec.sub(end.vec));
@@ -69,11 +70,33 @@ var Pipe = /** @class */ (function (_super) {
                         can = false;
                     }
                 }
-                else if (overlap && overlap.pipe) {
+                else if (overlap && overlap.body) {
                     can = true;
                 }
                 else {
                     can = false;
+                }
+            }
+        });
+        if (!can) {
+            return can;
+        }
+        [this.from, this.to].map(function (end) {
+            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
+            if (overlaps.length > 0) {
+                var overlap = overlaps[0];
+                if (overlap && overlap.end) {
+                    if (overlap.end.target &&
+                        !(overlap.end.target.object instanceof fitting_model_1.default)) {
+                        can = false;
+                        console.warn("Target is not empty");
+                    }
+                }
+                if (overlap && overlap.io) {
+                    if (overlap.io.isConnected()) {
+                        can = false;
+                        console.warn("Already is connected");
+                    }
                 }
             }
         });

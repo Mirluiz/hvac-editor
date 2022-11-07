@@ -41,7 +41,7 @@ var Valve = /** @class */ (function (_super) {
     });
     Valve.prototype.validation = function () {
         var overlaps = this.model.overlap.pipeOverlap(this.center);
-        return overlaps.length > 0 && Boolean(overlaps.find(function (o) { return o.pipe; }));
+        return overlaps.length > 0 && Boolean(overlaps.find(function (o) { return o.body; }));
     };
     return Valve;
 }(arc_model_1.default));

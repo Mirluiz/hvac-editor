@@ -52,21 +52,21 @@ var Valve = /** @class */ (function (_super) {
         var overlaps = this.model.overlap.pipeOverlap(this.center);
         overlaps = overlaps.filter(function (o) { return o.id !== _this.id; });
         overlaps.map(function (overlap) {
-            if (overlap.pipe) {
-                var mergePoint = overlap.pipe.vec.bindNet(_this.model.config.net.step);
-                var newP1 = new pipe_model_1.default(_this.model, overlap.pipe.object.from.vec.clone(), new vect_1.Vector(mergePoint.x, mergePoint.y));
-                var newP2 = new pipe_model_1.default(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), overlap.pipe.object.to.vec.clone());
+            if (overlap.body) {
+                var mergePoint = overlap.body.vec.bindNet(_this.model.config.net.step);
+                var newP1 = new pipe_model_1.default(_this.model, overlap.body.object.from.vec.clone(), new vect_1.Vector(mergePoint.x, mergePoint.y));
+                var newP2 = new pipe_model_1.default(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), overlap.body.object.to.vec.clone());
                 _this.model.addPipe(newP1);
                 _this.model.addPipe(newP2);
-                overlap.pipe.object.delete();
+                overlap.body.object.delete();
                 var newValve = new Valve(_this.model, mergePoint);
                 _this.model.addValve(newValve);
                 newValve.addPipe(newP1);
                 newValve.addPipe(newP2);
-                newP1.from.target = overlap.pipe.object.from.target;
+                newP1.from.target = overlap.body.object.from.target;
                 newP1.to.target = { id: newValve.id, object: newValve };
                 newP2.from.target = { id: newValve.id, object: newValve };
-                newP2.to.target = overlap.pipe.object.to.target;
+                newP2.to.target = overlap.body.object.to.target;
                 merged = true;
             }
         });

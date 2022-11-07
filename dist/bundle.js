@@ -215,19 +215,13 @@ var Pipe = /** @class */function () {
         this.model = model;
     }
     Pipe.prototype.mouseMove = function () {
-        var _a;
-        // let v = this.model.getWorldCoordinates(
-        //   this.model.mouse.x,
-        //   this.model.mouse.y
-        // );
-        //
-        // v = v.bindNet(this.model.config.net.step);
+        var _a, _b;
         if (!this.model.overlap.boundMouse) return;
         var bV = new vect_1.Vector(this.model.overlap.boundMouse.x, this.model.overlap.boundMouse.y);
         if (this.model.actionObject && this.model.actionObject instanceof pipe_model_1.default) {
             var target = null;
-            for (var _i = 0, _b = __spreadArray(__spreadArray([], this.model.overlap.list, true), this.model.overlap.boundList, true); _i < _b.length; _i++) {
-                var overlap = _b[_i];
+            for (var _i = 0, _c = __spreadArray(__spreadArray([], this.model.overlap.list, true), this.model.overlap.boundList, true); _i < _c.length; _i++) {
+                var overlap = _c[_i];
                 if (overlap.io) {
                     target = {
                         id: overlap.id,
@@ -239,10 +233,10 @@ var Pipe = /** @class */function () {
                         id: overlap.id,
                         object: overlap.fitting
                     };
-                } else if (overlap.pipeEnd) {
+                } else if (overlap.end) {
                     target = {
                         id: overlap.id,
-                        end: overlap.pipeEnd
+                        end: overlap.end
                     };
                 } else if ((_a = overlap.body) === null || _a === void 0 ? void 0 : _a.object) {
                     target = {
@@ -259,7 +253,7 @@ var Pipe = /** @class */function () {
                 this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.object.center.x;
                 this.model.actionObject.to.vec.y = target.object.center.y;
-            } else if ((target === null || target === void 0 ? void 0 : target.body) instanceof Pipe) {
+            } else if (((_b = target === null || target === void 0 ? void 0 : target.body) === null || _b === void 0 ? void 0 : _b.object) instanceof pipe_model_2.default) {
                 this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.body.vec.x;
                 this.model.actionObject.to.vec.y = target.body.vec.y;
@@ -683,6 +677,7 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var line_model_1 = __importDefault(require("../../geometry/line.model"));
+var fitting_model_1 = __importDefault(require("../../heating/fitting.model"));
 var Pipe = /** @class */function (_super) {
     __extends(Pipe, _super);
     function Pipe(model, from, to) {
@@ -723,8 +718,8 @@ var Pipe = /** @class */function (_super) {
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
                 var angleBetween = void 0;
-                if (overlap && overlap.pipeEnd) {
-                    angleBetween = overlap.pipeEnd.getOpposite().vec.sub(end.vec).angle(end.getOpposite().vec.sub(end.vec));
+                if (overlap && overlap.end) {
+                    angleBetween = overlap.end.getOpposite().vec.sub(end.vec).angle(end.getOpposite().vec.sub(end.vec));
                     if (angleBetween !== undefined && Math.abs(angleBetween * (180 / Math.PI)) < 90) {
                         can = false;
                     }
@@ -732,6 +727,28 @@ var Pipe = /** @class */function (_super) {
                     can = true;
                 } else {
                     can = false;
+                }
+            }
+        });
+        if (!can) {
+            return can;
+        }
+        [this.from, this.to].map(function (end) {
+            var overlaps = _this.model.overlap.direct(end.vec);
+            if (overlaps.length > 0) {
+                var overlap = overlaps[0];
+                console.log("overlap", overlap);
+                if (overlap && overlap.end) {
+                    if (overlap.end.target && !(overlap.end.target.object instanceof fitting_model_1.default)) {
+                        can = false;
+                        console.warn("Target is not empty");
+                    }
+                }
+                if (overlap && overlap.io) {
+                    if (overlap.io.isConnected()) {
+                        can = false;
+                        console.warn("Already is connected");
+                    }
                 }
             }
         });
@@ -744,7 +761,7 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../../geometry/line.model":8}],10:[function(require,module,exports){
+},{"../../geometry/line.model":8,"../../heating/fitting.model":12}],10:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -788,7 +805,10 @@ var Radiator = /** @class */function (_super) {
             getRadiator: function getRadiator() {
                 return _this;
             },
-            vec: new vect_1.Vector(-10, 0)
+            vec: new vect_1.Vector(-10, 0),
+            isConnected: function isConnected() {
+                return false;
+            }
         }, {
             type: "supply",
             getVecAbs: function getVecAbs() {
@@ -798,7 +818,10 @@ var Radiator = /** @class */function (_super) {
             getRadiator: function getRadiator() {
                 return _this;
             },
-            vec: new vect_1.Vector(-10, 40)
+            vec: new vect_1.Vector(-10, 40),
+            isConnected: function isConnected() {
+                return false;
+            }
         }];
         _this.center = center;
         _this.model = model;
@@ -1026,6 +1049,12 @@ var Pipe = /** @class */function (_super) {
                 _this.connect(fitting);
             }
         });
+        this.model.radiators.map(function (radiator) {
+            var io = radiator.isClose(_this.to.vec);
+            if (io) {
+                _this.connect(io);
+            }
+        });
     };
     Pipe.prototype.validation = function () {
         var _this = this;
@@ -1038,8 +1067,8 @@ var Pipe = /** @class */function (_super) {
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
                 var angleBetween = void 0;
-                if (overlap && overlap.pipeEnd) {
-                    angleBetween = overlap.pipeEnd.getOpposite().vec.sub(end.vec).angle(end.getOpposite().vec.sub(end.vec));
+                if (overlap && overlap.end) {
+                    angleBetween = overlap.end.getOpposite().vec.sub(end.vec).angle(end.getOpposite().vec.sub(end.vec));
                     if (angleBetween !== undefined && Math.abs(angleBetween * (180 / Math.PI)) < 90) {
                         can = false;
                     }
@@ -1074,13 +1103,13 @@ var Pipe = /** @class */function (_super) {
             });
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
-                if (overlap && overlap.pipeEnd) {
-                    if (overlap.pipeEnd.target) return;
-                    var newFitting = new fitting_model_1.default(_this.model, overlap.pipeEnd.vec);
+                if (overlap && overlap.end) {
+                    if (overlap.end.target) return;
+                    var newFitting = new fitting_model_1.default(_this.model, overlap.end.vec);
                     _this.model.addFitting(newFitting);
-                    newFitting.addPipe(overlap.pipeEnd.getPipe());
+                    newFitting.addPipe(overlap.end.getPipe());
                     newFitting.addPipe(end.getPipe());
-                    overlap.pipeEnd.target = { id: newFitting.id, object: newFitting };
+                    overlap.end.target = { id: newFitting.id, object: newFitting };
                     end.target = { id: newFitting.id, object: newFitting };
                 } else if (overlap && overlap.body) {
                     var mergePoint = overlap.body.vec.bindNet(_this.model.config.net.step);
@@ -1199,7 +1228,14 @@ var Radiator = /** @class */function (_super) {
             getRadiator: function getRadiator() {
                 return _this;
             },
-            vec: new vect_1.Vector(-10, 0)
+            vec: new vect_1.Vector(-10, 0),
+            isConnected: function isConnected() {
+                var ret = _this.model.pipes.find(function (p) {
+                    var _a, _b, _c, _d, _e, _f, _g, _h;
+                    return ((_b = (_a = p.from.target) === null || _a === void 0 ? void 0 : _a.object) === null || _b === void 0 ? void 0 : _b.id) === _this.id && ((_d = (_c = p.from.target) === null || _c === void 0 ? void 0 : _c.io) === null || _d === void 0 ? void 0 : _d.type) === "return" || ((_f = (_e = p.to.target) === null || _e === void 0 ? void 0 : _e.object) === null || _f === void 0 ? void 0 : _f.id) === _this.id && ((_h = (_g = p.to.target) === null || _g === void 0 ? void 0 : _g.io) === null || _h === void 0 ? void 0 : _h.type) === "return";
+                });
+                return Boolean(ret);
+            }
         }, {
             type: "supply",
             getVecAbs: function getVecAbs() {
@@ -1209,7 +1245,14 @@ var Radiator = /** @class */function (_super) {
             getRadiator: function getRadiator() {
                 return _this;
             },
-            vec: new vect_1.Vector(-10, 40)
+            vec: new vect_1.Vector(-10, 40),
+            isConnected: function isConnected() {
+                var ret = _this.model.pipes.find(function (p) {
+                    var _a, _b, _c, _d, _e, _f, _g, _h;
+                    return ((_b = (_a = p.from.target) === null || _a === void 0 ? void 0 : _a.object) === null || _b === void 0 ? void 0 : _b.id) === _this.id && ((_d = (_c = p.from.target) === null || _c === void 0 ? void 0 : _c.io) === null || _d === void 0 ? void 0 : _d.type) === "supply" || ((_f = (_e = p.to.target) === null || _e === void 0 ? void 0 : _e.object) === null || _f === void 0 ? void 0 : _f.id) === _this.id && ((_h = (_g = p.to.target) === null || _g === void 0 ? void 0 : _g.io) === null || _h === void 0 ? void 0 : _h.type) === "supply";
+                });
+                return Boolean(ret);
+            }
         }];
         _this.center = center;
         _this.model = model;
@@ -1235,7 +1278,14 @@ var Radiator = /** @class */function (_super) {
     Radiator.prototype.afterMerge = function () {};
     Radiator.prototype.isClose = function (v) {
         var distance = this.model.config.overlap.bindDistance;
-        return this.center.sub(v).length <= distance;
+        var ret = undefined;
+        for (var _i = 0, _a = this.IOs; _i < _a.length; _i++) {
+            var io = _a[_i];
+            if (io.getVecAbs().sub(v).length <= distance) {
+                ret = io;
+            }
+        }
+        return ret;
     };
     return Radiator;
 }(main_model_1.default);
@@ -1384,8 +1434,9 @@ var Overlap = /** @class */function () {
         configurable: true
     });
     Overlap.prototype.update = function () {
-        var netBoundMouse = new vect_1.Vector(Math.round(this.model.mouse.x / this.model.config.net.step) * this.model.config.net.step, Math.round(this.model.mouse.y / this.model.config.net.step) * this.model.config.net.step);
-        var v = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        var wMouse = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        var netBoundMouse = new vect_1.Vector(Math.round(wMouse.x / this.model.config.net.step) * this.model.config.net.step, Math.round(wMouse.y / this.model.config.net.step) * this.model.config.net.step);
+        var v = new vect_1.Vector(wMouse.x, wMouse.y);
         this.wallsOverlap();
         this.list = __spreadArray(__spreadArray([], this.pipeOverlap(v), true), this.IOOverlap(v), true);
         this.boundList = __spreadArray(__spreadArray([], this.pipeOverlap(netBoundMouse), true), this.IOOverlap(netBoundMouse), true);
@@ -1408,6 +1459,10 @@ var Overlap = /** @class */function () {
         //   }
         // }
     };
+    Overlap.prototype.direct = function (vec) {
+        var list = __spreadArray(__spreadArray([], this.pipeOverlap(vec), true), this.IOOverlap(vec), true);
+        return list;
+    };
     Overlap.prototype.wallsOverlap = function () {
         this.model.walls.map(function () {});
     };
@@ -1420,13 +1475,13 @@ var Overlap = /** @class */function () {
             if (pipe.from.vec.sub(vec).length <= bind) {
                 _p = {
                     id: pipe.id,
-                    pipeEnd: pipe.from
+                    end: pipe.from
                 };
             }
             if (!_p && pipe.to.vec.sub(vec).length <= bind) {
                 _p = {
                     id: pipe.id,
-                    pipeEnd: pipe.to
+                    end: pipe.to
                 };
             }
             if (!_p) {

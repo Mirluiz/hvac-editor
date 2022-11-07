@@ -12,12 +12,6 @@ class Pipe {
   }
 
   mouseMove() {
-    // let v = this.model.getWorldCoordinates(
-    //   this.model.mouse.x,
-    //   this.model.mouse.y
-    // );
-    //
-    // v = v.bindNet(this.model.config.net.step);
     if (!this.model.overlap.boundMouse) return;
 
     let bV = new Vector(
@@ -46,10 +40,10 @@ class Pipe {
             id: overlap.id,
             object: overlap.fitting,
           };
-        } else if (overlap.pipeEnd) {
+        } else if (overlap.end) {
           target = {
             id: overlap.id,
-            end: overlap.pipeEnd,
+            end: overlap.end,
           };
         } else if (overlap.body?.object) {
           target = {
@@ -67,7 +61,7 @@ class Pipe {
         this.model.actionObject.to.target = target;
         this.model.actionObject.to.vec.x = target.object.center.x;
         this.model.actionObject.to.vec.y = target.object.center.y;
-      } else if (target?.body instanceof Pipe) {
+      } else if (target?.body?.object instanceof PipeModel) {
         this.model.actionObject.to.target = target;
         this.model.actionObject.to.vec.x = target.body.vec.x;
         this.model.actionObject.to.vec.y = target.body.vec.y;

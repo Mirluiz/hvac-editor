@@ -9,6 +9,7 @@ export interface IO<T> {
   getVecAbs: () => IVec;
   type: "return" | "supply";
   getRadiator: () => T;
+  isConnected: () => boolean;
 }
 
 class Radiator extends Main {
@@ -33,6 +34,17 @@ class Radiator extends Main {
           return this;
         },
         vec: new Vector(-10, 0),
+        isConnected: () => {
+          let ret = this.model.pipes.find((p) => {
+            return (
+              (p.from.target?.object?.id === this.id &&
+                p.from.target?.io?.type === "return") ||
+              (p.to.target?.object?.id === this.id &&
+                p.to.target?.io?.type === "return")
+            );
+          });
+          return Boolean(ret);
+        },
       },
 
       {
@@ -45,6 +57,17 @@ class Radiator extends Main {
           return this;
         },
         vec: new Vector(-10, 40),
+        isConnected: () => {
+          let ret = this.model.pipes.find((p) => {
+            return (
+              (p.from.target?.object?.id === this.id &&
+                p.from.target?.io?.type === "supply") ||
+              (p.to.target?.object?.id === this.id &&
+                p.to.target?.io?.type === "supply")
+            );
+          });
+          return Boolean(ret);
+        },
       },
     ];
 
@@ -75,8 +98,15 @@ class Radiator extends Main {
 
   isClose(v: IVec) {
     let distance = this.model.config.overlap.bindDistance;
+    let ret: IO<Radiator> | undefined = undefined;
 
-    return this.center.sub(v).length <= distance;
+    for (let io of this.IOs) {
+      if (io.getVecAbs().sub(v).length <= distance) {
+        ret = io;
+      }
+    }
+
+    return ret;
   }
 }
 

@@ -27,13 +27,18 @@ class Overlap {
   }
 
   update() {
+    let wMouse = this.model.getWorldCoordinates(
+      this.model.mouse.x,
+      this.model.mouse.y
+    );
+
     let netBoundMouse = new Vector(
-      Math.round(this.model.mouse.x / this.model.config.net.step) *
+      Math.round(wMouse.x / this.model.config.net.step) *
         this.model.config.net.step,
-      Math.round(this.model.mouse.y / this.model.config.net.step) *
+      Math.round(wMouse.y / this.model.config.net.step) *
         this.model.config.net.step
     );
-    let v = new Vector(this.model.mouse.x, this.model.mouse.y);
+    let v = new Vector(wMouse.x, wMouse.y);
 
     this.wallsOverlap();
     this.list = [...this.pipeOverlap(v), ...this.IOOverlap(v)];
@@ -62,6 +67,12 @@ class Overlap {
     // }
   }
 
+  direct(vec: IVec) {
+    let list = [...this.pipeOverlap(vec), ...this.IOOverlap(vec)];
+
+    return list;
+  }
+
   wallsOverlap() {
     this.model.walls.map(() => {});
   }
@@ -78,14 +89,14 @@ class Overlap {
       if (pipe.from.vec.sub(vec).length <= bind) {
         _p = {
           id: pipe.id,
-          pipeEnd: pipe.from,
+          end: pipe.from,
         };
       }
 
       if (!_p && pipe.to.vec.sub(vec).length <= bind) {
         _p = {
           id: pipe.id,
-          pipeEnd: pipe.to,
+          end: pipe.to,
         };
       }
 
@@ -145,7 +156,7 @@ class Overlap {
 export interface IOverlap {
   id: string;
   body?: IOverlapBody<Pipe>;
-  pipeEnd?: IPipeEnd;
+  end?: IPipeEnd;
   fitting?: Fitting;
   io?: IO<Radiator>;
 }

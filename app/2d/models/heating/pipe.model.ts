@@ -81,6 +81,13 @@ class Pipe extends Line<IPipeEnd> {
         this.connect(fitting);
       }
     });
+
+    this.model.radiators.map((radiator) => {
+      let io = radiator.isClose(this.to.vec);
+      if (io) {
+        this.connect(io);
+      }
+    });
   }
 
   validation() {
@@ -92,8 +99,8 @@ class Pipe extends Line<IPipeEnd> {
       if (overlaps.length > 0) {
         let overlap = overlaps[0];
         let angleBetween;
-        if (overlap && overlap.pipeEnd) {
-          angleBetween = overlap.pipeEnd
+        if (overlap && overlap.end) {
+          angleBetween = overlap.end
             .getOpposite()
             .vec.sub(end.vec)
             .angle(end.getOpposite().vec.sub(end.vec));
@@ -141,15 +148,15 @@ class Pipe extends Line<IPipeEnd> {
 
       if (overlaps.length > 0) {
         let overlap = overlaps[0];
-        if (overlap && overlap.pipeEnd) {
-          if (overlap.pipeEnd.target) return;
+        if (overlap && overlap.end) {
+          if (overlap.end.target) return;
 
-          let newFitting = new Fitting(this.model, overlap.pipeEnd.vec);
+          let newFitting = new Fitting(this.model, overlap.end.vec);
           this.model.addFitting(newFitting);
-          newFitting.addPipe(overlap.pipeEnd.getPipe());
+          newFitting.addPipe(overlap.end.getPipe());
           newFitting.addPipe(end.getPipe());
 
-          overlap.pipeEnd.target = { id: newFitting.id, object: newFitting };
+          overlap.end.target = { id: newFitting.id, object: newFitting };
           end.target = { id: newFitting.id, object: newFitting };
         } else if (overlap && overlap.body) {
           let mergePoint = overlap.body.vec.bindNet(this.model.config.net.step);
@@ -194,7 +201,7 @@ class Pipe extends Line<IPipeEnd> {
     return merged;
   }
 
-  connect(target: Fitting | Valve | Radiator | IO<Radiator>) {
+  connect(target: Fitting | Valve | IO<Radiator>) {
     let merged = false;
 
     if (target instanceof Fitting) {

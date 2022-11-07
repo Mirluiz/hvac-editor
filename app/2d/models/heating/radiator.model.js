@@ -37,6 +37,16 @@ var Radiator = /** @class */ (function (_super) {
                     return _this;
                 },
                 vec: new vect_1.Vector(-10, 0),
+                isConnected: function () {
+                    var ret = _this.model.pipes.find(function (p) {
+                        var _a, _b, _c, _d, _e, _f, _g, _h;
+                        return ((((_b = (_a = p.from.target) === null || _a === void 0 ? void 0 : _a.object) === null || _b === void 0 ? void 0 : _b.id) === _this.id &&
+                            ((_d = (_c = p.from.target) === null || _c === void 0 ? void 0 : _c.io) === null || _d === void 0 ? void 0 : _d.type) === "return") ||
+                            (((_f = (_e = p.to.target) === null || _e === void 0 ? void 0 : _e.object) === null || _f === void 0 ? void 0 : _f.id) === _this.id &&
+                                ((_h = (_g = p.to.target) === null || _g === void 0 ? void 0 : _g.io) === null || _h === void 0 ? void 0 : _h.type) === "return"));
+                    });
+                    return Boolean(ret);
+                },
             },
             {
                 type: "supply",
@@ -48,6 +58,16 @@ var Radiator = /** @class */ (function (_super) {
                     return _this;
                 },
                 vec: new vect_1.Vector(-10, 40),
+                isConnected: function () {
+                    var ret = _this.model.pipes.find(function (p) {
+                        var _a, _b, _c, _d, _e, _f, _g, _h;
+                        return ((((_b = (_a = p.from.target) === null || _a === void 0 ? void 0 : _a.object) === null || _b === void 0 ? void 0 : _b.id) === _this.id &&
+                            ((_d = (_c = p.from.target) === null || _c === void 0 ? void 0 : _c.io) === null || _d === void 0 ? void 0 : _d.type) === "supply") ||
+                            (((_f = (_e = p.to.target) === null || _e === void 0 ? void 0 : _e.object) === null || _f === void 0 ? void 0 : _f.id) === _this.id &&
+                                ((_h = (_g = p.to.target) === null || _g === void 0 ? void 0 : _g.io) === null || _h === void 0 ? void 0 : _h.type) === "supply"));
+                    });
+                    return Boolean(ret);
+                },
             },
         ];
         _this.center = center;

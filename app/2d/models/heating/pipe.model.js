@@ -87,8 +87,8 @@ var Pipe = /** @class */ (function (_super) {
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
                 var angleBetween = void 0;
-                if (overlap && overlap.pipeEnd) {
-                    angleBetween = overlap.pipeEnd
+                if (overlap && overlap.end) {
+                    angleBetween = overlap.end
                         .getOpposite()
                         .vec.sub(end.vec)
                         .angle(end.getOpposite().vec.sub(end.vec));
@@ -129,14 +129,14 @@ var Pipe = /** @class */ (function (_super) {
             overlaps = overlaps.filter(function (o) { return o.id !== end.getPipe().id; });
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
-                if (overlap && overlap.pipeEnd) {
-                    if (overlap.pipeEnd.target)
+                if (overlap && overlap.end) {
+                    if (overlap.end.target)
                         return;
-                    var newFitting = new fitting_model_1.default(_this.model, overlap.pipeEnd.vec);
+                    var newFitting = new fitting_model_1.default(_this.model, overlap.end.vec);
                     _this.model.addFitting(newFitting);
-                    newFitting.addPipe(overlap.pipeEnd.getPipe());
+                    newFitting.addPipe(overlap.end.getPipe());
                     newFitting.addPipe(end.getPipe());
-                    overlap.pipeEnd.target = { id: newFitting.id, object: newFitting };
+                    overlap.end.target = { id: newFitting.id, object: newFitting };
                     end.target = { id: newFitting.id, object: newFitting };
                 }
                 else if (overlap && overlap.body) {

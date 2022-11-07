@@ -84,8 +84,8 @@ var Pipe = /** @class */ (function () {
             var _a;
             if (l) {
                 var _p = _this.canvas.model.getPipeByID(l.id);
-                if (_p && ((_a = l.pipe) === null || _a === void 0 ? void 0 : _a.vec)) {
-                    _this.drawOverLap(l.pipe.vec);
+                if (_p && ((_a = l.body) === null || _a === void 0 ? void 0 : _a.vec)) {
+                    _this.drawOverLap(l.body.vec);
                 }
             }
         });

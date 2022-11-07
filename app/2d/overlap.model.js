@@ -29,10 +29,11 @@ var Overlap = /** @class */ (function () {
         configurable: true
     });
     Overlap.prototype.update = function () {
-        var netBoundMouse = new vect_1.Vector(Math.round(this.model.mouse.x / this.model.config.net.step) *
-            this.model.config.net.step, Math.round(this.model.mouse.y / this.model.config.net.step) *
+        var wMouse = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
+        var netBoundMouse = new vect_1.Vector(Math.round(wMouse.x / this.model.config.net.step) *
+            this.model.config.net.step, Math.round(wMouse.y / this.model.config.net.step) *
             this.model.config.net.step);
-        var v = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
+        var v = new vect_1.Vector(wMouse.x, wMouse.y);
         this.wallsOverlap();
         this.list = __spreadArray(__spreadArray([], this.pipeOverlap(v), true), this.IOOverlap(v), true);
         this.boundList = __spreadArray(__spreadArray([], this.pipeOverlap(netBoundMouse), true), this.IOOverlap(netBoundMouse), true);
@@ -67,13 +68,13 @@ var Overlap = /** @class */ (function () {
             if (pipe.from.vec.sub(vec).length <= bind) {
                 _p = {
                     id: pipe.id,
-                    pipeEnd: pipe.from,
+                    end: pipe.from,
                 };
             }
             if (!_p && pipe.to.vec.sub(vec).length <= bind) {
                 _p = {
                     id: pipe.id,
-                    pipeEnd: pipe.to,
+                    end: pipe.to,
                 };
             }
             if (!_p) {

@@ -2,6 +2,7 @@ import Line from "../../geometry/line.model";
 import { IVec } from "../../../../geometry/vect";
 import CanvasModel from "../../canvas.model";
 import { PipeTarget } from "../../heating/pipe.model";
+import Fitting from "../../heating/fitting.model";
 
 interface IGhostPipeEnd {
   target: PipeTarget;
@@ -44,7 +45,7 @@ class Pipe extends Line<IGhostPipeEnd> {
     return "pink";
   }
 
-  validation() {
+  validation(): boolean {
     let can = true;
 
     [this.from, this.to].map((end) => {
@@ -52,8 +53,8 @@ class Pipe extends Line<IGhostPipeEnd> {
       if (overlaps.length > 0) {
         let overlap = overlaps[0];
         let angleBetween;
-        if (overlap && overlap.pipeEnd) {
-          angleBetween = overlap.pipeEnd
+        if (overlap && overlap.end) {
+          angleBetween = overlap.end
             .getOpposite()
             .vec.sub(end.vec)
             .angle(end.getOpposite().vec.sub(end.vec));
@@ -68,6 +69,35 @@ class Pipe extends Line<IGhostPipeEnd> {
           can = true;
         } else {
           can = false;
+        }
+      }
+    });
+
+    if (!can) {
+      return can;
+    }
+
+    [this.from, this.to].map((end) => {
+      let overlaps = this.model.overlap.direct(end.vec);
+      if (overlaps.length > 0) {
+        let overlap = overlaps[0];
+        console.log("overlap", overlap);
+
+        if (overlap && overlap.end) {
+          if (
+            overlap.end.target &&
+            !(overlap.end.target.object instanceof Fitting)
+          ) {
+            can = false;
+            console.warn("Target is not empty");
+          }
+        }
+
+        if (overlap && overlap.io) {
+          if (overlap.io.isConnected()) {
+            can = false;
+            console.warn("Already is connected");
+          }
         }
       }
     });

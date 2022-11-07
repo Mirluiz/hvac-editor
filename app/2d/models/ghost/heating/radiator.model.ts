@@ -30,6 +30,7 @@ class Radiator extends Main {
           return this;
         },
         vec: new Vector(-10, 0),
+        isConnected: () => false,
       },
 
       {
@@ -42,6 +43,7 @@ class Radiator extends Main {
           return this;
         },
         vec: new Vector(-10, 40),
+        isConnected: () => false,
       },
     ];
 

@@ -21,21 +21,15 @@ var Pipe = /** @class */ (function () {
         this.model = model;
     }
     Pipe.prototype.mouseMove = function () {
-        var _a;
-        // let v = this.model.getWorldCoordinates(
-        //   this.model.mouse.x,
-        //   this.model.mouse.y
-        // );
-        //
-        // v = v.bindNet(this.model.config.net.step);
+        var _a, _b;
         if (!this.model.overlap.boundMouse)
             return;
         var bV = new vect_1.Vector(this.model.overlap.boundMouse.x, this.model.overlap.boundMouse.y);
         if (this.model.actionObject &&
             this.model.actionObject instanceof pipe_model_1.default) {
             var target = null;
-            for (var _i = 0, _b = __spreadArray(__spreadArray([], this.model.overlap.list, true), this.model.overlap.boundList, true); _i < _b.length; _i++) {
-                var overlap = _b[_i];
+            for (var _i = 0, _c = __spreadArray(__spreadArray([], this.model.overlap.list, true), this.model.overlap.boundList, true); _i < _c.length; _i++) {
+                var overlap = _c[_i];
                 if (overlap.io) {
                     target = {
                         id: overlap.id,
@@ -49,10 +43,10 @@ var Pipe = /** @class */ (function () {
                         object: overlap.fitting,
                     };
                 }
-                else if (overlap.pipeEnd) {
+                else if (overlap.end) {
                     target = {
                         id: overlap.id,
-                        end: overlap.pipeEnd,
+                        end: overlap.end,
                     };
                 }
                 else if ((_a = overlap.body) === null || _a === void 0 ? void 0 : _a.object) {
@@ -72,7 +66,7 @@ var Pipe = /** @class */ (function () {
                 this.model.actionObject.to.vec.x = target.object.center.x;
                 this.model.actionObject.to.vec.y = target.object.center.y;
             }
-            else if ((target === null || target === void 0 ? void 0 : target.body) instanceof Pipe) {
+            else if (((_b = target === null || target === void 0 ? void 0 : target.body) === null || _b === void 0 ? void 0 : _b.object) instanceof pipe_model_2.default) {
                 this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.body.vec.x;
                 this.model.actionObject.to.vec.y = target.body.vec.y;
