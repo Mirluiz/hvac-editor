@@ -136,8 +136,8 @@ var Pipe = /** @class */ (function (_super) {
                     _this.model.addFitting(newFitting);
                     newFitting.addPipe(overlap.pipeEnd.getPipe());
                     newFitting.addPipe(end.getPipe());
-                    overlap.pipeEnd.target = newFitting;
-                    end.target = newFitting;
+                    overlap.pipeEnd.target = { id: newFitting.id, object: newFitting };
+                    end.target = { id: newFitting.id, object: newFitting };
                 }
                 else if (overlap && overlap.pipe) {
                     var mergePoint = overlap.pipe.vec.bindNet(_this.model.config.net.step);
@@ -151,8 +151,8 @@ var Pipe = /** @class */ (function (_super) {
                     newFitting.addPipe(newP1);
                     newFitting.addPipe(newP2);
                     newP1.from.target = pipe.from.target;
-                    newP1.to.target = newFitting;
-                    newP2.from.target = newFitting;
+                    newP1.to.target = { id: newFitting.id, object: newFitting };
+                    newP2.from.target = { id: newFitting.id, object: newFitting };
                     newP2.to.target = pipe.to.target;
                     merged = true;
                 }
@@ -175,10 +175,31 @@ var Pipe = /** @class */ (function (_super) {
                 merged = true;
             }
             if (isFrom) {
-                this.from.target = target;
+                this.from.target = { id: target.id, object: target };
             }
             else if (isTo)
-                this.to.target = target;
+                this.to.target = { id: target.id, object: target };
+            return merged;
+        }
+        if (target && "getRadiator" in target) {
+            var isFrom = target.getVecAbs().sub(this.from.vec).length <= 20;
+            var isTo = target.getVecAbs().sub(this.to.vec).length <= 20;
+            if (isFrom || isTo) {
+                merged = true;
+            }
+            if (isFrom) {
+                this.from.target = {
+                    id: target.getRadiator().id,
+                    object: target.getRadiator(),
+                    io: target,
+                };
+            }
+            else if (isTo)
+                this.to.target = {
+                    id: target.getRadiator().id,
+                    object: target.getRadiator(),
+                    io: target,
+                };
             return merged;
         }
         return merged;

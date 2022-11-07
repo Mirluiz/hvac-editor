@@ -4,7 +4,7 @@ import Valve from "./models/heating/valve.model";
 import CanvasModel from "./models/canvas.model";
 import { IVec, Vector } from "../geometry/vect";
 import Fitting from "./models/heating/fitting.model";
-import Radiator, { IRadiatorIO } from "./models/heating/radiator.model";
+import Radiator, { IO } from "./models/heating/radiator.model";
 
 class Overlap {
   readonly model: CanvasModel;
@@ -118,7 +118,7 @@ export interface IOverlap {
   pipe?: { object: Pipe; vec: IVec };
   pipeEnd?: IPipeEnd;
   fitting?: Fitting;
-  io?: IRadiatorIO<Radiator>;
+  io?: IO<Radiator>;
 }
 
 export interface IOverlapValve extends IOverlap {}

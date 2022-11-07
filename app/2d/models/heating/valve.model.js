@@ -64,8 +64,8 @@ var Valve = /** @class */ (function (_super) {
                 newValve.addPipe(newP1);
                 newValve.addPipe(newP2);
                 newP1.from.target = overlap.pipe.object.from.target;
-                newP1.to.target = newValve;
-                newP2.from.target = newValve;
+                newP1.to.target = { id: newValve.id, object: newValve };
+                newP2.from.target = { id: newValve.id, object: newValve };
                 newP2.to.target = overlap.pipe.object.to.target;
                 merged = true;
             }

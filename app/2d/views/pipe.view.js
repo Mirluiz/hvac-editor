@@ -34,6 +34,7 @@ var Pipe = /** @class */ (function () {
         this.ctx.restore();
     };
     Pipe.prototype.drawGhost = function (pipe) {
+        var _a, _b;
         this.ctx.save();
         this.ctx.beginPath();
         var from = this.canvas.model.getLocalCoordinates(pipe.from.vec.x, pipe.from.vec.y);
@@ -45,8 +46,8 @@ var Pipe = /** @class */ (function () {
         this.ctx.stroke();
         this.ctx.restore();
         if (pipe.from && pipe.from.target && pipe.from.target) {
-            if ("getRadiator" in pipe.from.target) {
-                var _wp = pipe.from.target.getVecAbs();
+            if ((_a = pipe.from.target) === null || _a === void 0 ? void 0 : _a.io) {
+                var _wp = pipe.from.target.io.getVecAbs();
                 this.ctx.save();
                 this.ctx.beginPath();
                 this.ctx.strokeStyle = "red";
@@ -57,8 +58,8 @@ var Pipe = /** @class */ (function () {
             }
         }
         if (pipe.to && pipe.to.target && pipe.to.target) {
-            if ("getRadiator" in pipe.to.target) {
-                var _wp = pipe.to.target.getVecAbs();
+            if ((_b = pipe.to.target) === null || _b === void 0 ? void 0 : _b.io) {
+                var _wp = pipe.to.target.io.getVecAbs();
                 this.ctx.save();
                 this.ctx.beginPath();
                 this.ctx.strokeStyle = "red";

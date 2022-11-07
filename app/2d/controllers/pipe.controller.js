@@ -27,12 +27,16 @@ var Pipe = /** @class */ (function () {
             for (var _i = 0, _a = __spreadArray(__spreadArray([], this.model.overlap.list, true), this.model.overlap.boundList, true); _i < _a.length; _i++) {
                 var overlap = _a[_i];
                 if (overlap.io) {
-                    target = overlap.io;
+                    target = {
+                        id: overlap.id,
+                        io: overlap.io,
+                        object: overlap.io.getRadiator(),
+                    };
                 }
             }
-            if (target) {
-                this.model.actionObject.to.vec.x = target.getVecAbs().x;
-                this.model.actionObject.to.vec.y = target.getVecAbs().y;
+            if (target === null || target === void 0 ? void 0 : target.io) {
+                this.model.actionObject.to.vec.x = target.io.getVecAbs().x;
+                this.model.actionObject.to.vec.y = target.io.getVecAbs().y;
             }
             else {
                 this.model.actionObject.to.vec.x = v.x;

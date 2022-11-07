@@ -2,7 +2,7 @@ import CanvasModel from "../../canvas.model";
 import { IVec, Vector } from "../../../../geometry/vect";
 import Main from "../../main.model";
 import Pipe from "../../heating/pipe.model";
-import { IRadiatorIO } from "../../heating/radiator.model";
+import { IO } from "../../heating/radiator.model";
 
 class Radiator extends Main {
   model: CanvasModel;
@@ -14,7 +14,7 @@ class Radiator extends Main {
    */
   center: IVec;
 
-  IOs: [IRadiatorIO<Radiator>, IRadiatorIO<Radiator>];
+  IOs: [IO<Radiator>, IO<Radiator>];
 
   constructor(model: CanvasModel, center: IVec) {
     super();

@@ -3,9 +3,13 @@ import Line from "../geometry/line.model";
 import CanvasModel from "../canvas.model";
 import Fitting from "./fitting.model";
 import Valve from "./valve.model";
-import Radiator, { IRadiatorIO } from "./radiator.model";
+import Radiator, { IO } from "./radiator.model";
 
-export type PipeTarget = null | Fitting | Valve | IRadiatorIO<Radiator>;
+export type PipeTarget = null | {
+  id: string;
+  object: Fitting | Valve | Radiator;
+  io?: IO<Radiator>;
+};
 
 export interface IPipeEnd {
   target: PipeTarget;
@@ -142,8 +146,8 @@ class Pipe extends Line<IPipeEnd> {
           newFitting.addPipe(overlap.pipeEnd.getPipe());
           newFitting.addPipe(end.getPipe());
 
-          overlap.pipeEnd.target = newFitting;
-          end.target = newFitting;
+          overlap.pipeEnd.target = { id: newFitting.id, object: newFitting };
+          end.target = { id: newFitting.id, object: newFitting };
         } else if (overlap && overlap.pipe) {
           let mergePoint = overlap.pipe.vec.bindNet(this.model.config.net.step);
 
@@ -170,8 +174,8 @@ class Pipe extends Line<IPipeEnd> {
           newFitting.addPipe(newP2);
 
           newP1.from.target = pipe.from.target;
-          newP1.to.target = newFitting;
-          newP2.from.target = newFitting;
+          newP1.to.target = { id: newFitting.id, object: newFitting };
+          newP2.from.target = { id: newFitting.id, object: newFitting };
           newP2.to.target = pipe.to.target;
 
           merged = true;
@@ -187,7 +191,7 @@ class Pipe extends Line<IPipeEnd> {
     return merged;
   }
 
-  connect(target: PipeTarget) {
+  connect(target: Fitting | Valve | Radiator | IO<Radiator>) {
     let merged = false;
 
     if (target instanceof Fitting) {
@@ -200,8 +204,32 @@ class Pipe extends Line<IPipeEnd> {
       }
 
       if (isFrom) {
-        this.from.target = target;
-      } else if (isTo) this.to.target = target;
+        this.from.target = { id: target.id, object: target };
+      } else if (isTo) this.to.target = { id: target.id, object: target };
+
+      return merged;
+    }
+
+    if (target && "getRadiator" in target) {
+      let isFrom = target.getVecAbs().sub(this.from.vec).length <= 20;
+      let isTo = target.getVecAbs().sub(this.to.vec).length <= 20;
+
+      if (isFrom || isTo) {
+        merged = true;
+      }
+
+      if (isFrom) {
+        this.from.target = {
+          id: target.getRadiator().id,
+          object: target.getRadiator(),
+          io: target,
+        };
+      } else if (isTo)
+        this.to.target = {
+          id: target.getRadiator().id,
+          object: target.getRadiator(),
+          io: target,
+        };
 
       return merged;
     }

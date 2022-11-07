@@ -4,7 +4,7 @@ import CanvasModel from "../canvas.model";
 import Main from "../main.model";
 import RadiatorModel from "../ghost/heating/radiator.model";
 
-export interface IRadiatorIO<T> {
+export interface IO<T> {
   vec: IVec;
   getVecAbs: () => IVec;
   type: "return" | "supply";
@@ -17,7 +17,7 @@ class Radiator extends Main {
   height: number = 40;
   center: IVec; // left top position
   objectCenter: IVec; // center of object
-  IOs: [IRadiatorIO<Radiator>, IRadiatorIO<Radiator>];
+  IOs: [IO<Radiator>, IO<Radiator>];
 
   constructor(model: CanvasModel, center: IVec) {
     super();

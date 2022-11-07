@@ -75,9 +75,9 @@ class Pipe {
     this.ctx.stroke();
     this.ctx.restore();
 
-    if (pipe.from && pipe.from.target && pipe.from.target) {
-      if ("getRadiator" in pipe.from.target) {
-        let _wp = pipe.from.target.getVecAbs();
+    setTimeout(() => {
+      if (pipe.from.target?.io) {
+        let _wp = pipe.from.target.io.getVecAbs();
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.strokeStyle = "red";
@@ -86,11 +86,9 @@ class Pipe {
         this.ctx.fill();
         this.ctx.restore();
       }
-    }
 
-    if (pipe.to && pipe.to.target && pipe.to.target) {
-      if ("getRadiator" in pipe.to.target) {
-        let _wp = pipe.to.target.getVecAbs();
+      if (pipe.to.target?.io) {
+        let _wp = pipe.to.target.io.getVecAbs();
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.strokeStyle = "red";
@@ -99,7 +97,7 @@ class Pipe {
         this.ctx.fill();
         this.ctx.restore();
       }
-    }
+    });
   }
 
   drawOverLap(coordinate: IVec) {
