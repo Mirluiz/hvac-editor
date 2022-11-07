@@ -4,10 +4,13 @@ import CanvasModel from "../canvas.model";
 import Fitting from "./fitting.model";
 import Valve from "./valve.model";
 import Radiator, { IO } from "./radiator.model";
+import { IOverlapBody } from "../../overlap.model";
 
 export type PipeTarget = null | {
   id: string;
-  object: Fitting | Valve | Radiator;
+  object?: Fitting | Valve | Radiator;
+  end?: IPipeEnd;
+  body?: IOverlapBody<Pipe>;
   io?: IO<Radiator>;
 };
 
@@ -100,7 +103,7 @@ class Pipe extends Line<IPipeEnd> {
           ) {
             can = false;
           }
-        } else if (overlap && overlap.pipe) {
+        } else if (overlap && overlap.body) {
           can = true;
         } else {
           can = false;
@@ -148,24 +151,24 @@ class Pipe extends Line<IPipeEnd> {
 
           overlap.pipeEnd.target = { id: newFitting.id, object: newFitting };
           end.target = { id: newFitting.id, object: newFitting };
-        } else if (overlap && overlap.pipe) {
-          let mergePoint = overlap.pipe.vec.bindNet(this.model.config.net.step);
+        } else if (overlap && overlap.body) {
+          let mergePoint = overlap.body.vec.bindNet(this.model.config.net.step);
 
           let newP1 = new Pipe(
             this.model,
-            overlap.pipe.object.from.vec.clone(),
+            overlap.body.object.from.vec.clone(),
             new Vector(mergePoint.x, mergePoint.y)
           );
 
           let newP2 = new Pipe(
             this.model,
             new Vector(mergePoint.x, mergePoint.y),
-            overlap.pipe.object.to.vec.clone()
+            overlap.body.object.to.vec.clone()
           );
 
           this.model.addPipe(newP1);
           this.model.addPipe(newP2);
-          overlap.pipe.object.delete();
+          overlap.body.object.delete();
 
           let newFitting = new Fitting(this.model, mergePoint);
           this.model.addFitting(newFitting);

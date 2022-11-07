@@ -64,7 +64,7 @@ class Pipe extends Line<IGhostPipeEnd> {
           ) {
             can = false;
           }
-        } else if (overlap && overlap.pipe) {
+        } else if (overlap && overlap.body) {
           can = true;
         } else {
           can = false;

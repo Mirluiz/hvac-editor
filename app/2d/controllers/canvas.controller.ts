@@ -46,21 +46,6 @@ class Canvas {
 
     if (!this.model.mouse) return;
 
-    let worldCoord = this.model.getWorldCoordinates(
-      this.model.mouse.x,
-      this.model.mouse.y
-    );
-    let _mouse = new Vector(worldCoord.x, worldCoord.y);
-
-    if (this.model.config.net.bind) {
-      _mouse.x =
-        Math.round(_mouse.x / this.model.config.net.step) *
-        this.model.config.net.step;
-      _mouse.y =
-        Math.round(_mouse.y / this.model.config.net.step) *
-        this.model.config.net.step;
-    }
-
     switch (this.model.mode) {
       case "default":
         break;
@@ -80,13 +65,8 @@ class Canvas {
   }
 
   mouseMove(e: MouseEvent): void {
-    if (!this.model.mouse || !this.model.netBoundMouse) {
+    if (!this.model.mouse) {
       this.model.mouse = {
-        x: e.offsetX,
-        y: e.offsetY,
-      };
-
-      this.model.netBoundMouse = {
         x: e.offsetX,
         y: e.offsetY,
       };
@@ -106,14 +86,6 @@ class Canvas {
         };
       }
     }
-
-    this.model.netBoundMouse.x =
-      Math.round(this.model.mouse.x / this.model.config.net.step) *
-      this.model.config.net.step;
-
-    this.model.netBoundMouse.y =
-      Math.round(this.model.mouse.y / this.model.config.net.step) *
-      this.model.config.net.step;
 
     this.model.overlap.update();
 
@@ -140,27 +112,16 @@ class Canvas {
 
     if (!this.model.mouse) return;
 
-    let _mouse = new Vector(this.model.mouse.x, this.model.mouse.y);
-
-    if (this.model.config.net.bind) {
-      _mouse.x =
-        Math.round(_mouse.x / this.model.config.net.step) *
-        this.model.config.net.step;
-      _mouse.y =
-        Math.round(_mouse.y / this.model.config.net.step) *
-        this.model.config.net.step;
-    }
-
     switch (this.model.mode) {
       case "default":
         break;
       case "wall":
         break;
       case "pipe":
-        this.pipe.mouseUp(_mouse);
+        this.pipe.mouseUp();
         break;
       case "valve":
-        this.object.mouseUp(_mouse);
+        this.object.mouseUp();
         break;
     }
   }

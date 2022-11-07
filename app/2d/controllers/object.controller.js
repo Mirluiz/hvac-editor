@@ -1,4 +1,13 @@
 "use strict";
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -13,32 +22,25 @@ var Pipe = /** @class */ (function () {
         this.model = model;
     }
     Pipe.prototype.mouseMove = function () {
-        var bV = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
-        var v = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
-        v = v.bindNet(this.model.config.net.step);
-        bV = bV.bindNet(this.model.config.net.step);
+        if (!this.model.overlap.boundMouse)
+            return;
+        var bV = new vect_1.Vector(this.model.overlap.boundMouse.x, this.model.overlap.boundMouse.y);
         if (this.model.placingObject &&
             this.model.placingObject instanceof valve_model_1.default) {
-            var overlaps = this.model.overlap.pipeOverlap(v);
-            var pipeFound = null;
-            this.model.placingObject.pipes = [];
-            for (var _i = 0, overlaps_1 = overlaps; _i < overlaps_1.length; _i++) {
-                var overlap = overlaps_1[_i];
-                if (overlap.pipe) {
-                    pipeFound = new vect_1.Vector(overlap.pipe.vec.x, overlap.pipe.vec.y);
-                    break;
+            if (!this.model.overlap.isEmpty) {
+                document.body.style.cursor = "default";
+                var pipeFound = __spreadArray(__spreadArray([], this.model.overlap.list, true), this.model.overlap.boundList, true).find(function (o) { return o.body; });
+                if (pipeFound === null || pipeFound === void 0 ? void 0 : pipeFound.body) {
+                }
+                else {
+                    document.body.style.cursor = "not-allowed";
                 }
             }
-            if (pipeFound) {
-                document.body.style.cursor = "default";
-                this.model.placingObject.center.x = pipeFound.x;
-                this.model.placingObject.center.y = pipeFound.y;
-            }
             else {
-                this.model.placingObject.center.x = bV.x;
-                this.model.placingObject.center.y = bV.y;
                 document.body.style.cursor = "not-allowed";
             }
+            this.model.placingObject.center.x = bV.x;
+            this.model.placingObject.center.y = bV.y;
         }
         if (this.model.placingObject &&
             this.model.placingObject instanceof radiator_model_1.default) {
@@ -65,7 +67,7 @@ var Pipe = /** @class */ (function () {
             this.model.addRadiator(radiator);
         }
     };
-    Pipe.prototype.mouseUp = function (coord) { };
+    Pipe.prototype.mouseUp = function () { };
     return Pipe;
 }());
 exports.default = Pipe;

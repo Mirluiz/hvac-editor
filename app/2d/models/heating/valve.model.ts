@@ -36,24 +36,24 @@ class Valve extends Arc {
     overlaps = overlaps.filter((o) => o.id !== this.id);
 
     overlaps.map((overlap) => {
-      if (overlap.pipe) {
-        let mergePoint = overlap.pipe.vec.bindNet(this.model.config.net.step);
+      if (overlap.body) {
+        let mergePoint = overlap.body.vec.bindNet(this.model.config.net.step);
 
         let newP1 = new Pipe(
           this.model,
-          overlap.pipe.object.from.vec.clone(),
+          overlap.body.object.from.vec.clone(),
           new Vector(mergePoint.x, mergePoint.y)
         );
 
         let newP2 = new Pipe(
           this.model,
           new Vector(mergePoint.x, mergePoint.y),
-          overlap.pipe.object.to.vec.clone()
+          overlap.body.object.to.vec.clone()
         );
 
         this.model.addPipe(newP1);
         this.model.addPipe(newP2);
-        overlap.pipe.object.delete();
+        overlap.body.object.delete();
 
         let newValve = new Valve(this.model, mergePoint);
         this.model.addValve(newValve);
@@ -61,10 +61,10 @@ class Valve extends Arc {
         newValve.addPipe(newP1);
         newValve.addPipe(newP2);
 
-        newP1.from.target = overlap.pipe.object.from.target;
+        newP1.from.target = overlap.body.object.from.target;
         newP1.to.target = { id: newValve.id, object: newValve };
         newP2.from.target = { id: newValve.id, object: newValve };
-        newP2.to.target = overlap.pipe.object.to.target;
+        newP2.to.target = overlap.body.object.to.target;
 
         merged = true;
       }

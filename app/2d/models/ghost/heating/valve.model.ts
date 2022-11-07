@@ -27,7 +27,7 @@ class Valve extends Arc {
   validation(): boolean {
     let overlaps = this.model.overlap.pipeOverlap(this.center);
 
-    return overlaps.length > 0 && Boolean(overlaps.find((o) => o.pipe));
+    return overlaps.length > 0 && Boolean(overlaps.find((o) => o.body));
   }
 }
 

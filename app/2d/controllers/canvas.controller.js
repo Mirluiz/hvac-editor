@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_view_1 = __importDefault(require("../views/canvas.view"));
 var canvas_model_1 = __importDefault(require("../models/canvas.model"));
 var stats_view_1 = __importDefault(require("../views/stats.view"));
-var vect_1 = require("../../geometry/vect");
 var pipe_controller_1 = __importDefault(require("./pipe.controller"));
 var object_controller_1 = __importDefault(require("./object.controller"));
 var Canvas = /** @class */ (function () {
@@ -32,16 +31,6 @@ var Canvas = /** @class */ (function () {
         this.model.clicked = true;
         if (!this.model.mouse)
             return;
-        var worldCoord = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
-        var _mouse = new vect_1.Vector(worldCoord.x, worldCoord.y);
-        if (this.model.config.net.bind) {
-            _mouse.x =
-                Math.round(_mouse.x / this.model.config.net.step) *
-                    this.model.config.net.step;
-            _mouse.y =
-                Math.round(_mouse.y / this.model.config.net.step) *
-                    this.model.config.net.step;
-        }
         switch (this.model.mode) {
             case "default":
                 break;
@@ -59,12 +48,8 @@ var Canvas = /** @class */ (function () {
         this.view.draw();
     };
     Canvas.prototype.mouseMove = function (e) {
-        if (!this.model.mouse || !this.model.netBoundMouse) {
+        if (!this.model.mouse) {
             this.model.mouse = {
-                x: e.offsetX,
-                y: e.offsetY,
-            };
-            this.model.netBoundMouse = {
                 x: e.offsetX,
                 y: e.offsetY,
             };
@@ -85,12 +70,6 @@ var Canvas = /** @class */ (function () {
                 };
             }
         }
-        this.model.netBoundMouse.x =
-            Math.round(this.model.mouse.x / this.model.config.net.step) *
-                this.model.config.net.step;
-        this.model.netBoundMouse.y =
-            Math.round(this.model.mouse.y / this.model.config.net.step) *
-                this.model.config.net.step;
         this.model.overlap.update();
         switch (this.model.mode) {
             case "default":
@@ -112,25 +91,16 @@ var Canvas = /** @class */ (function () {
         this.model.clicked = false;
         if (!this.model.mouse)
             return;
-        var _mouse = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
-        if (this.model.config.net.bind) {
-            _mouse.x =
-                Math.round(_mouse.x / this.model.config.net.step) *
-                    this.model.config.net.step;
-            _mouse.y =
-                Math.round(_mouse.y / this.model.config.net.step) *
-                    this.model.config.net.step;
-        }
         switch (this.model.mode) {
             case "default":
                 break;
             case "wall":
                 break;
             case "pipe":
-                this.pipe.mouseUp(_mouse);
+                this.pipe.mouseUp();
                 break;
             case "valve":
-                this.object.mouseUp(_mouse);
+                this.object.mouseUp();
                 break;
         }
     };

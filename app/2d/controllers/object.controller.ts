@@ -4,6 +4,7 @@ import ValveGhostModel from "../models/ghost/heating/valve.model";
 import ValveModel from "../models/heating/valve.model";
 import RadiatorGhostModel from "../models/ghost/heating/radiator.model";
 import RadiatorModel from "../models/heating/radiator.model";
+import { IOverlap } from "../overlap.model";
 
 class Pipe {
   model: CanvasModel;
@@ -13,36 +14,34 @@ class Pipe {
   }
 
   mouseMove() {
-    let bV = new Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
-    let v = new Vector(this.model.mouse.x, this.model.mouse.y);
+    if (!this.model.overlap.boundMouse) return;
 
-    v = v.bindNet(this.model.config.net.step);
-    bV = bV.bindNet(this.model.config.net.step);
+    let bV = new Vector(
+      this.model.overlap.boundMouse.x,
+      this.model.overlap.boundMouse.y
+    );
 
     if (
       this.model.placingObject &&
       this.model.placingObject instanceof ValveGhostModel
     ) {
-      let overlaps = this.model.overlap.pipeOverlap(v);
-      let pipeFound: IVec | null = null;
-      this.model.placingObject.pipes = [];
-
-      for (let overlap of overlaps) {
-        if (overlap.pipe) {
-          pipeFound = new Vector(overlap.pipe.vec.x, overlap.pipe.vec.y);
-          break;
-        }
-      }
-
-      if (pipeFound) {
+      if (!this.model.overlap.isEmpty) {
         document.body.style.cursor = "default";
-        this.model.placingObject.center.x = pipeFound.x;
-        this.model.placingObject.center.y = pipeFound.y;
+        let pipeFound = [
+          ...this.model.overlap.list,
+          ...this.model.overlap.boundList,
+        ].find((o) => o.body);
+
+        if (pipeFound?.body) {
+        } else {
+          document.body.style.cursor = "not-allowed";
+        }
       } else {
-        this.model.placingObject.center.x = bV.x;
-        this.model.placingObject.center.y = bV.y;
         document.body.style.cursor = "not-allowed";
       }
+
+      this.model.placingObject.center.x = bV.x;
+      this.model.placingObject.center.y = bV.y;
     }
 
     if (
@@ -86,7 +85,7 @@ class Pipe {
     }
   }
 
-  mouseUp(coord: IVec) {}
+  mouseUp() {}
 }
 
 export default Pipe;

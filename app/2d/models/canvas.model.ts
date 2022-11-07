@@ -32,7 +32,7 @@ class Canvas {
   }
 
   mouse: ICoord = { x: 0, y: 0 };
-  netBoundMouse: ICoord = { x: 0, y: 0 };
+  boundMouse: ICoord = { x: 0, y: 0 }; // bound for net, or for overlapped objects
   canvasSize: ICoord | null = null;
   mouseCanvasRatio: ICoord | null = null;
   scale: {

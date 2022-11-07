@@ -118,8 +118,8 @@ class Pipe {
     this.canvas.model.overlap.list.map((l) => {
       if (l) {
         let _p = this.canvas.model.getPipeByID(l.id);
-        if (_p && l.pipe?.vec) {
-          this.drawOverLap(l.pipe.vec);
+        if (_p && l.body?.vec) {
+          this.drawOverLap(l.body.vec);
         }
       }
     });

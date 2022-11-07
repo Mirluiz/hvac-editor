@@ -12,8 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../geometry/vect");
 var Overlap = /** @class */ (function () {
     function Overlap(model) {
-        this.mouse = null;
-        this.netBoundMouse = null;
+        this.boundMouse = null;
         this.walls = [];
         this.pipes = [];
         this.valves = [];
@@ -22,12 +21,39 @@ var Overlap = /** @class */ (function () {
         this.boundList = [];
         this.model = model;
     }
+    Object.defineProperty(Overlap.prototype, "isEmpty", {
+        get: function () {
+            return this.list.length === 0 && this.boundList.length === 0;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Overlap.prototype.update = function () {
-        var bV = new vect_1.Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+        var netBoundMouse = new vect_1.Vector(Math.round(this.model.mouse.x / this.model.config.net.step) *
+            this.model.config.net.step, Math.round(this.model.mouse.y / this.model.config.net.step) *
+            this.model.config.net.step);
         var v = new vect_1.Vector(this.model.mouse.x, this.model.mouse.y);
         this.wallsOverlap();
         this.list = __spreadArray(__spreadArray([], this.pipeOverlap(v), true), this.IOOverlap(v), true);
-        this.boundList = __spreadArray(__spreadArray([], this.pipeOverlap(bV), true), this.IOOverlap(bV), true);
+        this.boundList = __spreadArray(__spreadArray([], this.pipeOverlap(netBoundMouse), true), this.IOOverlap(netBoundMouse), true);
+        if (this.list.length === 0 && this.boundList.length === 0) {
+            this.boundMouse = netBoundMouse.clone();
+        }
+        // else {
+        //   let firstElement = [...this.list, ...this.boundList][0];
+        //
+        //   if (firstElement.pipe) {
+        //     this.boundMouse = firstElement.pipe.vec;
+        //   } else if (firstElement.io) {
+        //     this.boundMouse = firstElement.io.getVecAbs();
+        //   } else if (firstElement.fitting) {
+        //     this.boundMouse = firstElement.fitting.center;
+        //   } else if (firstElement.pipeEnd) {
+        //     this.boundMouse = firstElement.pipeEnd.vec;
+        //   } else {
+        //     this.boundMouse = netBoundMouse.clone();
+        //   }
+        // }
     };
     Overlap.prototype.wallsOverlap = function () {
         this.model.walls.map(function () { });
@@ -57,7 +83,7 @@ var Overlap = /** @class */ (function () {
                     var projPipe = pipe.toOrigin().projection(vec.sub(pipe.from.vec));
                     _p = {
                         id: pipe.id,
-                        pipe: {
+                        body: {
                             object: pipe,
                             vec: normPipe.multiply(projPipe).sum(pipe.from.vec),
                         },

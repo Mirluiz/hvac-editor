@@ -8,9 +8,7 @@ import Radiator, { IO } from "./models/heating/radiator.model";
 
 class Overlap {
   readonly model: CanvasModel;
-
-  mouse: IVec | null = null;
-  netBoundMouse: IVec | null = null;
+  boundMouse: IVec | null = null;
 
   private walls: Array<IOverlap> = [];
   private pipes: Array<IOverlap> = [];
@@ -24,13 +22,44 @@ class Overlap {
     this.model = model;
   }
 
+  get isEmpty() {
+    return this.list.length === 0 && this.boundList.length === 0;
+  }
+
   update() {
-    let bV = new Vector(this.model.netBoundMouse.x, this.model.netBoundMouse.y);
+    let netBoundMouse = new Vector(
+      Math.round(this.model.mouse.x / this.model.config.net.step) *
+        this.model.config.net.step,
+      Math.round(this.model.mouse.y / this.model.config.net.step) *
+        this.model.config.net.step
+    );
     let v = new Vector(this.model.mouse.x, this.model.mouse.y);
 
     this.wallsOverlap();
     this.list = [...this.pipeOverlap(v), ...this.IOOverlap(v)];
-    this.boundList = [...this.pipeOverlap(bV), ...this.IOOverlap(bV)];
+    this.boundList = [
+      ...this.pipeOverlap(netBoundMouse),
+      ...this.IOOverlap(netBoundMouse),
+    ];
+
+    if (this.list.length === 0 && this.boundList.length === 0) {
+      this.boundMouse = netBoundMouse.clone();
+    }
+    // else {
+    //   let firstElement = [...this.list, ...this.boundList][0];
+    //
+    //   if (firstElement.pipe) {
+    //     this.boundMouse = firstElement.pipe.vec;
+    //   } else if (firstElement.io) {
+    //     this.boundMouse = firstElement.io.getVecAbs();
+    //   } else if (firstElement.fitting) {
+    //     this.boundMouse = firstElement.fitting.center;
+    //   } else if (firstElement.pipeEnd) {
+    //     this.boundMouse = firstElement.pipeEnd.vec;
+    //   } else {
+    //     this.boundMouse = netBoundMouse.clone();
+    //   }
+    // }
   }
 
   wallsOverlap() {
@@ -69,7 +98,7 @@ class Overlap {
 
           _p = {
             id: pipe.id,
-            pipe: {
+            body: {
               object: pipe,
               vec: normPipe.multiply(projPipe).sum(pipe.from.vec),
             },
@@ -115,10 +144,15 @@ class Overlap {
 
 export interface IOverlap {
   id: string;
-  pipe?: { object: Pipe; vec: IVec };
+  body?: IOverlapBody<Pipe>;
   pipeEnd?: IPipeEnd;
   fitting?: Fitting;
   io?: IO<Radiator>;
+}
+
+export interface IOverlapBody<T> {
+  object: T;
+  vec: IVec;
 }
 
 export interface IOverlapValve extends IOverlap {}

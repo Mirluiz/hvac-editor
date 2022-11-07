@@ -12,20 +12,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var vect_1 = require("../../geometry/vect");
 var pipe_model_1 = __importDefault(require("../models/ghost/heating/pipe.model"));
 var pipe_model_2 = __importDefault(require("../models/heating/pipe.model"));
+var fitting_model_1 = __importDefault(require("../models/heating/fitting.model"));
 var Pipe = /** @class */ (function () {
     function Pipe(model) {
         this.model = model;
     }
     Pipe.prototype.mouseMove = function () {
-        var v = this.model.getWorldCoordinates(this.model.mouse.x, this.model.mouse.y);
-        v = v.bindNet(this.model.config.net.step);
+        var _a;
+        // let v = this.model.getWorldCoordinates(
+        //   this.model.mouse.x,
+        //   this.model.mouse.y
+        // );
+        //
+        // v = v.bindNet(this.model.config.net.step);
+        if (!this.model.overlap.boundMouse)
+            return;
+        var bV = new vect_1.Vector(this.model.overlap.boundMouse.x, this.model.overlap.boundMouse.y);
         if (this.model.actionObject &&
             this.model.actionObject instanceof pipe_model_1.default) {
             var target = null;
-            for (var _i = 0, _a = __spreadArray(__spreadArray([], this.model.overlap.list, true), this.model.overlap.boundList, true); _i < _a.length; _i++) {
-                var overlap = _a[_i];
+            for (var _i = 0, _b = __spreadArray(__spreadArray([], this.model.overlap.list, true), this.model.overlap.boundList, true); _i < _b.length; _i++) {
+                var overlap = _b[_i];
                 if (overlap.io) {
                     target = {
                         id: overlap.id,
@@ -33,14 +43,44 @@ var Pipe = /** @class */ (function () {
                         object: overlap.io.getRadiator(),
                     };
                 }
+                else if (overlap.fitting) {
+                    target = {
+                        id: overlap.id,
+                        object: overlap.fitting,
+                    };
+                }
+                else if (overlap.pipeEnd) {
+                    target = {
+                        id: overlap.id,
+                        end: overlap.pipeEnd,
+                    };
+                }
+                else if ((_a = overlap.body) === null || _a === void 0 ? void 0 : _a.object) {
+                    target = {
+                        id: overlap.id,
+                        body: overlap.body,
+                    };
+                }
             }
             if (target === null || target === void 0 ? void 0 : target.io) {
+                this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.io.getVecAbs().x;
                 this.model.actionObject.to.vec.y = target.io.getVecAbs().y;
             }
+            else if ((target === null || target === void 0 ? void 0 : target.object) instanceof fitting_model_1.default) {
+                this.model.actionObject.to.target = target;
+                this.model.actionObject.to.vec.x = target.object.center.x;
+                this.model.actionObject.to.vec.y = target.object.center.y;
+            }
+            else if ((target === null || target === void 0 ? void 0 : target.body) instanceof Pipe) {
+                this.model.actionObject.to.target = target;
+                this.model.actionObject.to.vec.x = target.body.vec.x;
+                this.model.actionObject.to.vec.y = target.body.vec.y;
+            }
             else {
-                this.model.actionObject.to.vec.x = v.x;
-                this.model.actionObject.to.vec.y = v.y;
+                this.model.actionObject.to.target = null;
+                this.model.actionObject.to.vec.x = bV.x;
+                this.model.actionObject.to.vec.y = bV.y;
             }
             if (!this.model.actionObject.validation()) {
                 document.body.style.cursor = "not-allowed";
@@ -69,7 +109,7 @@ var Pipe = /** @class */ (function () {
         }
         this.model.actionObject = new pipe_model_1.default(this.model, coord.clone(), coord.clone());
     };
-    Pipe.prototype.mouseUp = function (coord) { };
+    Pipe.prototype.mouseUp = function () { };
     return Pipe;
 }());
 exports.default = Pipe;

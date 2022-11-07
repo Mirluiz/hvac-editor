@@ -97,7 +97,7 @@ var Pipe = /** @class */ (function (_super) {
                         can = false;
                     }
                 }
-                else if (overlap && overlap.pipe) {
+                else if (overlap && overlap.body) {
                     can = true;
                 }
                 else {
@@ -139,13 +139,13 @@ var Pipe = /** @class */ (function (_super) {
                     overlap.pipeEnd.target = { id: newFitting.id, object: newFitting };
                     end.target = { id: newFitting.id, object: newFitting };
                 }
-                else if (overlap && overlap.pipe) {
-                    var mergePoint = overlap.pipe.vec.bindNet(_this.model.config.net.step);
-                    var newP1 = new Pipe(_this.model, overlap.pipe.object.from.vec.clone(), new vect_1.Vector(mergePoint.x, mergePoint.y));
-                    var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), overlap.pipe.object.to.vec.clone());
+                else if (overlap && overlap.body) {
+                    var mergePoint = overlap.body.vec.bindNet(_this.model.config.net.step);
+                    var newP1 = new Pipe(_this.model, overlap.body.object.from.vec.clone(), new vect_1.Vector(mergePoint.x, mergePoint.y));
+                    var newP2 = new Pipe(_this.model, new vect_1.Vector(mergePoint.x, mergePoint.y), overlap.body.object.to.vec.clone());
                     _this.model.addPipe(newP1);
                     _this.model.addPipe(newP2);
-                    overlap.pipe.object.delete();
+                    overlap.body.object.delete();
                     var newFitting = new fitting_model_1.default(_this.model, mergePoint);
                     _this.model.addFitting(newFitting);
                     newFitting.addPipe(newP1);
