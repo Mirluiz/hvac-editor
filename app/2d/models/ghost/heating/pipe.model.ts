@@ -39,6 +39,7 @@ class Pipe extends Line<IGhostPipeEnd> {
     );
 
     this.model = model;
+    this.z = 10;
   }
 
   get color() {
@@ -81,7 +82,6 @@ class Pipe extends Line<IGhostPipeEnd> {
       let overlaps = this.model.overlap.direct(end.vec);
       if (overlaps.length > 0) {
         let overlap = overlaps[0];
-        console.log("overlap", overlap);
 
         if (overlap && overlap.end) {
           if (

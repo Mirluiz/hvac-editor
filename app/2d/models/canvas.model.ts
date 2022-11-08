@@ -45,6 +45,7 @@ class Canvas {
     limitReached: false,
   };
   clicked: boolean = false;
+  wheelClicked: boolean = false;
   keyboard: string | null = null;
   offset: ICoord = { x: 0, y: 0 };
   config: IConfig = {

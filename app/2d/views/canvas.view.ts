@@ -4,6 +4,15 @@ import PipeView from "./pipe.view";
 import ValveView from "./valve.view";
 import FittingView from "./fitting.view";
 import RadiatorView from "./radiator.view";
+import Pipe from "../models/heating/pipe.model";
+import PipeGhost from "../models/ghost/heating/pipe.model";
+import Wall from "../models/architecture/wall.model";
+import Radiator from "../models/heating/radiator.model";
+import Valve from "../models/heating/valve.model";
+import ValveGhostModel from "../models/ghost/heating/valve.model";
+import Fitting from "../models/heating/fitting.model";
+import PipeGhostModel from "../models/ghost/heating/pipe.model";
+import RadiatorModel from "../models/ghost/heating/radiator.model";
 
 class Canvas {
   model: CanvasModel;
@@ -12,6 +21,7 @@ class Canvas {
   valve: ValveView | null = null;
   fitting: FittingView | null = null;
   radiator: RadiatorView | null = null;
+  zIndex: any | null = null;
 
   constructor(model: CanvasModel) {
     this.model = model;
@@ -30,6 +40,7 @@ class Canvas {
       this.valve = new ValveView(this, this.model, ctx);
       this.fitting = new FittingView(this, this.model, ctx);
       this.radiator = new RadiatorView(this, this.model, ctx);
+      this.zIndex = new RadiatorView(this, this.model, ctx);
     }
   }
 
@@ -38,10 +49,69 @@ class Canvas {
     this.drawNet();
     this.drawWalls();
 
-    this.pipe?.draw();
-    this.valve?.draw();
-    this.fitting?.draw();
-    this.radiator?.draw();
+    let { pipes, walls, radiators, valves, fittings } = this.model;
+
+    let objects = [
+      ...pipes,
+      ...walls,
+      ...radiators,
+      ...valves,
+      ...fittings,
+    ].sort((a, b) => {
+      return a.z - b.z;
+    });
+
+    objects.map((object) => {
+      if (object instanceof Pipe) {
+        this.pipe?.drawPipe(object);
+      }
+
+      if (object instanceof Wall) {
+        // console.log("Wall");
+        // this.drawWall(o);
+      }
+
+      if (object instanceof Radiator) {
+        // console.log("Radiator");
+        this.radiator?.drawRadiator(object);
+      }
+
+      if (object instanceof Valve) {
+        // console.log("Vavle");
+        this.valve?.drawValve(object);
+      }
+
+      if (object instanceof Fitting) {
+        this.fitting?.drawFitting(object);
+      }
+    });
+
+    if (
+      this.model.actionObject &&
+      this.model.actionObject instanceof PipeGhostModel
+    ) {
+      this.pipe?.drawGhost(this.model.actionObject);
+    }
+
+    if (
+      this.model.placingObject &&
+      this.model.placingObject instanceof ValveGhostModel
+    ) {
+      this.valve?.drawGhost(this.model.placingObject);
+    }
+
+    if (
+      this.model.placingObject &&
+      this.model.placingObject instanceof RadiatorModel
+    ) {
+      this.radiator?.drawGhost(this.model.placingObject);
+    }
+
+    // this.pipe?.draw();
+    // this.valve?.draw();
+    // this.fitting?.draw();
+    // this.radiator?.draw();
+    // this.zIndex?.draw(); // draw top elements in canvas
   }
 
   clear() {

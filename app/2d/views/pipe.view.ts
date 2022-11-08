@@ -75,29 +75,27 @@ class Pipe {
     this.ctx.stroke();
     this.ctx.restore();
 
-    setTimeout(() => {
-      if (pipe.from.target?.io) {
-        let _wp = pipe.from.target.io.getVecAbs();
-        this.ctx.save();
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = "red";
-        this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
-        this.ctx.fillStyle = "#ADD8E6";
-        this.ctx.fill();
-        this.ctx.restore();
-      }
+    if (pipe.from.target?.io) {
+      let _wp = pipe.from.target.io.getVecAbs();
+      this.ctx.save();
+      this.ctx.beginPath();
+      this.ctx.strokeStyle = "red";
+      this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+      this.ctx.fillStyle = "#ADD8E6";
+      this.ctx.fill();
+      this.ctx.restore();
+    }
 
-      if (pipe.to.target?.io) {
-        let _wp = pipe.to.target.io.getVecAbs();
-        this.ctx.save();
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = "red";
-        this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
-        this.ctx.fillStyle = "#ADD8E6";
-        this.ctx.fill();
-        this.ctx.restore();
-      }
-    });
+    if (pipe.to.target?.io) {
+      let _wp = pipe.to.target.io.getVecAbs();
+      this.ctx.save();
+      this.ctx.beginPath();
+      this.ctx.strokeStyle = "red";
+      this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+      this.ctx.fillStyle = "#ADD8E6";
+      this.ctx.fill();
+      this.ctx.restore();
+    }
   }
 
   drawOverLap(coordinate: IVec) {

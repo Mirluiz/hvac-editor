@@ -77,12 +77,6 @@ class Pipe {
         document.body.style.cursor = "default";
       }
     }
-
-    if (!this.model.actionObject.validation()) {
-      document.body.style.cursor = "not-allowed";
-    } else {
-      document.body.style.cursor = "default";
-    }
   }
 
   mouseDown() {

@@ -41,8 +41,14 @@ class Canvas {
     this.view.draw();
   }
 
-  mouseDown(e: Event): void {
-    this.model.clicked = true;
+  mouseDown(e: MouseEvent): void {
+    if (e.button === 1) {
+      this.model.wheelClicked = true;
+      return;
+    } else {
+      this.model.wheelClicked = false;
+      this.model.clicked = true;
+    }
 
     if (!this.model.mouse) return;
 
@@ -75,7 +81,10 @@ class Canvas {
       this.model.mouse.y = e.offsetY;
     }
 
-    if (this.model.clicked) {
+    if (
+      this.model.wheelClicked ||
+      (this.model.mode === "default" && this.model.clicked)
+    ) {
       if (this.model.offset) {
         this.model.offset.x += e.movementX;
         this.model.offset.y += e.movementY;
@@ -109,6 +118,7 @@ class Canvas {
 
   mouseUp(e: Event) {
     this.model.clicked = false;
+    this.model.wheelClicked = false;
 
     if (!this.model.mouse) return;
 
