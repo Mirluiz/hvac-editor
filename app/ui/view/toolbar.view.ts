@@ -1,5 +1,5 @@
-import CanvasModel from "../models/canvas.model";
-import { ToolbarMenu, ToolbarMode } from "../controllers/toolbar.controller";
+import CanvasModel from "../../2d/models/canvas.model";
+import { ToolbarMenu, ToolbarMode } from "../controller/toolbar.controller";
 
 class Toolbar {
   model: { menu: ToolbarMenu; subMenu?: string };
