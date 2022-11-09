@@ -1,5 +1,5 @@
 import CanvasController from "./controllers/canvas.controller";
-import Toolbar from "./controllers/toolbar.controller";
+import Toolbar from "../ui/controller/toolbar.controller";
 import StatsView from "./views/stats.view";
 
 class Controller {

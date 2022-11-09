@@ -7,7 +7,7 @@ import ValveGhostModel from "./ghost/heating/valve.model";
 import Overlap from "../overlap.model";
 import Fitting from "./heating/fitting.model";
 import { fittingModel } from "../../_test_/common";
-import { ToolbarMode } from "../controllers/toolbar.controller";
+import { ToolbarMode } from "../../ui/controller/toolbar.controller";
 import RadiatorModel from "./heating/radiator.model";
 import RadiatorGhostModel from "./ghost/heating/radiator.model";
 
