@@ -179,6 +179,35 @@
         <hr class="infoPanel-block__divider"/>
         <div class="infoPanel-block">
           <div class="panel-oneLine header">
+            <div class="panel-oneLine__content">
+              <div class="panelText">
+                Mode
+              </div>
+            </div>
+            <div class="panel-oneLine__icon">
+              <div class="panel-oneLine__content mode switch-field">
+                <input type="radio" id="panelModePipeReturn" name="mode-switch-pipe" value="return" checked />
+                <label for="panelModePipeReturn">R</label>
+                <input type="radio" id="panelModePipeSupply" name="mode-switch-pipe" value="supply" />
+                <label for="panelModePipeSupply">S</label>
+              </div>
+            </div>
+          </div>
+          <div class="panel-oneLine">
+            <div class="panel-oneLine__content">
+              <div class="input-invisible">
+                <label>W <input type="number" /></label>
+              </div>
+              <div class="input-invisible">
+                <label>Z <input type="number" /></label>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <hr class="infoPanel-block__divider"/>
+        <div class="infoPanel-block">
+          <div class="panel-oneLine header">
             <div class="panelText">
               Selection
             </div>
@@ -190,9 +219,7 @@
             </div>
           </div>
         </div>
-
         <hr class="infoPanel-block__divider"/>
-
         <div class="infoPanel-block">
           <div class="panel-oneLine subHeader">
             <div class="panelText">
