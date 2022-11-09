@@ -1,14 +1,24 @@
 .material-symbols-outlined {
-    font-size: 16px;
-    padding: 5px;
     font-variation-settings:
             'FILL' 0,
-            'wght' 400,
+            'wght' 200,
             'GRAD' 0,
             'opsz' 48
 }
-.material-symbols-outlined:hover {
+
+.toolbar .material-symbols-outlined {
+    color: white;
+    font-size: 36px;
+    padding: 5px;
+}
+
+
+#infoPanel .material-symbols-outlined {
+    font-size: 16px;
+    padding: 5px;
+}
+
+#infoPanel .material-symbols-outlined:hover {
     background-color: #E5E5E5;
     cursor: pointer;
 }
-
