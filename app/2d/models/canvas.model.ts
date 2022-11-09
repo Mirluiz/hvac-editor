@@ -28,7 +28,7 @@ class Canvas {
   constructor() {
     this.overlap = new Overlap(this);
 
-    fittingModel(this);
+    // fittingModel(this);
   }
 
   mouse: ICoord = { x: 0, y: 0 };
