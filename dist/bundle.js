@@ -125,7 +125,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../models/canvas.model":7,"../views/canvas.view":19,"../views/stats.view":23,"./object.controller":2,"./pipe.controller":3}],2:[function(require,module,exports){
+},{"../models/canvas.model":6,"../views/canvas.view":18,"../views/stats.view":22,"./object.controller":2,"./pipe.controller":3}],2:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -197,7 +197,7 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../../geometry/vect":27,"../models/ghost/heating/radiator.model":11,"../models/ghost/heating/valve.model":12,"../models/heating/radiator.model":15,"../models/heating/valve.model":16}],3:[function(require,module,exports){
+},{"../../geometry/vect":25,"../models/ghost/heating/radiator.model":10,"../models/ghost/heating/valve.model":11,"../models/heating/radiator.model":14,"../models/heating/valve.model":15}],3:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -298,66 +298,7 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../../geometry/vect":27,"../models/ghost/heating/pipe.model":10,"../models/heating/fitting.model":13,"../models/heating/pipe.model":14}],4:[function(require,module,exports){
-"use strict";
-
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var toolbar_view_1 = __importDefault(require("../views/toolbar.view"));
-var Toolbar = /** @class */function () {
-    function Toolbar(model) {
-        var _this = this;
-        this.toolbarModel = { menu: "default" }; // now it is small object. if it gets bigger move it
-        this.model = model;
-        this.view = new toolbar_view_1.default(this.toolbarModel);
-        if (this.view.menuItems) {
-            Array.from(this.view.menuItems).map(function (e) {
-                e.addEventListener("click", _this.handleMenu.bind(_this));
-            });
-        }
-        if (this.view.subMenuItems) {
-            Array.from(this.view.subMenuItems).map(function (e) {
-                e.addEventListener("click", _this.handleMode.bind(_this));
-            });
-        }
-    }
-    Toolbar.prototype.handleMenu = function (e) {
-        var cT = e.currentTarget;
-        var value = cT.id;
-        switch (value) {
-            case "toolbar_selection":
-                this.model.updateMode("default");
-                this.toolbarModel.menu = "default";
-                break;
-            case "toolbar_heating":
-                this.toolbarModel.menu = "heating";
-                break;
-            case "toolbar_architecture":
-                this.toolbarModel.menu = "architecture";
-                break;
-            case "toolbar_ventilation":
-                this.toolbarModel.menu = "ventilation";
-                break;
-            default:
-                this.model.updateMode("default");
-                this.toolbarModel.menu = "default";
-        }
-        this.view.render();
-    };
-    Toolbar.prototype.handleMode = function (e) {
-        var cT = e.currentTarget;
-        var value = cT.getAttribute("data-value");
-        if (value === "default" || value === "wall" || value === "pipe" || value === "radiator" || value === "valve") {
-            this.model.updateMode(value);
-        }
-    };
-    return Toolbar;
-}();
-exports.default = Toolbar;
-
-},{"../views/toolbar.view":24}],5:[function(require,module,exports){
+},{"../../geometry/vect":25,"../models/ghost/heating/pipe.model":9,"../models/heating/fitting.model":12,"../models/heating/pipe.model":13}],4:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -365,7 +306,7 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_controller_1 = __importDefault(require("./controllers/canvas.controller"));
-var toolbar_controller_1 = __importDefault(require("./controllers/toolbar.controller"));
+var toolbar_controller_1 = __importDefault(require("../ui/controller/toolbar.controller"));
 var Controller = /** @class */function () {
     function Controller() {
         this.canvas = new canvas_controller_1.default();
@@ -376,7 +317,7 @@ var Controller = /** @class */function () {
 }();
 exports.default = Controller;
 
-},{"./controllers/canvas.controller":1,"./controllers/toolbar.controller":4}],6:[function(require,module,exports){
+},{"../ui/controller/toolbar.controller":27,"./controllers/canvas.controller":1}],5:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -420,7 +361,7 @@ var Wall = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Wall;
 
-},{"../geometry/line.model":9}],7:[function(require,module,exports){
+},{"../geometry/line.model":8}],6:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -616,7 +557,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":27,"../overlap.model":18,"./ghost/heating/radiator.model":11,"./ghost/heating/valve.model":12}],8:[function(require,module,exports){
+},{"../../geometry/vect":25,"../overlap.model":17,"./ghost/heating/radiator.model":10,"./ghost/heating/valve.model":11}],7:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -658,7 +599,7 @@ var Arc = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Arc;
 
-},{"../main.model":17}],9:[function(require,module,exports){
+},{"../main.model":16}],8:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -700,7 +641,7 @@ var Line = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Line;
 
-},{"../main.model":17}],10:[function(require,module,exports){
+},{"../main.model":16}],9:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -812,7 +753,7 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../../geometry/line.model":9,"../../heating/fitting.model":13}],11:[function(require,module,exports){
+},{"../../geometry/line.model":8,"../../heating/fitting.model":12}],10:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -885,7 +826,7 @@ var Radiator = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Radiator;
 
-},{"../../../../geometry/vect":27,"../../main.model":17}],12:[function(require,module,exports){
+},{"../../../../geometry/vect":25,"../../main.model":16}],11:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -943,7 +884,7 @@ var Valve = /** @class */function (_super) {
 }(arc_model_1.default);
 exports.default = Valve;
 
-},{"../../geometry/arc.model":8}],13:[function(require,module,exports){
+},{"../../geometry/arc.model":7}],12:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -1015,7 +956,7 @@ var Fitting = /** @class */function (_super) {
 }(arc_model_1.default);
 exports.default = Fitting;
 
-},{"../geometry/arc.model":8}],14:[function(require,module,exports){
+},{"../geometry/arc.model":7}],13:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -1235,7 +1176,7 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../../../geometry/vect":27,"../geometry/line.model":9,"./fitting.model":13}],15:[function(require,module,exports){
+},{"../../../geometry/vect":25,"../geometry/line.model":8,"./fitting.model":12}],14:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -1342,7 +1283,7 @@ var Radiator = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Radiator;
 
-},{"../../../geometry/vect":27,"../main.model":17}],16:[function(require,module,exports){
+},{"../../../geometry/vect":25,"../main.model":16}],15:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -1439,7 +1380,7 @@ var Valve = /** @class */function (_super) {
 }(arc_model_1.default);
 exports.default = Valve;
 
-},{"../../../geometry/vect":27,"../geometry/arc.model":8,"./pipe.model":14}],17:[function(require,module,exports){
+},{"../../../geometry/vect":25,"../geometry/arc.model":7,"./pipe.model":13}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1453,7 +1394,7 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":29}],18:[function(require,module,exports){
+},{"../../utils":29}],17:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -1581,7 +1522,7 @@ var Overlap = /** @class */function () {
 }();
 exports.default = Overlap;
 
-},{"../geometry/vect":27}],19:[function(require,module,exports){
+},{"../geometry/vect":25}],18:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -1689,6 +1630,9 @@ var Canvas = /** @class */function () {
         var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
         if (!ctx || !this.model.mouse || !this.container) return;
         ctx.clearRect(0, 0, this.container.width, this.container.height);
+        ctx.fillStyle = "#f5f5f5";
+        ctx.fillRect(0, 0, this.container.width, this.container.height);
+        //f5f5f5
     };
     Canvas.prototype.drawMouse = function () {
         var _a;
@@ -1815,7 +1759,7 @@ var Canvas = /** @class */function () {
     Canvas.prototype.initCanvasContainer = function () {
         if (!this.container) return;
         var h = Math.ceil(screen.height / this.model.config.net.step) * this.model.config.net.step;
-        var w = Math.ceil(screen.width / this.model.config.net.step) * this.model.config.net.step;
+        var w = Math.ceil(screen.width / this.model.config.net.step) * this.model.config.net.step - 250; // 250 is panel width
         this.container.style.height = h + "px";
         this.container.style.width = w + "px";
         this.container.height = h;
@@ -1829,7 +1773,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":27,"../models/architecture/wall.model":6,"../models/ghost/heating/pipe.model":10,"../models/ghost/heating/radiator.model":11,"../models/ghost/heating/valve.model":12,"../models/heating/fitting.model":13,"../models/heating/pipe.model":14,"../models/heating/radiator.model":15,"../models/heating/valve.model":16,"./fitting.view":20,"./pipe.view":21,"./radiator.view":22,"./valve.view":25}],20:[function(require,module,exports){
+},{"../../geometry/vect":25,"../models/architecture/wall.model":5,"../models/ghost/heating/pipe.model":9,"../models/ghost/heating/radiator.model":10,"../models/ghost/heating/valve.model":11,"../models/heating/fitting.model":12,"../models/heating/pipe.model":13,"../models/heating/radiator.model":14,"../models/heating/valve.model":15,"./fitting.view":19,"./pipe.view":20,"./radiator.view":21,"./valve.view":23}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1955,7 +1899,7 @@ var Fitting = /** @class */function () {
 }();
 exports.default = Fitting;
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -2059,7 +2003,7 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../models/ghost/heating/pipe.model":10}],22:[function(require,module,exports){
+},{"../models/ghost/heating/pipe.model":9}],21:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -2132,7 +2076,7 @@ var Radiator = /** @class */function () {
 }();
 exports.default = Radiator;
 
-},{"../../geometry/vect":27,"../models/ghost/heating/radiator.model":11}],23:[function(require,module,exports){
+},{"../../geometry/vect":25,"../models/ghost/heating/radiator.model":10}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2161,45 +2105,7 @@ var Stats = /** @class */function () {
 }();
 exports.default = Stats;
 
-},{}],24:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Toolbar = /** @class */function () {
-    function Toolbar(model) {
-        this.model = model;
-        this.container = document.querySelector(".toolbar");
-        this.menu = document.querySelector(".menu");
-        this.menuItems = document.querySelectorAll(".menuItem");
-        this.subMenus = document.querySelectorAll(".subMenu");
-        this.subMenuItems = document.querySelectorAll(".subMenuItem");
-    }
-    Toolbar.prototype.render = function () {
-        var _this = this;
-        if (!this.subMenus || !this.menu || !this.menuItems || !this.container) return;
-        Array.from(this.menuItems).map(function (menu) {
-            if ("toolbar_" + _this.model.menu === menu.id) {
-                menu.style.background = "cadetblue";
-            } else {
-                menu.style.background = "black";
-            }
-        });
-        Array.from(this.subMenus).map(function (subMenu) {
-            subMenu.style.display = "none";
-            if (_this.model.menu === "default") {
-                subMenu.style.display = "none";
-            } else {
-                if ("toolbar_" + _this.model.menu === subMenu.getAttribute("data-tab")) {
-                    subMenu.style.display = "flex";
-                }
-            }
-        });
-    };
-    return Toolbar;
-}();
-exports.default = Toolbar;
-
-},{}],25:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -2294,7 +2200,7 @@ var Valve = /** @class */function () {
 }();
 exports.default = Valve;
 
-},{"../../geometry/vect":27,"../models/ghost/heating/valve.model":12}],26:[function(require,module,exports){
+},{"../../geometry/vect":25,"../models/ghost/heating/valve.model":11}],24:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -2313,7 +2219,7 @@ var App = /** @class */function () {
 }();
 exports.default = App;
 
-},{"./2d":5}],27:[function(require,module,exports){
+},{"./2d":4}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2452,7 +2358,7 @@ var Vector = /** @class */function () {
 }();
 exports.Vector = Vector;
 
-},{}],28:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -2463,7 +2369,104 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":26}],29:[function(require,module,exports){
+},{"./app":24}],27:[function(require,module,exports){
+"use strict";
+
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var toolbar_view_1 = __importDefault(require("../view/toolbar.view"));
+var Toolbar = /** @class */function () {
+    function Toolbar(model) {
+        var _this = this;
+        this.toolbarModel = { menu: "default" }; // now it is small object. if it gets bigger move it
+        this.model = model;
+        this.view = new toolbar_view_1.default(this.toolbarModel);
+        if (this.view.menuItems) {
+            Array.from(this.view.menuItems).map(function (e) {
+                e.addEventListener("click", _this.handleMenu.bind(_this));
+            });
+        }
+        if (this.view.subMenuItems) {
+            Array.from(this.view.subMenuItems).map(function (e) {
+                e.addEventListener("click", _this.handleMode.bind(_this));
+            });
+        }
+    }
+    Toolbar.prototype.handleMenu = function (e) {
+        var cT = e.currentTarget;
+        var value = cT.id;
+        switch (value) {
+            case "toolbar_selection":
+                this.model.updateMode("default");
+                this.toolbarModel.menu = "default";
+                break;
+            case "toolbar_heating":
+                this.toolbarModel.menu = "heating";
+                break;
+            case "toolbar_architecture":
+                this.toolbarModel.menu = "architecture";
+                break;
+            case "toolbar_ventilation":
+                this.toolbarModel.menu = "ventilation";
+                break;
+            default:
+                this.model.updateMode("default");
+                this.toolbarModel.menu = "default";
+        }
+        this.view.render();
+    };
+    Toolbar.prototype.handleMode = function (e) {
+        var cT = e.currentTarget;
+        var value = cT.getAttribute("data-value");
+        if (value === "default" || value === "wall" || value === "pipe" || value === "radiator" || value === "valve") {
+            this.model.updateMode(value);
+        }
+    };
+    return Toolbar;
+}();
+exports.default = Toolbar;
+
+},{"../view/toolbar.view":28}],28:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Toolbar = /** @class */function () {
+    function Toolbar(model) {
+        this.model = model;
+        this.container = document.querySelector(".toolbar");
+        this.menu = document.querySelector(".menu");
+        this.menuItems = document.querySelectorAll(".menuItem");
+        this.subMenus = document.querySelectorAll(".subMenu");
+        this.subMenuItems = document.querySelectorAll(".subMenuItem");
+    }
+    Toolbar.prototype.render = function () {
+        var _this = this;
+        if (!this.subMenus || !this.menu || !this.menuItems || !this.container) return;
+        Array.from(this.menuItems).map(function (menu) {
+            if ("toolbar_" + _this.model.menu === menu.id) {
+                menu.style.background = "cadetblue";
+            } else {
+                menu.style.background = "black";
+            }
+        });
+        Array.from(this.subMenus).map(function (subMenu) {
+            subMenu.style.display = "none";
+            if (_this.model.menu === "default") {
+                subMenu.style.display = "none";
+            } else {
+                if ("toolbar_" + _this.model.menu === subMenu.getAttribute("data-tab")) {
+                    subMenu.style.display = "flex";
+                }
+            }
+        });
+    };
+    return Toolbar;
+}();
+exports.default = Toolbar;
+
+},{}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2486,6 +2489,6 @@ function getProperty(obj, key) {
 }
 exports.getProperty = getProperty;
 
-},{}]},{},[28])
+},{}]},{},[26])
 
 //# sourceMappingURL=bundle.js.map

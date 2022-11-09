@@ -4,16 +4,15 @@ body {
 
 .container{
     font-family: 'Baloo 2', cursive;
+    display: flex;
+    flex-direction: column;
 }
 
 .toolbar {
     display: flex;
     flex-direction: column;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
     background-color: black;
+    position: relative;
     height: 50px;
 }
 
@@ -69,4 +68,10 @@ body {
 
 .toolbar .subMenu .subMenuItem:hover {
     background-color: cadetblue;
+}
+
+.body {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
 }

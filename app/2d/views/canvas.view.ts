@@ -120,6 +120,9 @@ class Canvas {
     if (!ctx || !this.model.mouse || !this.container) return;
 
     ctx.clearRect(0, 0, this.container.width, this.container.height);
+    ctx.fillStyle = "#f5f5f5";
+    ctx.fillRect(0, 0, this.container.width, this.container.height);
+    //f5f5f5
   }
 
   drawMouse() {
@@ -298,7 +301,8 @@ class Canvas {
       this.model.config.net.step;
     let w =
       Math.ceil(screen.width / this.model.config.net.step) *
-      this.model.config.net.step;
+        this.model.config.net.step -
+      250; // 250 is panel width
 
     this.container.style.height = h + "px";
     this.container.style.width = w + "px";

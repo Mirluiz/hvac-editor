@@ -5,14 +5,15 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/js/all.min.js" integrity="sha512-naukR7I+Nk6gp7p5TMA4ycgfxaZBJ7MO5iC3Fp6ySQyKFHOGfpkSZkYVWV5R7u7cfAicxanwYQ5D1e17EfJcMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="main.css">
-  <link rel="stylesheet" href="tooltip.css">
-  <link rel="stylesheet" href="icons.css">
+  <link rel="stylesheet" href="assets/style/main.css">
+  <link rel="stylesheet" href="assets/style/tooltip.css">
+  <link rel="stylesheet" href="assets/style/icons.css">
+  <link rel="stylesheet" href="assets/style/panel.css">
+  <link rel="stylesheet" href="assets/style/input.css">
 </head>
 <body>
   <div class="container">
@@ -80,15 +81,130 @@
         </div>
       </div>
     </div>
-    <canvas id="editor"></canvas>
-<!--    <canvas id="editor"></canvas>-->
-    <div class="infoPanel"></div>
-    <div class="state"></div>
-<!--    <div id="stats"></div>-->
-<!--    <div id="subMode">-->
-<!--      <button value="supply">Supply</button>-->
-<!--      <button value="return">Return</button>-->
-<!--    </div>-->
+    <div class="body">
+      <canvas id="editor"></canvas>
+      <div id="infoPanel">
+        <div class="infoPanel-block">
+          <div class="panel-oneLine header">
+            <div class="panelText">
+              Project
+            </div>
+          </div>
+         <div class="panel-oneLine">
+           <div class="panelText">
+             Title <span id="projectTitle">Test Project</span>
+           </div>
+         </div>
+        </div>
+        <hr class="infoPanel-block__divider"/>
+        <div class="infoPanel-block">
+          <div class="panel-oneLine subHeader">
+            <div class="panel-oneLine__content">
+              <div class="panelText">
+                Floor
+              </div>
+            </div>
+            <div class="panel-oneLine__icon">
+              <span class="material-symbols-outlined">remove</span>
+            </div>
+          </div>
+
+          <div class="panel-oneLine">
+            <div class="panel-oneLine__content">
+              <input placeholder="Floor name" type="text"/>
+              <select>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+            <div class="panel-oneLine__icon">
+              <span class="material-symbols-outlined">add</span>
+            </div>
+          </div>
+
+        </div>
+        <hr class="infoPanel-block__divider"/>
+        <div class="infoPanel-block">
+          <div class="panel-oneLine subHeader">
+            <div class="panel-oneLine__content">
+              <div class="panelText">
+                System
+              </div>
+            </div>
+            <div class="panel-oneLine__icon">
+              <span class="material-symbols-outlined">visibility</span>
+            </div>
+          </div>
+          <div class="panel-oneLine">
+            <div class="panel-oneLine__content">
+              <div class="panelText">
+                Heating
+              </div>
+            </div>
+            <div class="panel-oneLine__icon">
+              <span class="material-symbols-outlined">visibility</span>
+            </div>
+          </div>
+
+          <div class="panel-oneLine">
+            <div class="panel-oneLine__content">
+              <div class="panelText">
+                Ventilation
+              </div>
+            </div>
+            <div class="panel-oneLine__icon">
+              <span class="material-symbols-outlined">visibility</span>
+            </div>
+          </div>
+
+          <div class="panel-oneLine">
+            <div class="panel-oneLine__content">
+              <div class="panelText">
+                Air Conditioning
+              </div>
+            </div>
+            <div class="panel-oneLine__icon">
+              <span class="material-symbols-outlined">visibility</span>
+            </div>
+          </div>
+
+        </div>
+        <hr class="infoPanel-block__divider"/>
+        <div class="infoPanel-block">
+          <div class="panel-oneLine header">
+            <div class="panelText">
+              Selection
+            </div>
+          </div>
+
+          <div class="panel-oneLine">
+            <div class="panelText">
+              ID <span id="selectionID">123123</span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="infoPanel-block__divider"/>
+
+        <div class="infoPanel-block">
+          <div class="panel-oneLine subHeader">
+            <div class="panelText">
+              Type
+            </div>
+          </div>
+
+          <div class="panel-oneLine">
+            <div class="panel-oneLine__content switch-field">
+              <input type="radio" id="panelPipeReturn" name="switch-pipe" value="return" checked />
+              <label for="panelPipeReturn">Return</label>
+              <input type="radio" id="panelPipeSupply" name="switch-pipe" value="supply" />
+              <label for="panelPipeSupply">Supply</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="state"></div>
 
   </div>
 
