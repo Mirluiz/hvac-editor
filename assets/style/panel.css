@@ -34,18 +34,25 @@
     align-items: center;
 }
 
+.panel-oneLine.header {
+    margin-bottom: 12px;
+}
+
 .panel-oneLine.header  .panelText {
     font-size: 14px;
     color: black;
     font-weight: bold;
-    margin-bottom: 12px;
+
+}
+
+
+.panel-oneLine.subHeader {
+    margin-bottom: 4px;
 }
 
 .panel-oneLine.subHeader .panelText {
-    margin-bottom: 4px;
     font-size: 14px;
 }
-
 
 .panel-oneLine .panel-oneLine__content {
     display: flex;
