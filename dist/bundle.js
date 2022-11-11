@@ -307,17 +307,19 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_controller_1 = __importDefault(require("./controllers/canvas.controller"));
 var toolbar_controller_1 = __importDefault(require("../ui/controller/toolbar.controller"));
+var info_panel_controller_1 = __importDefault(require("../ui/controller/info-panel.controller"));
 var Controller = /** @class */function () {
     function Controller() {
         this.canvas = new canvas_controller_1.default();
         this.toolbar = new toolbar_controller_1.default(this.canvas.model);
+        this.infoPanel = new info_panel_controller_1.default(this.canvas.model);
         this.canvas.model.update();
     }
     return Controller;
 }();
 exports.default = Controller;
 
-},{"../ui/controller/toolbar.controller":27,"./controllers/canvas.controller":1}],5:[function(require,module,exports){
+},{"../ui/controller/info-panel.controller":27,"../ui/controller/toolbar.controller":28,"./controllers/canvas.controller":1}],5:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -1394,7 +1396,7 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":29}],17:[function(require,module,exports){
+},{"../../utils":31}],17:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -2376,6 +2378,41 @@ var __importDefault = undefined && undefined.__importDefault || function (mod) {
     return mod && mod.__esModule ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var info_panel_view_1 = __importDefault(require("../view/info-panel.view"));
+var InfoPanel = /** @class */function () {
+    function InfoPanel(model) {
+        var _this = this;
+        this.panelModel = {};
+        this.model = model;
+        this.view = new info_panel_view_1.default(this.panelModel);
+        if (this.view.pipeModeFrame) {
+            this.view.pipeModeFrame.addEventListener("click", this.pipeModeHandle.bind(this));
+        }
+        if (this.view.pipeType) {
+            this.view.pipeType.forEach(function (e) {
+                e.addEventListener("change", _this.pipeTypeHandle.bind(_this));
+            });
+        }
+    }
+    InfoPanel.prototype.pipeModeHandle = function () {};
+    InfoPanel.prototype.pipeTypeHandle = function (e) {
+        var cT = e.currentTarget;
+        var value = cT.value;
+        if (value === "supply" || value === "return") {
+            this.model.updateSubMode(value);
+        }
+    };
+    return InfoPanel;
+}();
+exports.default = InfoPanel;
+
+},{"../view/info-panel.view":29}],28:[function(require,module,exports){
+"use strict";
+
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 var toolbar_view_1 = __importDefault(require("../view/toolbar.view"));
 var Toolbar = /** @class */function () {
     function Toolbar(model) {
@@ -2428,7 +2465,23 @@ var Toolbar = /** @class */function () {
 }();
 exports.default = Toolbar;
 
-},{"../view/toolbar.view":28}],28:[function(require,module,exports){
+},{"../view/toolbar.view":30}],29:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var InfoPanel = /** @class */function () {
+    function InfoPanel(model) {
+        this.model = model;
+        this.container = document.querySelector("#infoPanel");
+        this.pipeModeFrame = document.querySelector("#pipeModeFrame");
+        this.pipeType = document.querySelectorAll("[name='mode-switch-pipe']");
+    }
+    InfoPanel.prototype.render = function () {};
+    return InfoPanel;
+}();
+exports.default = InfoPanel;
+
+},{}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2466,7 +2519,7 @@ var Toolbar = /** @class */function () {
 }();
 exports.default = Toolbar;
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
