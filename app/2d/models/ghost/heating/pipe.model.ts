@@ -43,7 +43,7 @@ class Pipe extends Line<IGhostPipeEnd> {
   }
 
   get color() {
-    return "pink";
+    return "black";
   }
 
   validation(): boolean {

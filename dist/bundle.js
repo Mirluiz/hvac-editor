@@ -700,7 +700,7 @@ var Pipe = /** @class */function (_super) {
     }
     Object.defineProperty(Pipe.prototype, "color", {
         get: function get() {
-            return "pink";
+            return "black";
         },
         enumerable: false,
         configurable: true
