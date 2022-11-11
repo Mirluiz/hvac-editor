@@ -3,10 +3,12 @@ import Line from "../2d/models/geometry/line.model";
 export class Vector implements IVec {
   x: number;
   y: number;
+  z: number;
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, z: number = 0) {
     this.x = x;
     this.y = y;
+    this.z = z;
   }
 
   distanceTo(v: IVec) {
@@ -184,4 +186,5 @@ export interface IVec extends ICoord {
 export interface ICoord {
   x: number;
   y: number;
+  z: number;
 }

@@ -2,9 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
 var Vector = /** @class */ (function () {
-    function Vector(x, y) {
+    function Vector(x, y, z) {
+        if (z === void 0) { z = 0; }
         this.x = x;
         this.y = y;
+        this.z = z;
     }
     Vector.prototype.distanceTo = function (v) {
         var _v = new Vector(this.x - v.x, this.y - v.y);

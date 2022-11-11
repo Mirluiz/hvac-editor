@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var valve_model_1 = __importDefault(require("./ghost/heating/valve.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
-var common_1 = require("../../_test_/common");
 var radiator_model_1 = __importDefault(require("./ghost/heating/radiator.model"));
 var Canvas = /** @class */ (function () {
     function Canvas() {
@@ -30,6 +29,7 @@ var Canvas = /** @class */ (function () {
             limitReached: false,
         };
         this.clicked = false;
+        this.wheelClicked = false;
         this.keyboard = null;
         this.offset = { x: 0, y: 0 };
         this.config = {
@@ -46,7 +46,7 @@ var Canvas = /** @class */ (function () {
             },
         };
         this.overlap = new overlap_model_1.default(this);
-        (0, common_1.fittingModel)(this);
+        // fittingModel(this);
     }
     Object.defineProperty(Canvas.prototype, "walls", {
         get: function () {

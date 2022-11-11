@@ -18,7 +18,7 @@ var vect_1 = require("../geometry/vect");
 var fittingModel = function (model) {
     var pipes = model.pipes;
     var step = model.config.net.step / 2;
-    _2Pipes(model, pipes, step);
+    // _2Pipes(model, pipes, step);
     // _3Pipes(model, pipes, step);
 };
 exports.fittingModel = fittingModel;
@@ -514,13 +514,10 @@ var _2Pipes = function (model, pipes, step) {
         ],
     ];
     __spreadArray(__spreadArray([], arraysRL90, true), arraysLR90, true).map(function (lines, index) {
-        if (index > 0)
-            return;
         lines.map(function (line) {
             pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, line.y2 * step)));
         });
     });
-    return;
     __spreadArray(__spreadArray([], arraysV90Down, true), arraysV90Up, true).map(function (lines, index) {
         lines.map(function (line) {
             pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 12 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 12 * step + line.y2 * step)));

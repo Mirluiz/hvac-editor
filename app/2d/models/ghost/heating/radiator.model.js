@@ -37,6 +37,7 @@ var Radiator = /** @class */ (function (_super) {
                     return _this;
                 },
                 vec: new vect_1.Vector(-10, 0),
+                isConnected: function () { return false; },
             },
             {
                 type: "supply",
@@ -48,6 +49,7 @@ var Radiator = /** @class */ (function (_super) {
                     return _this;
                 },
                 vec: new vect_1.Vector(-10, 40),
+                isConnected: function () { return false; },
             },
         ];
         _this.center = center;

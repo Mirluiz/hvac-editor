@@ -95,7 +95,14 @@ var Radiator = /** @class */ (function (_super) {
     Radiator.prototype.afterMerge = function () { };
     Radiator.prototype.isClose = function (v) {
         var distance = this.model.config.overlap.bindDistance;
-        return this.center.sub(v).length <= distance;
+        var ret = undefined;
+        for (var _i = 0, _a = this.IOs; _i < _a.length; _i++) {
+            var io = _a[_i];
+            if (io.getVecAbs().sub(v).length <= distance) {
+                ret = io;
+            }
+        }
+        return ret;
     };
     return Radiator;
 }(main_model_1.default));

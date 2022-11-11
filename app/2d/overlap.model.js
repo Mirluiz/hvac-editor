@@ -17,6 +17,7 @@ var Overlap = /** @class */ (function () {
         this.pipes = [];
         this.valves = [];
         this.objectIOs = [];
+        this.first = null;
         this.list = [];
         this.boundList = [];
         this.model = model;
@@ -40,21 +41,43 @@ var Overlap = /** @class */ (function () {
         if (this.list.length === 0 && this.boundList.length === 0) {
             this.boundMouse = netBoundMouse.clone();
         }
-        // else {
-        //   let firstElement = [...this.list, ...this.boundList][0];
-        //
-        //   if (firstElement.pipe) {
-        //     this.boundMouse = firstElement.pipe.vec;
-        //   } else if (firstElement.io) {
-        //     this.boundMouse = firstElement.io.getVecAbs();
-        //   } else if (firstElement.fitting) {
-        //     this.boundMouse = firstElement.fitting.center;
-        //   } else if (firstElement.pipeEnd) {
-        //     this.boundMouse = firstElement.pipeEnd.vec;
-        //   } else {
-        //     this.boundMouse = netBoundMouse.clone();
-        //   }
-        // }
+        this.firstOverlap();
+    };
+    Overlap.prototype.direct = function (vec) {
+        var list = __spreadArray(__spreadArray([], this.pipeOverlap(vec), true), this.IOOverlap(vec), true);
+        return list;
+    };
+    /**
+     * it is sorted by height (more height -> more closer to user)
+     */
+    Overlap.prototype.firstOverlap = function () {
+        var overlaps = __spreadArray(__spreadArray([], this.list, true), this.boundList, true);
+        if (overlaps.length > 1) {
+            overlaps.sort(function (a, b) {
+                var aZ = 0;
+                var bZ = 0;
+                if (a.fitting) {
+                    aZ = a.fitting.center.z;
+                }
+                else if (a.io) {
+                    aZ = a.io.getVecAbs().z;
+                }
+                else if (a.body) {
+                    aZ = a.body.vec.z;
+                }
+                if (b.fitting) {
+                    bZ = b.fitting.center.z;
+                }
+                else if (b.io) {
+                    bZ = b.io.getVecAbs().z;
+                }
+                else if (b.body) {
+                    bZ = b.body.vec.z;
+                }
+                return aZ - bZ;
+            });
+        }
+        this.first = overlaps[0];
     };
     Overlap.prototype.wallsOverlap = function () {
         this.model.walls.map(function () { });
@@ -94,6 +117,28 @@ var Overlap = /** @class */ (function () {
             if (_p)
                 ret.push(_p);
         });
+        return ret;
+    };
+    Overlap.prototype.fittingOverlap = function (vec) {
+        var ret = [];
+        var bind = this.model.config.overlap.bindDistance;
+        this.model.fittings.map(function (fitting) {
+            var _f = null;
+            if (fitting.center.sub(vec).length <= bind) {
+                _f = {
+                    id: fitting.id,
+                    fitting: fitting,
+                };
+            }
+            if (_f)
+                ret.push(_f);
+        });
+        if (ret.length > 1) {
+            ret.sort(function (a, b) {
+                return 1;
+                // return a.io?.vec.x -
+            });
+        }
         return ret;
     };
     Overlap.prototype.IOOverlap = function (vec) {

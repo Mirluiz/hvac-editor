@@ -34,7 +34,7 @@ var Pipe = /** @class */ (function () {
         this.ctx.restore();
     };
     Pipe.prototype.drawGhost = function (pipe) {
-        var _this = this;
+        var _a, _b;
         this.ctx.save();
         this.ctx.beginPath();
         var from = this.canvas.model.getLocalCoordinates(pipe.from.vec.x, pipe.from.vec.y);
@@ -45,29 +45,26 @@ var Pipe = /** @class */ (function () {
         this.ctx.lineWidth = pipe.width * 2;
         this.ctx.stroke();
         this.ctx.restore();
-        setTimeout(function () {
-            var _a, _b;
-            if ((_a = pipe.from.target) === null || _a === void 0 ? void 0 : _a.io) {
-                var _wp = pipe.from.target.io.getVecAbs();
-                _this.ctx.save();
-                _this.ctx.beginPath();
-                _this.ctx.strokeStyle = "red";
-                _this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
-                _this.ctx.fillStyle = "#ADD8E6";
-                _this.ctx.fill();
-                _this.ctx.restore();
-            }
-            if ((_b = pipe.to.target) === null || _b === void 0 ? void 0 : _b.io) {
-                var _wp = pipe.to.target.io.getVecAbs();
-                _this.ctx.save();
-                _this.ctx.beginPath();
-                _this.ctx.strokeStyle = "red";
-                _this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
-                _this.ctx.fillStyle = "#ADD8E6";
-                _this.ctx.fill();
-                _this.ctx.restore();
-            }
-        });
+        if ((_a = pipe.from.target) === null || _a === void 0 ? void 0 : _a.io) {
+            var _wp = pipe.from.target.io.getVecAbs();
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = "red";
+            this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+            this.ctx.fillStyle = "#ADD8E6";
+            this.ctx.fill();
+            this.ctx.restore();
+        }
+        if ((_b = pipe.to.target) === null || _b === void 0 ? void 0 : _b.io) {
+            var _wp = pipe.to.target.io.getVecAbs();
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = "red";
+            this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+            this.ctx.fillStyle = "#ADD8E6";
+            this.ctx.fill();
+            this.ctx.restore();
+        }
     };
     Pipe.prototype.drawOverLap = function (coordinate) {
         this.ctx.save();

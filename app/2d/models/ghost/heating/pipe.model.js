@@ -43,11 +43,12 @@ var Pipe = /** @class */ (function (_super) {
             },
         }) || this;
         _this.model = model;
+        _this.z = 10;
         return _this;
     }
     Object.defineProperty(Pipe.prototype, "color", {
         get: function () {
-            return "pink";
+            return "black";
         },
         enumerable: false,
         configurable: true
@@ -82,7 +83,7 @@ var Pipe = /** @class */ (function (_super) {
             return can;
         }
         [this.from, this.to].map(function (end) {
-            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
+            var overlaps = _this.model.overlap.direct(end.vec);
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
                 if (overlap && overlap.end) {

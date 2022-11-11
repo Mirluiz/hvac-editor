@@ -28,7 +28,14 @@ var Canvas = /** @class */ (function () {
         this.view.draw();
     };
     Canvas.prototype.mouseDown = function (e) {
-        this.model.clicked = true;
+        if (e.button === 1) {
+            this.model.wheelClicked = true;
+            return;
+        }
+        else {
+            this.model.wheelClicked = false;
+            this.model.clicked = true;
+        }
         if (!this.model.mouse)
             return;
         switch (this.model.mode) {
@@ -58,7 +65,8 @@ var Canvas = /** @class */ (function () {
             this.model.mouse.x = e.offsetX;
             this.model.mouse.y = e.offsetY;
         }
-        if (this.model.clicked) {
+        if (this.model.wheelClicked ||
+            (this.model.mode === "default" && this.model.clicked)) {
             if (this.model.offset) {
                 this.model.offset.x += e.movementX;
                 this.model.offset.y += e.movementY;
@@ -89,6 +97,7 @@ var Canvas = /** @class */ (function () {
     };
     Canvas.prototype.mouseUp = function (e) {
         this.model.clicked = false;
+        this.model.wheelClicked = false;
         if (!this.model.mouse)
             return;
         switch (this.model.mode) {

@@ -42,11 +42,9 @@ class Pipe {
     this.ctx.strokeStyle = pipe.color;
     this.ctx.lineWidth = pipe.width;
 
-    if (this.canvas.model.overlap.list.find((l) => l.id === pipe.id)) {
-      this.ctx.shadowOffsetX = 4;
-      this.ctx.shadowOffsetY = 4;
+    if (this.canvas.model.overlap.first?.id === pipe.id) {
       this.ctx.shadowBlur = 5;
-      this.ctx.shadowColor = "gray";
+      this.ctx.shadowColor = pipe.color;
     }
 
     this.ctx.stroke();
@@ -95,43 +93,6 @@ class Pipe {
       this.ctx.fillStyle = "#ADD8E6";
       this.ctx.fill();
       this.ctx.restore();
-    }
-  }
-
-  drawOverLap(coordinate: IVec) {
-    this.ctx.save();
-    this.ctx.beginPath();
-
-    let c = this.canvas.model.getLocalCoordinates(coordinate.x, coordinate.y);
-
-    this.ctx.arc(c.x, c.y, 5, 0, 2 * Math.PI);
-
-    this.ctx.fillStyle = "black";
-
-    this.ctx.fill();
-    this.ctx.restore();
-  }
-
-  drawOverLaps() {
-    this.canvas.model.overlap.list.map((l) => {
-      if (l) {
-        let _p = this.canvas.model.getPipeByID(l.id);
-        if (_p && l.body?.vec) {
-          this.drawOverLap(l.body.vec);
-        }
-      }
-    });
-  }
-
-  draw() {
-    this.drawPipes();
-    this.drawOverLaps();
-
-    if (
-      this.canvas.model.actionObject &&
-      this.canvas.model.actionObject instanceof PipeGhostModel
-    ) {
-      this.drawGhost(this.canvas.model.actionObject);
     }
   }
 }

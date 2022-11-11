@@ -57,23 +57,23 @@ class Fitting {
 
           let fittingNeck1Left = fitting1N
             .perpendicular("left")
-            .multiply(fitting.neck)
-            .sum(fitting1N.multiply(fitting.neck))
+            .multiply(fitting.width)
+            .sum(fitting1N.multiply(fitting.width))
             .sum(fitting.center);
           let fittingNeck1Right = fitting1N
             .perpendicular("right")
-            .multiply(fitting.neck)
-            .sum(fitting1N.multiply(fitting.neck))
+            .multiply(fitting.width)
+            .sum(fitting1N.multiply(fitting.width))
             .sum(fitting.center);
           let fittingNeck2Left = fitting2N
             .perpendicular("left")
-            .multiply(fitting.neck)
-            .sum(fitting2N.multiply(fitting.neck))
+            .multiply(fitting.width)
+            .sum(fitting2N.multiply(fitting.width))
             .sum(fitting.center);
           let fittingNeck2Right = fitting2N
             .perpendicular("right")
-            .multiply(fitting.neck)
-            .sum(fitting2N.multiply(fitting.neck))
+            .multiply(fitting.width)
+            .sum(fitting2N.multiply(fitting.width))
             .sum(fitting.center);
 
           let pipe1Angle = pipe1OppositeEnd.vec.sub(pipe1End.vec).angle();
@@ -104,7 +104,7 @@ class Fitting {
               .perpendicular("right")
               .sum(fitting2N.perpendicular("left"))
               .normalize()
-              .multiply(fitting.neck)
+              .multiply(fitting.width)
               .sum(fitting.center);
             let c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
             this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p4.x, p4.y);
@@ -118,12 +118,17 @@ class Fitting {
               .perpendicular("right")
               .sum(fitting1N.perpendicular("left"))
               .normalize()
-              .multiply(fitting.neck)
+              .multiply(fitting.width)
               .sum(fitting.center);
             let c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
             this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p2.x, p2.y);
           } else {
             this.ctx.lineTo(p2.x, p2.y);
+          }
+
+          if (this.canvas.model.overlap.first?.id === fitting.id) {
+            this.ctx.shadowBlur = 5;
+            this.ctx.shadowColor = "gray";
           }
 
           this.ctx.closePath();
@@ -180,12 +185,12 @@ class Fitting {
           fittingNormalized.map((n) => {
             necks.push(
               n
-                .multiply(fitting.neck)
-                .sub(n.multiply(fitting.neck).perpendicular("right"))
+                .multiply(fitting.width)
+                .sub(n.multiply(fitting.width).perpendicular("right"))
                 .sum(fitting.center),
               n
-                .multiply(fitting.neck)
-                .sub(n.multiply(fitting.neck).perpendicular("left"))
+                .multiply(fitting.width)
+                .sub(n.multiply(fitting.width).perpendicular("left"))
                 .sum(fitting.center)
             );
           });

@@ -77,6 +77,12 @@ var Pipe = /** @class */ (function (_super) {
                 _this.connect(fitting);
             }
         });
+        this.model.radiators.map(function (radiator) {
+            var io = radiator.isClose(_this.to.vec);
+            if (io) {
+                _this.connect(io);
+            }
+        });
     };
     Pipe.prototype.validation = function () {
         var _this = this;

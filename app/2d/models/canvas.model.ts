@@ -28,13 +28,13 @@ class Canvas {
   constructor() {
     this.overlap = new Overlap(this);
 
-    // fittingModel(this);
+    fittingModel(this);
   }
 
-  mouse: ICoord = { x: 0, y: 0 };
-  boundMouse: ICoord = { x: 0, y: 0 }; // bound for net, or for overlapped objects
-  canvasSize: ICoord | null = null;
-  mouseCanvasRatio: ICoord | null = null;
+  mouse: { x: number; y: number } = { x: 0, y: 0 };
+  boundMouse: { x: number; y: number } = { x: 0, y: 0 }; // bound for net, or for overlapped objects
+  canvasSize: { x: number; y: number } | null = null;
+  mouseCanvasRatio: { x: number; y: number } | null = null;
   scale: {
     amount: number;
     coord: ICoord | null;
@@ -47,7 +47,7 @@ class Canvas {
   clicked: boolean = false;
   wheelClicked: boolean = false;
   keyboard: string | null = null;
-  offset: ICoord = { x: 0, y: 0 };
+  offset: { x: number; y: number } = { x: 0, y: 0 };
   config: IConfig = {
     axis: {
       show: true,

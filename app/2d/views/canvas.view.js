@@ -1,4 +1,13 @@
 "use strict";
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -8,12 +17,21 @@ var pipe_view_1 = __importDefault(require("./pipe.view"));
 var valve_view_1 = __importDefault(require("./valve.view"));
 var fitting_view_1 = __importDefault(require("./fitting.view"));
 var radiator_view_1 = __importDefault(require("./radiator.view"));
+var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
+var wall_model_1 = __importDefault(require("../models/architecture/wall.model"));
+var radiator_model_1 = __importDefault(require("../models/heating/radiator.model"));
+var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
+var valve_model_2 = __importDefault(require("../models/ghost/heating/valve.model"));
+var fitting_model_1 = __importDefault(require("../models/heating/fitting.model"));
+var pipe_model_2 = __importDefault(require("../models/ghost/heating/pipe.model"));
+var radiator_model_2 = __importDefault(require("../models/ghost/heating/radiator.model"));
 var Canvas = /** @class */ (function () {
     function Canvas(model) {
         this.pipe = null;
         this.valve = null;
         this.fitting = null;
         this.radiator = null;
+        this.zIndex = null;
         this.model = model;
         this.container = document.querySelector("#editor");
         this.init();
@@ -27,17 +45,57 @@ var Canvas = /** @class */ (function () {
             this.valve = new valve_view_1.default(this, this.model, ctx);
             this.fitting = new fitting_view_1.default(this, this.model, ctx);
             this.radiator = new radiator_view_1.default(this, this.model, ctx);
+            this.zIndex = new radiator_view_1.default(this, this.model, ctx);
         }
     };
     Canvas.prototype.draw = function () {
-        var _a, _b, _c, _d;
+        var _this = this;
+        var _a, _b, _c;
         this.clear();
         this.drawNet();
         this.drawWalls();
-        (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.draw();
-        (_b = this.valve) === null || _b === void 0 ? void 0 : _b.draw();
-        (_c = this.fitting) === null || _c === void 0 ? void 0 : _c.draw();
-        (_d = this.radiator) === null || _d === void 0 ? void 0 : _d.draw();
+        var _d = this.model, pipes = _d.pipes, walls = _d.walls, radiators = _d.radiators, valves = _d.valves, fittings = _d.fittings;
+        var objects = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], pipes, true), walls, true), radiators, true), valves, true), fittings, true).sort(function (a, b) {
+            return a.z - b.z;
+        });
+        objects.map(function (object) {
+            var _a, _b, _c, _d;
+            if (object instanceof pipe_model_1.default) {
+                (_a = _this.pipe) === null || _a === void 0 ? void 0 : _a.drawPipe(object);
+            }
+            if (object instanceof wall_model_1.default) {
+                // console.log("Wall");
+                // this.drawWall(o);
+            }
+            if (object instanceof radiator_model_1.default) {
+                // console.log("Radiator");
+                (_b = _this.radiator) === null || _b === void 0 ? void 0 : _b.drawRadiator(object);
+            }
+            if (object instanceof valve_model_1.default) {
+                // console.log("Vavle");
+                (_c = _this.valve) === null || _c === void 0 ? void 0 : _c.drawValve(object);
+            }
+            if (object instanceof fitting_model_1.default) {
+                (_d = _this.fitting) === null || _d === void 0 ? void 0 : _d.drawFitting(object);
+            }
+        });
+        if (this.model.actionObject &&
+            this.model.actionObject instanceof pipe_model_2.default) {
+            (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.drawGhost(this.model.actionObject);
+        }
+        if (this.model.placingObject &&
+            this.model.placingObject instanceof valve_model_2.default) {
+            (_b = this.valve) === null || _b === void 0 ? void 0 : _b.drawGhost(this.model.placingObject);
+        }
+        if (this.model.placingObject &&
+            this.model.placingObject instanceof radiator_model_2.default) {
+            (_c = this.radiator) === null || _c === void 0 ? void 0 : _c.drawGhost(this.model.placingObject);
+        }
+        // this.pipe?.draw();
+        // this.valve?.draw();
+        // this.fitting?.draw();
+        // this.radiator?.draw();
+        // this.zIndex?.draw(); // draw top elements in canvas
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -45,6 +103,9 @@ var Canvas = /** @class */ (function () {
         if (!ctx || !this.model.mouse || !this.container)
             return;
         ctx.clearRect(0, 0, this.container.width, this.container.height);
+        ctx.fillStyle = "#f5f5f5";
+        ctx.fillRect(0, 0, this.container.width, this.container.height);
+        //f5f5f5
     };
     Canvas.prototype.drawMouse = function () {
         var _a;
@@ -183,7 +244,8 @@ var Canvas = /** @class */ (function () {
         var h = Math.ceil(screen.height / this.model.config.net.step) *
             this.model.config.net.step;
         var w = Math.ceil(screen.width / this.model.config.net.step) *
-            this.model.config.net.step;
+            this.model.config.net.step -
+            250; // 250 is panel width
         this.container.style.height = h + "px";
         this.container.style.width = w + "px";
         this.container.height = h;

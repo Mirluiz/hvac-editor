@@ -1,6 +1,4 @@
-import Wall from "./models/architecture/wall.model";
 import Pipe, { IPipeEnd } from "./models/heating/pipe.model";
-import Valve from "./models/heating/valve.model";
 import CanvasModel from "./models/canvas.model";
 import { IVec, Vector } from "../geometry/vect";
 import Fitting from "./models/heating/fitting.model";
@@ -15,6 +13,7 @@ class Overlap {
   private valves: Array<IOverlapValve> = [];
   private objectIOs: Array<IOverlap> = [];
 
+  first: IOverlap | null = null;
   list: Array<IOverlap> = [];
   boundList: Array<IOverlap> = [];
 
@@ -41,36 +40,93 @@ class Overlap {
     let v = new Vector(wMouse.x, wMouse.y);
 
     this.wallsOverlap();
-    this.list = [...this.pipeOverlap(v), ...this.IOOverlap(v)];
+    this.list = [
+      ...this.pipeOverlap(v),
+      ...this.IOOverlap(v),
+      ...this.fittingOverlap(v),
+    ];
     this.boundList = [
       ...this.pipeOverlap(netBoundMouse),
       ...this.IOOverlap(netBoundMouse),
+      ...this.fittingOverlap(v),
     ];
 
     if (this.list.length === 0 && this.boundList.length === 0) {
       this.boundMouse = netBoundMouse.clone();
     }
-    // else {
-    //   let firstElement = [...this.list, ...this.boundList][0];
-    //
-    //   if (firstElement.pipe) {
-    //     this.boundMouse = firstElement.pipe.vec;
-    //   } else if (firstElement.io) {
-    //     this.boundMouse = firstElement.io.getVecAbs();
-    //   } else if (firstElement.fitting) {
-    //     this.boundMouse = firstElement.fitting.center;
-    //   } else if (firstElement.pipeEnd) {
-    //     this.boundMouse = firstElement.pipeEnd.vec;
-    //   } else {
-    //     this.boundMouse = netBoundMouse.clone();
-    //   }
-    // }
+
+    this.firstOverlap(v);
+
+    console.log("this", this.list.length, this.first);
   }
 
   direct(vec: IVec) {
-    let list = [...this.pipeOverlap(vec), ...this.IOOverlap(vec)];
+    let list = [
+      ...this.pipeOverlap(vec),
+      ...this.IOOverlap(vec),
+      ...this.fittingOverlap(vec),
+    ];
 
     return list;
+  }
+
+  /**
+   * it is sorted by height (more height -> more closer to user)
+   */
+  firstOverlap(vec: IVec) {
+    let overlaps = [...this.list, ...this.boundList];
+
+    if (overlaps.length > 0) {
+      overlaps.sort((a, b) => {
+        let aL = 0;
+        let bL = 0;
+
+        if (a.fitting) {
+          aL = a.fitting.center.sub(vec).length;
+        } else if (a.io) {
+          aL = a.io.getVecAbs().sub(vec).length;
+        } else if (a.body) {
+          aL = a.body.vec.sub(vec).length;
+        }
+
+        if (b.fitting) {
+          bL = b.fitting.center.sub(vec).length;
+        } else if (b.io) {
+          bL = b.io.getVecAbs().sub(vec).length;
+        } else if (b.body) {
+          bL = b.body.vec.sub(vec).length;
+        }
+
+        return aL - bL;
+      });
+    }
+
+    if (overlaps.length > 0) {
+      overlaps.sort((a, b) => {
+        let aZ = 0;
+        let bZ = 0;
+
+        if (a.fitting) {
+          aZ = a.fitting.center.z + a.fitting.width;
+        } else if (a.io) {
+          aZ = a.io.getVecAbs().z;
+        } else if (a.body) {
+          aZ = a.body.vec.z;
+        }
+
+        if (b.fitting) {
+          bZ = b.fitting.center.z + b.fitting.width;
+        } else if (b.io) {
+          bZ = b.io.getVecAbs().z;
+        } else if (b.body) {
+          bZ = b.body.vec.z;
+        }
+
+        return aZ - bZ;
+      });
+    }
+
+    this.first = overlaps.reverse()[0];
   }
 
   wallsOverlap() {
@@ -119,6 +175,34 @@ class Overlap {
 
       if (_p) ret.push(_p);
     });
+
+    return ret;
+  }
+
+  fittingOverlap(vec: IVec): Array<IOverlap> {
+    let ret: Array<IOverlap> = [];
+
+    let bind = this.model.config.overlap.bindDistance;
+
+    this.model.fittings.map((fitting) => {
+      let _f: IOverlap | null = null;
+
+      if (fitting.center.sub(vec).length <= bind) {
+        _f = {
+          id: fitting.id,
+          fitting: fitting,
+        };
+      }
+
+      if (_f) ret.push(_f);
+    });
+
+    if (ret.length > 1) {
+      ret.sort((a, b) => {
+        return 1;
+        // return a.io?.vec.x -
+      });
+    }
 
     return ret;
   }
