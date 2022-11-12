@@ -1675,11 +1675,6 @@ var Canvas = /** @class */function () {
         if (this.model.placingObject && this.model.placingObject instanceof radiator_model_2.default) {
             (_c = this.radiator) === null || _c === void 0 ? void 0 : _c.drawGhost(this.model.placingObject);
         }
-        // this.pipe?.draw();
-        // this.valve?.draw();
-        // this.fitting?.draw();
-        // this.radiator?.draw();
-        // this.zIndex?.draw(); // draw top elements in canvas
     };
     Canvas.prototype.clear = function () {
         var _a;
@@ -2036,8 +2031,6 @@ var Fitting = /** @class */function () {
         //     console.warn("no type");
         // }
         var wP = this.canvas.model.getLocalCoordinates(fitting.center.x, fitting.center.y);
-        this.ctx.save();
-        this.ctx.beginPath();
         this.ctx.strokeStyle = "red";
         this.ctx.arc(wP.x, wP.y, fitting.width / 2, 0, 2 * Math.PI);
         if (((_a = this.canvas.model.overlap.first) === null || _a === void 0 ? void 0 : _a.id) === fitting.id) {
@@ -2084,6 +2077,7 @@ var Pipe = /** @class */function () {
             this.ctx.shadowBlur = 5;
             this.ctx.shadowColor = pipe.color;
         }
+        this.ctx.closePath();
         this.ctx.stroke();
         this.ctx.restore();
     };
@@ -2343,8 +2337,9 @@ var vect_1 = require("../geometry/vect");
 var fittingModel = function fittingModel(model) {
     var pipes = model.pipes;
     var step = model.config.net.step / 2;
-    _2Pipes(model, pipes, step);
+    // _2Pipes(model, pipes, step);
     // _3Pipes(model, pipes, step);
+    // performanceCheck(model, pipes, step);
 };
 exports.fittingModel = fittingModel;
 var _2Pipes = function _2Pipes(model, pipes, step) {
@@ -3003,6 +2998,21 @@ var _3Pipes = function _3Pipes(model, pipes, step) {
         });
     });
     combinationGroupOffset += yOffsetStep * step;
+};
+var performanceCheck = function performanceCheck(model, pipes, step) {
+    new Array(10000).fill(undefined).map(function (value, index) {
+        var vec1;
+        var vec2;
+        vec1 = new vect_1.Vector(4, 4);
+        vec2 = new vect_1.Vector(8, 4);
+        var offsetX = 100 * (index % 8);
+        var offsetY = 20 * Math.round(index / 8);
+        vec1.x = offsetX + vec1.x * step;
+        vec1.y = offsetY + vec1.y * step;
+        vec2.x = offsetX + vec2.x * step;
+        vec2.y = offsetY + vec2.y * step;
+        pipes.push(new pipe_model_1.default(model, vec1, vec2));
+    });
 };
 
 },{"../2d/models/heating/pipe.model":13,"../geometry/vect":26}],25:[function(require,module,exports){

@@ -106,12 +106,6 @@ class Canvas {
     ) {
       this.radiator?.drawGhost(this.model.placingObject);
     }
-
-    // this.pipe?.draw();
-    // this.valve?.draw();
-    // this.fitting?.draw();
-    // this.radiator?.draw();
-    // this.zIndex?.draw(); // draw top elements in canvas
   }
 
   clear() {

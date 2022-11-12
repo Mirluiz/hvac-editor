@@ -46,7 +46,7 @@ class Pipe {
       this.ctx.shadowBlur = 5;
       this.ctx.shadowColor = pipe.color;
     }
-
+    this.ctx.closePath();
     this.ctx.stroke();
     this.ctx.restore();
   }

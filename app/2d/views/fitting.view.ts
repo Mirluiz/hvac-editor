@@ -220,8 +220,6 @@ class Fitting {
       fitting.center.y
     );
 
-    this.ctx.save();
-    this.ctx.beginPath();
     this.ctx.strokeStyle = "red";
     this.ctx.arc(wP.x, wP.y, fitting.width / 2, 0, 2 * Math.PI);
 

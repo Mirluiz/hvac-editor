@@ -7,8 +7,9 @@ export const fittingModel = (model: CanvasModel) => {
   let pipes = model.pipes;
   let step = model.config.net.step / 2;
 
-  _2Pipes(model, pipes, step);
+  // _2Pipes(model, pipes, step);
   // _3Pipes(model, pipes, step);
+  // performanceCheck(model, pipes, step);
 };
 
 const _2Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
@@ -883,4 +884,28 @@ const _3Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {
   });
 
   combinationGroupOffset += yOffsetStep * step;
+};
+
+const performanceCheck = (
+  model: CanvasModel,
+  pipes: Array<Pipe>,
+  step: number
+) => {
+  new Array(10000).fill(undefined).map((value, index) => {
+    let vec1: IVec;
+    let vec2: IVec;
+
+    vec1 = new Vector(4, 4);
+    vec2 = new Vector(8, 4);
+
+    let offsetX = 100 * (index % 8);
+    let offsetY = 20 * Math.round(index / 8);
+
+    vec1.x = offsetX + vec1.x * step;
+    vec1.y = offsetY + vec1.y * step;
+    vec2.x = offsetX + vec2.x * step;
+    vec2.y = offsetY + vec2.y * step;
+
+    pipes.push(new Pipe(model, vec1, vec2));
+  });
 };
