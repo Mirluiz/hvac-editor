@@ -37,8 +37,8 @@ class Canvas {
   }
 
   mouseWheel(e: WheelEvent) {
-    this.stats.render();
-    this.view.draw();
+    // this.stats.render();
+    // this.view.draw();
   }
 
   mouseDown(e: MouseEvent): void {
@@ -66,8 +66,8 @@ class Canvas {
         break;
     }
 
-    this.stats.render();
-    this.view.draw();
+    // this.stats.render();
+    // this.view.draw();
   }
 
   mouseMove(e: MouseEvent): void {
@@ -112,8 +112,8 @@ class Canvas {
         break;
     }
 
-    this.stats.render();
-    this.view.draw();
+    // this.stats.render();
+    // this.view.draw();
   }
 
   mouseUp(e: Event) {
@@ -147,8 +147,8 @@ class Canvas {
     this.model.actionObject = null;
 
     document.body.style.cursor = "default";
-    this.stats.render();
-    this.view.draw();
+    // this.stats.render();
+    // this.view.draw();
   }
 }
 

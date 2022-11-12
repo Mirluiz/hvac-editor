@@ -11,6 +11,13 @@ class App {
 
   run() {
     window.app = this;
+
+    window.requestAnimationFrame(this.step.bind(this));
+  }
+
+  step() {
+    this._2d.canvas.view.draw();
+    window.requestAnimationFrame(this.step.bind(this));
   }
 }
 

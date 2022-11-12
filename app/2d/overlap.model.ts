@@ -48,16 +48,15 @@ class Overlap {
     this.boundList = [
       ...this.pipeOverlap(netBoundMouse),
       ...this.IOOverlap(netBoundMouse),
-      ...this.fittingOverlap(v),
+      ...this.fittingOverlap(netBoundMouse),
     ];
 
-    if (this.list.length === 0 && this.boundList.length === 0) {
-      this.boundMouse = netBoundMouse.clone();
-    }
+    //problem. it updates only one. fix this
+    // if (this.list.length === 0 && this.boundList.length === 0) {
+    this.boundMouse = netBoundMouse.clone();
+    // }
 
     this.firstOverlap(v);
-
-    console.log("this", this.list.length, this.first);
   }
 
   direct(vec: IVec) {

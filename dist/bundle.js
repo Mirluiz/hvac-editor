@@ -26,8 +26,8 @@ var Canvas = /** @class */function () {
         }
     }
     Canvas.prototype.mouseWheel = function (e) {
-        this.stats.render();
-        this.view.draw();
+        // this.stats.render();
+        // this.view.draw();
     };
     Canvas.prototype.mouseDown = function (e) {
         if (e.button === 1) {
@@ -51,8 +51,8 @@ var Canvas = /** @class */function () {
                 this.object.mouseDown();
                 break;
         }
-        this.stats.render();
-        this.view.draw();
+        // this.stats.render();
+        // this.view.draw();
     };
     Canvas.prototype.mouseMove = function (e) {
         if (!this.model.mouse) {
@@ -89,8 +89,8 @@ var Canvas = /** @class */function () {
                 this.object.mouseMove();
                 break;
         }
-        this.stats.render();
-        this.view.draw();
+        // this.stats.render();
+        // this.view.draw();
     };
     Canvas.prototype.mouseUp = function (e) {
         this.model.clicked = false;
@@ -118,8 +118,8 @@ var Canvas = /** @class */function () {
     Canvas.prototype.reset = function () {
         this.model.actionObject = null;
         document.body.style.cursor = "default";
-        this.stats.render();
-        this.view.draw();
+        // this.stats.render();
+        // this.view.draw();
     };
     return Canvas;
 }();
@@ -253,19 +253,15 @@ var Pipe = /** @class */function () {
                 }
             }
             if (target === null || target === void 0 ? void 0 : target.io) {
-                this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.io.getVecAbs().x;
                 this.model.actionObject.to.vec.y = target.io.getVecAbs().y;
             } else if ((target === null || target === void 0 ? void 0 : target.object) instanceof fitting_model_1.default) {
-                this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.object.center.x;
                 this.model.actionObject.to.vec.y = target.object.center.y;
             } else if (((_b = target === null || target === void 0 ? void 0 : target.body) === null || _b === void 0 ? void 0 : _b.object) instanceof pipe_model_2.default) {
-                this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.body.vec.x;
                 this.model.actionObject.to.vec.y = target.body.vec.y;
             } else {
-                this.model.actionObject.to.target = null;
                 this.model.actionObject.to.vec.x = bV.x;
                 this.model.actionObject.to.vec.y = bV.y;
             }
@@ -544,7 +540,6 @@ var Canvas = /** @class */function () {
             this.placingObject = new valve_model_1.default(this, new vect_1.Vector(this.mouse.x, this.mouse.y));
         }
         if (mode === "radiator") {
-            console.log("-", mode);
             this.placingObject = new radiator_model_1.default(this, new vect_1.Vector(this.mouse.x, this.mouse.y));
         }
     };
@@ -677,7 +672,6 @@ var Pipe = /** @class */function (_super) {
     __extends(Pipe, _super);
     function Pipe(model, from, to) {
         var _this = _super.call(this, {
-            target: null,
             vec: from,
             getPipe: function getPipe() {
                 return _this;
@@ -686,7 +680,6 @@ var Pipe = /** @class */function (_super) {
                 return _this.to;
             }
         }, {
-            target: null,
             vec: to,
             getPipe: function getPipe() {
                 return _this;
@@ -710,7 +703,8 @@ var Pipe = /** @class */function (_super) {
         var _this = this;
         var can = true;
         [this.from, this.to].map(function (end) {
-            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
+            if (!can) return;
+            var overlaps = _this.model.overlap.direct(end.vec);
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
                 var angleBetween = void 0;
@@ -920,8 +914,8 @@ var Fitting = /** @class */function (_super) {
     function Fitting(model, center) {
         var _this = _super.call(this, center) || this;
         _this._pipes = [];
-        _this.width = 10;
-        _this.height = 10;
+        _this.width = 20;
+        _this.height = 20;
         _this.color = "black";
         _this.model = model;
         return _this;
@@ -1437,12 +1431,12 @@ var Overlap = /** @class */function () {
         var v = new vect_1.Vector(wMouse.x, wMouse.y);
         this.wallsOverlap();
         this.list = __spreadArray(__spreadArray(__spreadArray([], this.pipeOverlap(v), true), this.IOOverlap(v), true), this.fittingOverlap(v), true);
-        this.boundList = __spreadArray(__spreadArray(__spreadArray([], this.pipeOverlap(netBoundMouse), true), this.IOOverlap(netBoundMouse), true), this.fittingOverlap(v), true);
-        if (this.list.length === 0 && this.boundList.length === 0) {
-            this.boundMouse = netBoundMouse.clone();
-        }
+        this.boundList = __spreadArray(__spreadArray(__spreadArray([], this.pipeOverlap(netBoundMouse), true), this.IOOverlap(netBoundMouse), true), this.fittingOverlap(netBoundMouse), true);
+        //problem. it updates only one. fix this
+        // if (this.list.length === 0 && this.boundList.length === 0) {
+        this.boundMouse = netBoundMouse.clone();
+        // }
         this.firstOverlap(v);
-        console.log("this", this.list.length, this.first);
     };
     Overlap.prototype.direct = function (vec) {
         var list = __spreadArray(__spreadArray(__spreadArray([], this.pipeOverlap(vec), true), this.IOOverlap(vec), true), this.fittingOverlap(vec), true);
@@ -1851,111 +1845,207 @@ var Fitting = /** @class */function () {
         });
     };
     Fitting.prototype.drawFitting = function (fitting) {
-        var _this = this;
-        var _a, _b, _c, _d, _e, _f;
+        var _a;
         this.ctx.save();
         this.ctx.beginPath();
-        switch (fitting.type) {
-            case "2d":
-                {
-                    var pipe1 = fitting.pipes[0];
-                    var pipe2 = fitting.pipes[1];
-                    var pipe1End = void 0,
-                        pipe1OppositeEnd = void 0,
-                        pipe2End = void 0,
-                        pipe2OppositeEnd = void 0;
-                    pipe1End = ((_a = pipe1.from.target) === null || _a === void 0 ? void 0 : _a.id) === fitting.id ? pipe1.from : pipe1.to;
-                    pipe1OppositeEnd = pipe1End.getOpposite();
-                    pipe2End = ((_b = pipe2.from.target) === null || _b === void 0 ? void 0 : _b.id) === fitting.id ? pipe2.from : pipe2.to;
-                    pipe2OppositeEnd = pipe2End.getOpposite();
-                    if (!pipe1End || !pipe2End || !pipe1OppositeEnd || !pipe2OppositeEnd) break;
-                    var fitting1N = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
-                    var fitting2N = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
-                    // console.log(
-                    //   "fitting1N.angle();",
-                    //   fitting1N.angle1(fitting2N) * (180 / Math.PI),
-                    //   fitting2N.angle1(fitting1N) * (180 / Math.PI)
-                    // );
-                    var fittingNeck1Left = fitting1N.perpendicular("left").multiply(fitting.width).sum(fitting1N.multiply(fitting.width)).sum(fitting.center);
-                    var fittingNeck1Right = fitting1N.perpendicular("right").multiply(fitting.width).sum(fitting1N.multiply(fitting.width)).sum(fitting.center);
-                    var fittingNeck2Left = fitting2N.perpendicular("left").multiply(fitting.width).sum(fitting2N.multiply(fitting.width)).sum(fitting.center);
-                    var fittingNeck2Right = fitting2N.perpendicular("right").multiply(fitting.width).sum(fitting2N.multiply(fitting.width)).sum(fitting.center);
-                    var pipe1Angle = pipe1OppositeEnd.vec.sub(pipe1End.vec).angle();
-                    var pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
-                    var needBezier = pipe1Angle - pipe2Angle !== 0;
-                    var p1 = this.canvas.model.getLocalCoordinates(fittingNeck1Right.x, fittingNeck1Right.y);
-                    var p2 = this.canvas.model.getLocalCoordinates(fittingNeck1Left.x, fittingNeck1Left.y);
-                    var p3 = this.canvas.model.getLocalCoordinates(fittingNeck2Right.x, fittingNeck2Right.y);
-                    var p4 = this.canvas.model.getLocalCoordinates(fittingNeck2Left.x, fittingNeck2Left.y);
-                    this.ctx.moveTo(p1.x, p1.y);
-                    if (needBezier) {
-                        var curve = fitting1N.perpendicular("right").sum(fitting2N.perpendicular("left")).normalize().multiply(fitting.width).sum(fitting.center);
-                        var c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
-                        this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p4.x, p4.y);
-                    } else {
-                        this.ctx.lineTo(p4.x, p4.y);
-                    }
-                    this.ctx.lineTo(p3.x, p3.y);
-                    if (needBezier) {
-                        var curve = fitting2N.perpendicular("right").sum(fitting1N.perpendicular("left")).normalize().multiply(fitting.width).sum(fitting.center);
-                        var c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
-                        this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p2.x, p2.y);
-                    } else {
-                        this.ctx.lineTo(p2.x, p2.y);
-                    }
-                    if (((_c = this.canvas.model.overlap.first) === null || _c === void 0 ? void 0 : _c.id) === fitting.id) {
-                        this.ctx.shadowBlur = 5;
-                        this.ctx.shadowColor = "gray";
-                    }
-                    this.ctx.closePath();
-                    this.ctx.stroke();
-                    this.ctx.fillStyle = "black";
-                    this.ctx.fill();
-                }
-                break;
-            case "3d":
-                {
-                    var pipe1 = fitting.pipes[0];
-                    var pipe2 = fitting.pipes[1];
-                    var pipe3 = fitting.pipes[2];
-                    var pipe1End = void 0,
-                        pipe1OppositeEnd = void 0,
-                        pipe2End = void 0,
-                        pipe2OppositeEnd = void 0,
-                        pipe3End = void 0,
-                        pipe3OppositeEnd = void 0;
-                    pipe1End = ((_d = pipe1.from.target) === null || _d === void 0 ? void 0 : _d.id) === fitting.id ? pipe1.from : pipe1.to;
-                    pipe1OppositeEnd = pipe1End.getOpposite();
-                    pipe2End = ((_e = pipe2.from.target) === null || _e === void 0 ? void 0 : _e.id) === fitting.id ? pipe2.from : pipe2.to;
-                    pipe2OppositeEnd = pipe2End.getOpposite();
-                    pipe3End = ((_f = pipe3.from.target) === null || _f === void 0 ? void 0 : _f.id) === fitting.id ? pipe3.from : pipe3.to;
-                    pipe3OppositeEnd = pipe3End.getOpposite();
-                    if (!pipe1End || !pipe2End || !pipe3End || !pipe3OppositeEnd || !pipe1OppositeEnd || !pipe2OppositeEnd) break;
-                    var necks_1 = [];
-                    var fittingNormalized = [pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize(), pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize(), pipe3OppositeEnd.vec.sub(pipe3End.vec).normalize()];
-                    fittingNormalized.sort(function (a, b) {
-                        return a.angle() - b.angle();
-                    });
-                    fittingNormalized.map(function (n) {
-                        necks_1.push(n.multiply(fitting.width).sub(n.multiply(fitting.width).perpendicular("right")).sum(fitting.center), n.multiply(fitting.width).sub(n.multiply(fitting.width).perpendicular("left")).sum(fitting.center));
-                    });
-                    necks_1.map(function (p, index) {
-                        var wP = _this.canvas.model.getLocalCoordinates(p.x, p.y);
-                        if (index === 0) _this.ctx.moveTo(wP.x, wP.y);
-                        _this.ctx.lineTo(wP.x, wP.y);
-                    });
-                    this.ctx.closePath();
-                    this.ctx.stroke();
-                    this.ctx.fillStyle = "black";
-                    this.ctx.fill();
-                }
-                break;
-            case "4d":
-                console.log("4d");
-                break;
-            default:
-                console.warn("no type");
+        // switch (fitting.type) {
+        //   case "2d":
+        //     {
+        //       let pipe1 = fitting.pipes[0];
+        //       let pipe2 = fitting.pipes[1];
+        //       let pipe1End, pipe1OppositeEnd, pipe2End, pipe2OppositeEnd;
+        //
+        //       pipe1End =
+        //         pipe1.from.target?.id === fitting.id ? pipe1.from : pipe1.to;
+        //       pipe1OppositeEnd = pipe1End.getOpposite();
+        //
+        //       pipe2End =
+        //         pipe2.from.target?.id === fitting.id ? pipe2.from : pipe2.to;
+        //       pipe2OppositeEnd = pipe2End.getOpposite();
+        //
+        //       if (!pipe1End || !pipe2End || !pipe1OppositeEnd || !pipe2OppositeEnd)
+        //         break;
+        //
+        //       let fitting1N = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
+        //       let fitting2N = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
+        //
+        //       // console.log(
+        //       //   "fitting1N.angle();",
+        //       //   fitting1N.angle1(fitting2N) * (180 / Math.PI),
+        //       //   fitting2N.angle1(fitting1N) * (180 / Math.PI)
+        //       // );
+        //
+        //       let fittingNeck1Left = fitting1N
+        //         .perpendicular("left")
+        //         .multiply(fitting.width)
+        //         .sum(fitting1N.multiply(fitting.width))
+        //         .sum(fitting.center);
+        //       let fittingNeck1Right = fitting1N
+        //         .perpendicular("right")
+        //         .multiply(fitting.width)
+        //         .sum(fitting1N.multiply(fitting.width))
+        //         .sum(fitting.center);
+        //       let fittingNeck2Left = fitting2N
+        //         .perpendicular("left")
+        //         .multiply(fitting.width)
+        //         .sum(fitting2N.multiply(fitting.width))
+        //         .sum(fitting.center);
+        //       let fittingNeck2Right = fitting2N
+        //         .perpendicular("right")
+        //         .multiply(fitting.width)
+        //         .sum(fitting2N.multiply(fitting.width))
+        //         .sum(fitting.center);
+        //
+        //       let pipe1Angle = pipe1OppositeEnd.vec.sub(pipe1End.vec).angle();
+        //       let pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
+        //       let needBezier = pipe1Angle - pipe2Angle !== 0;
+        //
+        //       let p1 = this.canvas.model.getLocalCoordinates(
+        //         fittingNeck1Right.x,
+        //         fittingNeck1Right.y
+        //       );
+        //       let p2 = this.canvas.model.getLocalCoordinates(
+        //         fittingNeck1Left.x,
+        //         fittingNeck1Left.y
+        //       );
+        //       let p3 = this.canvas.model.getLocalCoordinates(
+        //         fittingNeck2Right.x,
+        //         fittingNeck2Right.y
+        //       );
+        //       let p4 = this.canvas.model.getLocalCoordinates(
+        //         fittingNeck2Left.x,
+        //         fittingNeck2Left.y
+        //       );
+        //
+        //       this.ctx.moveTo(p1.x, p1.y);
+        //
+        //       if (needBezier) {
+        //         let curve = fitting1N
+        //           .perpendicular("right")
+        //           .sum(fitting2N.perpendicular("left"))
+        //           .normalize()
+        //           .multiply(fitting.width)
+        //           .sum(fitting.center);
+        //         let c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
+        //         this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p4.x, p4.y);
+        //       } else {
+        //         this.ctx.lineTo(p4.x, p4.y);
+        //       }
+        //
+        //       this.ctx.lineTo(p3.x, p3.y);
+        //       if (needBezier) {
+        //         let curve = fitting2N
+        //           .perpendicular("right")
+        //           .sum(fitting1N.perpendicular("left"))
+        //           .normalize()
+        //           .multiply(fitting.width)
+        //           .sum(fitting.center);
+        //         let c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
+        //         this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p2.x, p2.y);
+        //       } else {
+        //         this.ctx.lineTo(p2.x, p2.y);
+        //       }
+        //
+        //       if (this.canvas.model.overlap.first?.id === fitting.id) {
+        //         this.ctx.shadowBlur = 5;
+        //         this.ctx.shadowColor = "gray";
+        //       }
+        //
+        //       this.ctx.closePath();
+        //       this.ctx.stroke();
+        //       this.ctx.fillStyle = "black";
+        //       this.ctx.fill();
+        //     }
+        //     break;
+        //   case "3d":
+        //     {
+        //       let pipe1 = fitting.pipes[0];
+        //       let pipe2 = fitting.pipes[1];
+        //       let pipe3 = fitting.pipes[2];
+        //       let pipe1End,
+        //         pipe1OppositeEnd,
+        //         pipe2End,
+        //         pipe2OppositeEnd,
+        //         pipe3End,
+        //         pipe3OppositeEnd;
+        //
+        //       pipe1End =
+        //         pipe1.from.target?.id === fitting.id ? pipe1.from : pipe1.to;
+        //       pipe1OppositeEnd = pipe1End.getOpposite();
+        //
+        //       pipe2End =
+        //         pipe2.from.target?.id === fitting.id ? pipe2.from : pipe2.to;
+        //       pipe2OppositeEnd = pipe2End.getOpposite();
+        //
+        //       pipe3End =
+        //         pipe3.from.target?.id === fitting.id ? pipe3.from : pipe3.to;
+        //       pipe3OppositeEnd = pipe3End.getOpposite();
+        //
+        //       if (
+        //         !pipe1End ||
+        //         !pipe2End ||
+        //         !pipe3End ||
+        //         !pipe3OppositeEnd ||
+        //         !pipe1OppositeEnd ||
+        //         !pipe2OppositeEnd
+        //       )
+        //         break;
+        //
+        //       let necks: Array<IVec> = [];
+        //       let fittingNormalized = [
+        //         pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize(),
+        //         pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize(),
+        //         pipe3OppositeEnd.vec.sub(pipe3End.vec).normalize(),
+        //       ];
+        //
+        //       fittingNormalized.sort((a, b) => {
+        //         return a.angle() - b.angle();
+        //       });
+        //
+        //       fittingNormalized.map((n) => {
+        //         necks.push(
+        //           n
+        //             .multiply(fitting.width)
+        //             .sub(n.multiply(fitting.width).perpendicular("right"))
+        //             .sum(fitting.center),
+        //           n
+        //             .multiply(fitting.width)
+        //             .sub(n.multiply(fitting.width).perpendicular("left"))
+        //             .sum(fitting.center)
+        //         );
+        //       });
+        //
+        //       necks.map((p, index) => {
+        //         let wP = this.canvas.model.getLocalCoordinates(p.x, p.y);
+        //
+        //         if (index === 0) this.ctx.moveTo(wP.x, wP.y);
+        //
+        //         this.ctx.lineTo(wP.x, wP.y);
+        //       });
+        //
+        //       this.ctx.closePath();
+        //       this.ctx.stroke();
+        //       this.ctx.fillStyle = "black";
+        //       this.ctx.fill();
+        //     }
+        //     break;
+        //   case "4d":
+        //     console.log("4d");
+        //     break;
+        //   default:
+        //     console.warn("no type");
+        // }
+        var wP = this.canvas.model.getLocalCoordinates(fitting.center.x, fitting.center.y);
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = "red";
+        this.ctx.arc(wP.x, wP.y, fitting.width / 2, 0, 2 * Math.PI);
+        if (((_a = this.canvas.model.overlap.first) === null || _a === void 0 ? void 0 : _a.id) === fitting.id) {
+            this.ctx.shadowBlur = 5;
+            this.ctx.shadowColor = "gray";
         }
+        this.ctx.fillStyle = "black";
+        this.ctx.fill();
         this.ctx.restore();
     };
     Fitting.prototype.draw = function () {
@@ -1998,7 +2088,6 @@ var Pipe = /** @class */function () {
         this.ctx.restore();
     };
     Pipe.prototype.drawGhost = function (pipe) {
-        var _a, _b;
         this.ctx.save();
         this.ctx.beginPath();
         var from = this.canvas.model.getLocalCoordinates(pipe.from.vec.x, pipe.from.vec.y);
@@ -2009,26 +2098,27 @@ var Pipe = /** @class */function () {
         this.ctx.lineWidth = pipe.width * 2;
         this.ctx.stroke();
         this.ctx.restore();
-        if ((_a = pipe.from.target) === null || _a === void 0 ? void 0 : _a.io) {
-            var _wp = pipe.from.target.io.getVecAbs();
-            this.ctx.save();
-            this.ctx.beginPath();
-            this.ctx.strokeStyle = "red";
-            this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
-            this.ctx.fillStyle = "#ADD8E6";
-            this.ctx.fill();
-            this.ctx.restore();
-        }
-        if ((_b = pipe.to.target) === null || _b === void 0 ? void 0 : _b.io) {
-            var _wp = pipe.to.target.io.getVecAbs();
-            this.ctx.save();
-            this.ctx.beginPath();
-            this.ctx.strokeStyle = "red";
-            this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
-            this.ctx.fillStyle = "#ADD8E6";
-            this.ctx.fill();
-            this.ctx.restore();
-        }
+        // if (pipe.from.target?.io) {
+        //   let _wp = pipe.from.target.io.getVecAbs();
+        //   this.ctx.save();
+        //   this.ctx.beginPath();
+        //   this.ctx.strokeStyle = "red";
+        //   this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+        //   this.ctx.fillStyle = "#ADD8E6";
+        //   this.ctx.fill();
+        //   this.ctx.restore();
+        // }
+        //
+        // if (pipe.to.target?.io) {
+        //   let _wp = pipe.to.target.io.getVecAbs();
+        //   this.ctx.save();
+        //   this.ctx.beginPath();
+        //   this.ctx.strokeStyle = "red";
+        //   this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
+        //   this.ctx.fillStyle = "#ADD8E6";
+        //   this.ctx.fill();
+        //   this.ctx.restore();
+        // }
     };
     return Pipe;
 }();
@@ -2929,6 +3019,11 @@ var App = /** @class */function () {
     }
     App.prototype.run = function () {
         window.app = this;
+        window.requestAnimationFrame(this.step.bind(this));
+    };
+    App.prototype.step = function () {
+        this._2d.canvas.view.draw();
+        window.requestAnimationFrame(this.step.bind(this));
     };
     return App;
 }();
@@ -2996,7 +3091,8 @@ var Vector = /** @class */function () {
             //   this.x * v.y - this.y * v.x,
             //   this.x * v.x + this.y * v.y
             // );
-            return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
+            // console.log("this.length", this.length, v.length);
+            return Math.acos(Math.min(1, (this.x * v.x + this.y * v.y) / (this.length * v.length)));
         }
         return Math.atan2(this.y, this.x);
     };

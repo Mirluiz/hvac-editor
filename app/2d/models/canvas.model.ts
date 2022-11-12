@@ -208,7 +208,6 @@ class Canvas {
     }
 
     if (mode === "radiator") {
-      console.log("-", mode);
       this.placingObject = new RadiatorGhostModel(
         this,
         new Vector(this.mouse.x, this.mouse.y)

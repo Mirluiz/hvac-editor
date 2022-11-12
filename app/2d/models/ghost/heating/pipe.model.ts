@@ -5,7 +5,6 @@ import { PipeTarget } from "../../heating/pipe.model";
 import Fitting from "../../heating/fitting.model";
 
 interface IGhostPipeEnd {
-  target: PipeTarget;
   vec: IVec;
   getPipe: () => Pipe;
   getOpposite: () => IGhostPipeEnd;
@@ -17,7 +16,6 @@ class Pipe extends Line<IGhostPipeEnd> {
   constructor(model: CanvasModel, from: IVec, to: IVec) {
     super(
       {
-        target: null,
         vec: from,
         getPipe: () => {
           return this;
@@ -27,7 +25,6 @@ class Pipe extends Line<IGhostPipeEnd> {
         },
       },
       {
-        target: null,
         vec: to,
         getPipe: () => {
           return this;
@@ -50,7 +47,9 @@ class Pipe extends Line<IGhostPipeEnd> {
     let can = true;
 
     [this.from, this.to].map((end) => {
-      let overlaps = this.model.overlap.pipeOverlap(end.vec);
+      if (!can) return;
+
+      let overlaps = this.model.overlap.direct(end.vec);
       if (overlaps.length > 0) {
         let overlap = overlaps[0];
         let angleBetween;

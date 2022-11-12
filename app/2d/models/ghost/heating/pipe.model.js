@@ -24,7 +24,6 @@ var Pipe = /** @class */ (function (_super) {
     __extends(Pipe, _super);
     function Pipe(model, from, to) {
         var _this = _super.call(this, {
-            target: null,
             vec: from,
             getPipe: function () {
                 return _this;
@@ -33,7 +32,6 @@ var Pipe = /** @class */ (function (_super) {
                 return _this.to;
             },
         }, {
-            target: null,
             vec: to,
             getPipe: function () {
                 return _this;
@@ -57,7 +55,9 @@ var Pipe = /** @class */ (function (_super) {
         var _this = this;
         var can = true;
         [this.from, this.to].map(function (end) {
-            var overlaps = _this.model.overlap.pipeOverlap(end.vec);
+            if (!can)
+                return;
+            var overlaps = _this.model.overlap.direct(end.vec);
             if (overlaps.length > 0) {
                 var overlap = overlaps[0];
                 var angleBetween = void 0;
@@ -66,6 +66,21 @@ var Pipe = /** @class */ (function (_super) {
                         .getOpposite()
                         .vec.sub(end.vec)
                         .angle(end.getOpposite().vec.sub(end.vec));
+                    if (isNaN(angleBetween)) {
+                        console.log("");
+                        var a = overlap.end.getOpposite().vec.sub(end.vec);
+                        var b = end.getOpposite().vec.sub(end.vec);
+                        console.log("----", (a.x * b.x + a.y * b.y) / (a.length * b.length)
+                        // overlap,
+                        // end,
+                        // overlap.end.getOpposite().vec.sub(end.vec),
+                        // end.getOpposite().vec.sub(end.vec),
+                        // overlap.end
+                        //   .getOpposite()
+                        //   .vec.sub(end.vec)
+                        //   .angle(end.getOpposite().vec.sub(end.vec))
+                        );
+                    }
                     if (angleBetween !== undefined &&
                         Math.abs(angleBetween * (180 / Math.PI)) < 90) {
                         can = false;

@@ -36,28 +36,53 @@ var Overlap = /** @class */ (function () {
             this.model.config.net.step);
         var v = new vect_1.Vector(wMouse.x, wMouse.y);
         this.wallsOverlap();
-        this.list = __spreadArray(__spreadArray([], this.pipeOverlap(v), true), this.IOOverlap(v), true);
-        this.boundList = __spreadArray(__spreadArray([], this.pipeOverlap(netBoundMouse), true), this.IOOverlap(netBoundMouse), true);
+        this.list = __spreadArray(__spreadArray(__spreadArray([], this.pipeOverlap(v), true), this.IOOverlap(v), true), this.fittingOverlap(v), true);
+        this.boundList = __spreadArray(__spreadArray(__spreadArray([], this.pipeOverlap(netBoundMouse), true), this.IOOverlap(netBoundMouse), true), this.fittingOverlap(netBoundMouse), true);
         if (this.list.length === 0 && this.boundList.length === 0) {
             this.boundMouse = netBoundMouse.clone();
         }
-        this.firstOverlap();
+        this.firstOverlap(v);
     };
     Overlap.prototype.direct = function (vec) {
-        var list = __spreadArray(__spreadArray([], this.pipeOverlap(vec), true), this.IOOverlap(vec), true);
+        var list = __spreadArray(__spreadArray(__spreadArray([], this.pipeOverlap(vec), true), this.IOOverlap(vec), true), this.fittingOverlap(vec), true);
         return list;
     };
     /**
      * it is sorted by height (more height -> more closer to user)
      */
-    Overlap.prototype.firstOverlap = function () {
+    Overlap.prototype.firstOverlap = function (vec) {
         var overlaps = __spreadArray(__spreadArray([], this.list, true), this.boundList, true);
-        if (overlaps.length > 1) {
+        if (overlaps.length > 0) {
+            overlaps.sort(function (a, b) {
+                var aL = 0;
+                var bL = 0;
+                if (a.fitting) {
+                    aL = a.fitting.center.sub(vec).length;
+                }
+                else if (a.io) {
+                    aL = a.io.getVecAbs().sub(vec).length;
+                }
+                else if (a.body) {
+                    aL = a.body.vec.sub(vec).length;
+                }
+                if (b.fitting) {
+                    bL = b.fitting.center.sub(vec).length;
+                }
+                else if (b.io) {
+                    bL = b.io.getVecAbs().sub(vec).length;
+                }
+                else if (b.body) {
+                    bL = b.body.vec.sub(vec).length;
+                }
+                return aL - bL;
+            });
+        }
+        if (overlaps.length > 0) {
             overlaps.sort(function (a, b) {
                 var aZ = 0;
                 var bZ = 0;
                 if (a.fitting) {
-                    aZ = a.fitting.center.z;
+                    aZ = a.fitting.center.z + a.fitting.width;
                 }
                 else if (a.io) {
                     aZ = a.io.getVecAbs().z;
@@ -66,7 +91,7 @@ var Overlap = /** @class */ (function () {
                     aZ = a.body.vec.z;
                 }
                 if (b.fitting) {
-                    bZ = b.fitting.center.z;
+                    bZ = b.fitting.center.z + b.fitting.width;
                 }
                 else if (b.io) {
                     bZ = b.io.getVecAbs().z;
@@ -77,7 +102,7 @@ var Overlap = /** @class */ (function () {
                 return aZ - bZ;
             });
         }
-        this.first = overlaps[0];
+        this.first = overlaps.reverse()[0];
     };
     Overlap.prototype.wallsOverlap = function () {
         this.model.walls.map(function () { });

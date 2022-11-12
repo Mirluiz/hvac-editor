@@ -58,7 +58,8 @@ var Vector = /** @class */ (function () {
             //   this.x * v.y - this.y * v.x,
             //   this.x * v.x + this.y * v.y
             // );
-            return Math.acos((this.x * v.x + this.y * v.y) / (this.length * v.length));
+            // console.log("this.length", this.length, v.length);
+            return Math.acos(Math.min(1, (this.x * v.x + this.y * v.y) / (this.length * v.length)));
         }
         return Math.atan2(this.y, this.x);
     };

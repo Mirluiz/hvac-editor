@@ -54,19 +54,15 @@ class Pipe {
       }
 
       if (target?.io) {
-        this.model.actionObject.to.target = target;
         this.model.actionObject.to.vec.x = target.io.getVecAbs().x;
         this.model.actionObject.to.vec.y = target.io.getVecAbs().y;
       } else if (target?.object instanceof Fitting) {
-        this.model.actionObject.to.target = target;
         this.model.actionObject.to.vec.x = target.object.center.x;
         this.model.actionObject.to.vec.y = target.object.center.y;
       } else if (target?.body?.object instanceof PipeModel) {
-        this.model.actionObject.to.target = target;
         this.model.actionObject.to.vec.x = target.body.vec.x;
         this.model.actionObject.to.vec.y = target.body.vec.y;
       } else {
-        this.model.actionObject.to.target = null;
         this.model.actionObject.to.vec.x = bV.x;
         this.model.actionObject.to.vec.y = bV.y;
       }

@@ -24,7 +24,8 @@ var Fitting = /** @class */ (function (_super) {
     function Fitting(model, center) {
         var _this = _super.call(this, center) || this;
         _this._pipes = [];
-        _this.neck = 10;
+        _this.width = 20;
+        _this.height = 20;
         _this.color = "black";
         _this.model = model;
         return _this;
