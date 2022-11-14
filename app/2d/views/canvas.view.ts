@@ -24,6 +24,16 @@ class Canvas {
   radiator: RadiatorView | null = null;
   gl: WebGLRenderingContext | null = null;
   programInfo: any;
+  objects: Array<{
+    program: WebGLProgram;
+    attribLocations: {
+      vertexPosition: number;
+    };
+    uniformLocations: {
+      projectionMatrix: WebGLUniformLocation | null;
+    };
+    buffer: { position: WebGLBuffer } | undefined;
+  }> = [];
 
   constructor(model: CanvasModel) {
     this.model = model;
@@ -45,16 +55,7 @@ class Canvas {
       return;
     }
 
-    let objects: Array<{
-      program: WebGLProgram;
-      attribLocations: {
-        vertexPosition: number;
-      };
-      uniformLocations: {
-        projectionMatrix: WebGLUniformLocation | null;
-      };
-      buffer: { position: WebGLBuffer } | undefined;
-    }> = [];
+    this.objects = [];
 
     let { gl } = this;
 
