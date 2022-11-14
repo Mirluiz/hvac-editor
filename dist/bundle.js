@@ -125,7 +125,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../models/canvas.model":6,"../views/canvas.view":18,"../views/stats.view":22,"./object.controller":2,"./pipe.controller":3}],2:[function(require,module,exports){
+},{"../models/canvas.model":5,"../views/canvas.view":17,"../views/stats.view":18,"./object.controller":2,"./pipe.controller":3}],2:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -197,7 +197,7 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../../geometry/vect":26,"../models/ghost/heating/radiator.model":10,"../models/ghost/heating/valve.model":11,"../models/heating/radiator.model":14,"../models/heating/valve.model":15}],3:[function(require,module,exports){
+},{"../../geometry/vect":21,"../models/ghost/heating/radiator.model":9,"../models/ghost/heating/valve.model":10,"../models/heating/radiator.model":13,"../models/heating/valve.model":14}],3:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -294,7 +294,7 @@ var Pipe = /** @class */function () {
 }();
 exports.default = Pipe;
 
-},{"../../geometry/vect":26,"../models/ghost/heating/pipe.model":9,"../models/heating/fitting.model":12,"../models/heating/pipe.model":13}],4:[function(require,module,exports){
+},{"../../geometry/vect":21,"../models/ghost/heating/pipe.model":8,"../models/heating/fitting.model":11,"../models/heating/pipe.model":12}],4:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -315,51 +315,7 @@ var Controller = /** @class */function () {
 }();
 exports.default = Controller;
 
-},{"../ui/controller/info-panel.controller":28,"../ui/controller/toolbar.controller":29,"./controllers/canvas.controller":1}],5:[function(require,module,exports){
-"use strict";
-
-var __extends = undefined && undefined.__extends || function () {
-    var _extendStatics = function extendStatics(d, b) {
-        _extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (d, b) {
-            d.__proto__ = b;
-        } || function (d, b) {
-            for (var p in b) {
-                if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
-            }
-        };
-        return _extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        _extendStatics(d, b);
-        function __() {
-            this.constructor = d;
-        }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-}();
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var line_model_1 = __importDefault(require("../geometry/line.model"));
-var Wall = /** @class */function (_super) {
-    __extends(Wall, _super);
-    function Wall(from, to) {
-        return _super.call(this, { vec: from }, { vec: to }) || this;
-    }
-    Object.defineProperty(Wall.prototype, "color", {
-        get: function get() {
-            return "grey";
-        },
-        enumerable: false,
-        configurable: true
-    });
-    return Wall;
-}(line_model_1.default);
-exports.default = Wall;
-
-},{"../geometry/line.model":8}],6:[function(require,module,exports){
+},{"../ui/controller/info-panel.controller":24,"../ui/controller/toolbar.controller":25,"./controllers/canvas.controller":1}],5:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -555,7 +511,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../_test_/common":24,"../../geometry/vect":26,"../overlap.model":17,"./ghost/heating/radiator.model":10,"./ghost/heating/valve.model":11}],7:[function(require,module,exports){
+},{"../../_test_/common":19,"../../geometry/vect":21,"../overlap.model":16,"./ghost/heating/radiator.model":9,"./ghost/heating/valve.model":10}],6:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -597,7 +553,7 @@ var Arc = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Arc;
 
-},{"../main.model":16}],8:[function(require,module,exports){
+},{"../main.model":15}],7:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -639,7 +595,7 @@ var Line = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Line;
 
-},{"../main.model":16}],9:[function(require,module,exports){
+},{"../main.model":15}],8:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -750,7 +706,7 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../../geometry/line.model":8,"../../heating/fitting.model":12}],10:[function(require,module,exports){
+},{"../../geometry/line.model":7,"../../heating/fitting.model":11}],9:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -823,7 +779,7 @@ var Radiator = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Radiator;
 
-},{"../../../../geometry/vect":26,"../../main.model":16}],11:[function(require,module,exports){
+},{"../../../../geometry/vect":21,"../../main.model":15}],10:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -881,7 +837,7 @@ var Valve = /** @class */function (_super) {
 }(arc_model_1.default);
 exports.default = Valve;
 
-},{"../../geometry/arc.model":7}],12:[function(require,module,exports){
+},{"../../geometry/arc.model":6}],11:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -954,7 +910,7 @@ var Fitting = /** @class */function (_super) {
 }(arc_model_1.default);
 exports.default = Fitting;
 
-},{"../geometry/arc.model":7}],13:[function(require,module,exports){
+},{"../geometry/arc.model":6}],12:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -1174,7 +1130,7 @@ var Pipe = /** @class */function (_super) {
 }(line_model_1.default);
 exports.default = Pipe;
 
-},{"../../../geometry/vect":26,"../geometry/line.model":8,"./fitting.model":12}],14:[function(require,module,exports){
+},{"../../../geometry/vect":21,"../geometry/line.model":7,"./fitting.model":11}],13:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -1281,7 +1237,7 @@ var Radiator = /** @class */function (_super) {
 }(main_model_1.default);
 exports.default = Radiator;
 
-},{"../../../geometry/vect":26,"../main.model":16}],15:[function(require,module,exports){
+},{"../../../geometry/vect":21,"../main.model":15}],14:[function(require,module,exports){
 "use strict";
 
 var __extends = undefined && undefined.__extends || function () {
@@ -1378,7 +1334,7 @@ var Valve = /** @class */function (_super) {
 }(arc_model_1.default);
 exports.default = Valve;
 
-},{"../../../geometry/vect":26,"../geometry/arc.model":7,"./pipe.model":13}],16:[function(require,module,exports){
+},{"../../../geometry/vect":21,"../geometry/arc.model":6,"./pipe.model":12}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1392,7 +1348,7 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":32}],17:[function(require,module,exports){
+},{"../../utils":28}],16:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -1578,234 +1534,156 @@ var Overlap = /** @class */function () {
 }();
 exports.default = Overlap;
 
-},{"../geometry/vect":26}],18:[function(require,module,exports){
+},{"../geometry/vect":21}],17:[function(require,module,exports){
 "use strict";
 
-var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var vect_1 = require("../../geometry/vect");
-var pipe_view_1 = __importDefault(require("./pipe.view"));
-var valve_view_1 = __importDefault(require("./valve.view"));
-var fitting_view_1 = __importDefault(require("./fitting.view"));
-var radiator_view_1 = __importDefault(require("./radiator.view"));
-var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
-var wall_model_1 = __importDefault(require("../models/architecture/wall.model"));
-var radiator_model_1 = __importDefault(require("../models/heating/radiator.model"));
-var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
-var valve_model_2 = __importDefault(require("../models/ghost/heating/valve.model"));
-var fitting_model_1 = __importDefault(require("../models/heating/fitting.model"));
-var pipe_model_2 = __importDefault(require("../models/ghost/heating/pipe.model"));
-var radiator_model_2 = __importDefault(require("../models/ghost/heating/radiator.model"));
+var shader_1 = require("../../shaders/shader");
 var Canvas = /** @class */function () {
     function Canvas(model) {
         this.pipe = null;
         this.valve = null;
         this.fitting = null;
         this.radiator = null;
-        this.zIndex = null;
+        this.gl = null;
         this.model = model;
         this.container = document.querySelector("#editor");
-        this.init();
+        // this.init();
     }
     Canvas.prototype.init = function () {
-        var _a;
+        var _this = this;
+        if (!this.container) return;
         this.initCanvasContainer();
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (ctx) {
-            this.pipe = new pipe_view_1.default(this, this.model, ctx);
-            this.valve = new valve_view_1.default(this, this.model, ctx);
-            this.fitting = new fitting_view_1.default(this, this.model, ctx);
-            this.radiator = new radiator_view_1.default(this, this.model, ctx);
-            this.zIndex = new radiator_view_1.default(this, this.model, ctx);
+        this.gl = this.container.getContext("webgl");
+        if (this.gl === null) {
+            alert("Unable to initialize WebGL. Your browser or machine may not support it.");
+            return;
         }
-    };
-    Canvas.prototype.draw = function () {
-        var _this = this;
-        var _a, _b, _c;
-        this.clear();
-        this.drawNet();
-        this.drawWalls();
-        var _d = this.model,
-            pipes = _d.pipes,
-            walls = _d.walls,
-            radiators = _d.radiators,
-            valves = _d.valves,
-            fittings = _d.fittings;
-        var objects = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], pipes, true), walls, true), radiators, true), valves, true), fittings, true).sort(function (a, b) {
-            return a.z - b.z;
+        var objects = [];
+        var gl = this.gl;
+        this.model.pipes.map(function (pipe) {
+            var shaderProgram = _this.initShaderProgram(gl, (0, shader_1.vertex)(), (0, shader_1.fragment)());
+            if (!shaderProgram) return;
+            var buffer = _this.initBuffers(gl, pipe);
+            var programInfo = {
+                program: shaderProgram,
+                attribLocations: {
+                    vertexPosition: gl.getAttribLocation(shaderProgram, "a_position")
+                },
+                uniformLocations: {
+                    projectionMatrix: gl.getUniformLocation(shaderProgram, "u_resolution")
+                },
+                buffer: buffer
+            };
+            objects.push(programInfo);
         });
-        objects.map(function (object) {
-            var _a, _b, _c, _d;
-            if (object instanceof pipe_model_1.default) {
-                (_a = _this.pipe) === null || _a === void 0 ? void 0 : _a.drawPipe(object);
-            }
-            if (object instanceof wall_model_1.default) {
-                // console.log("Wall");
-                // this.drawWall(o);
-            }
-            if (object instanceof radiator_model_1.default) {
-                // console.log("Radiator");
-                (_b = _this.radiator) === null || _b === void 0 ? void 0 : _b.drawRadiator(object);
-            }
-            if (object instanceof valve_model_1.default) {
-                // console.log("Vavle");
-                (_c = _this.valve) === null || _c === void 0 ? void 0 : _c.drawValve(object);
-            }
-            if (object instanceof fitting_model_1.default) {
-                (_d = _this.fitting) === null || _d === void 0 ? void 0 : _d.drawFitting(object);
-            }
+        if (!objects) return;
+        this.drawScene(objects);
+    };
+    //Array<{ position: WebGLBuffer | null }>
+    Canvas.prototype.drawScene = function (objects) {
+        if (!this.gl) return;
+        var gl = this.gl;
+        var matrix = [0, 0];
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        // gl.useProgram(this.programInfo.program);
+        //
+        // gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
+        // var size = 2; // 2 components per iteration
+        // var type = gl.FLOAT; // the data is 32bit floats
+        // var normalize = false; // don't normalize the data
+        // var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        // var offset = 0; // start at the beginning of the buffer
+        // gl.bindBuffer(gl.ARRAY_BUFFER, buffer.position);
+        // gl.vertexAttribPointer(
+        //   this.programInfo.attribLocations.vertexPosition,
+        //   size,
+        //   type,
+        //   normalize,
+        //   stride,
+        //   offset
+        // );
+        //
+        // // set the resolution
+        // gl.uniform2f(
+        //   this.programInfo.uniformLocations.projectionMatrix,
+        //   gl.canvas.width,
+        //   gl.canvas.height
+        // );
+        //
+        // // Draw the rectangle.
+        // var primitiveType = gl.TRIANGLES;
+        // var offset = 0;
+        // var count = 6;
+        // gl.drawArrays(primitiveType, offset, count);
+        objects.forEach(function (object) {
+            if (!object || !object.buffer || !object.buffer.position) return;
+            var size = 2; // 2 components per iteration
+            var type = gl.FLOAT; // the data is 32bit floats
+            var normalize = false; // don't normalize the data
+            var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+            var offset = 0; // start at the beginning of the buffer
+            var programInfo = object.program;
+            var bufferInfo = object.buffer;
+            gl.useProgram(programInfo);
+            gl.enableVertexAttribArray(object.attribLocations.vertexPosition);
+            // Setup all the needed attributes.
+            gl.bindBuffer(gl.ARRAY_BUFFER, object.buffer.position);
+            gl.vertexAttribPointer(object.attribLocations.vertexPosition, size, type, normalize, stride, offset);
+            gl.uniform2f(object.uniformLocations.projectionMatrix, gl.canvas.width, gl.canvas.height);
+            // Draw
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
         });
-        if (this.model.actionObject && this.model.actionObject instanceof pipe_model_2.default) {
-            (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.drawGhost(this.model.actionObject);
-        }
-        if (this.model.placingObject && this.model.placingObject instanceof valve_model_2.default) {
-            (_b = this.valve) === null || _b === void 0 ? void 0 : _b.drawGhost(this.model.placingObject);
-        }
-        if (this.model.placingObject && this.model.placingObject instanceof radiator_model_2.default) {
-            (_c = this.radiator) === null || _c === void 0 ? void 0 : _c.drawGhost(this.model.placingObject);
-        }
     };
-    Canvas.prototype.clear = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse || !this.container) return;
-        ctx.clearRect(0, 0, this.container.width, this.container.height);
-        ctx.fillStyle = "#f5f5f5";
-        ctx.fillRect(0, 0, this.container.width, this.container.height);
-        //f5f5f5
-    };
-    Canvas.prototype.drawMouse = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse) return;
-        ctx.save();
-        ctx.beginPath();
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        ctx.arc(this.model.mouse.x, this.model.mouse.y, 1, 0, 2 * Math.PI);
-        ctx.restore();
-    };
-    Canvas.prototype.drawNet = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse || !this.container) return;
-        if (!this.model.config.net.show) return;
-        ctx.save();
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        var step = this.model.config.net.step * this.model.scale.amount;
-        var h = this.container.height;
-        var w = this.container.width;
-        var netOffset = new vect_1.Vector(this.model.offset.x % step, this.model.offset.y % step);
-        //x
-        var iV = 0;
-        var maxV = w / step;
-        while (iV <= maxV) {
-            var from = new vect_1.Vector(step * iV + netOffset.x, 0);
-            var to = new vect_1.Vector(step * iV + netOffset.x, h);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            iV++;
+    Canvas.prototype.initShaderProgram = function (gl, vsSource, fsSource) {
+        var vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
+        var fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+        if (!vertexShader || !fragmentShader) return;
+        var shaderProgram = gl.createProgram();
+        if (!shaderProgram) return;
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
+        // If creating the shader program failed, alert
+        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+            alert("Unable to initialize the shader program: ".concat(gl.getProgramInfoLog(shaderProgram)));
+            return null;
         }
-        //y
-        var iH = 0;
-        var maxH = h / step;
-        while (iH <= maxH) {
-            var from = new vect_1.Vector(0, step * iH + netOffset.y);
-            var to = new vect_1.Vector(w, step * iH + netOffset.y);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            iH++;
-        }
-        ctx.globalAlpha = 0.2;
-        ctx.stroke();
-        ctx.restore();
+        return shaderProgram;
     };
-    Canvas.prototype.drawNet1 = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse || !this.container) return;
-        if (!this.model.config.net.show) return;
-        ctx.save();
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        // let step = this.model.config.net.step * this.model.scale.amount;
-        var step = this.model.config.net.step;
-        var h = this.container.height;
-        var w = this.container.width;
-        //x
-        var iV = 0;
-        var maxV = w / step;
-        while (iV <= maxV) {
-            var from = this.model.getLocalCoordinates(step * iV, 0);
-            var to = this.model.getLocalCoordinates(step * iV, h);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            iV++;
+    Canvas.prototype.loadShader = function (gl, type, source) {
+        var shader = gl.createShader(type);
+        if (!shader) return;
+        // Send the source to the shader object
+        gl.shaderSource(shader, source);
+        // Compile the shader program
+        gl.compileShader(shader);
+        // See if it compiled successfully
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            alert("An error occurred compiling the shaders: ".concat(gl.getShaderInfoLog(shader)));
+            gl.deleteShader(shader);
+            return null;
         }
-        //y
-        var iH = 0;
-        var maxH = h / step;
-        while (iH <= maxH) {
-            var from = this.model.getLocalCoordinates(0, step * iH);
-            var to = this.model.getLocalCoordinates(w, step * iH);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            iH++;
-        }
-        ctx.stroke();
-        ctx.restore();
+        return shader;
     };
-    Canvas.prototype.drawAxis = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse || !this.container) return;
-        if (!this.model.config.axis.show) return;
-        ctx.save();
-        ctx.beginPath();
-        var h = this.container.height;
-        var w = this.container.width;
-        var x_From = this.model.getLocalCoordinates(0, 0);
-        var x_To = this.model.getLocalCoordinates(w, 0);
-        var y_From = this.model.getLocalCoordinates(0, 0);
-        var y_To = this.model.getLocalCoordinates(0, h);
-        ctx.moveTo(0, x_From.y);
-        ctx.lineTo(w, x_To.y);
-        ctx.moveTo(y_From.x, 0);
-        ctx.lineTo(y_To.x, h);
-        ctx.strokeStyle = "red";
-        ctx.stroke();
-        ctx.restore();
-    };
-    Canvas.prototype.drawWalls = function () {
-        var _this = this;
-        var walls = this.model.walls;
-        walls === null || walls === void 0 ? void 0 : walls.map(function (wall) {
-            if (!_this.container) return;
-            var ctx = _this.container.getContext("2d");
-            if (!ctx) return;
-            ctx.save();
-            ctx.beginPath();
-            var from = _this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
-            var to = _this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            ctx.strokeStyle = wall.color;
-            ctx.lineWidth = wall.width;
-            ctx.stroke();
-            ctx.restore();
-        });
+    Canvas.prototype.initBuffers = function (gl, pipe) {
+        var positionBuffer = gl.createBuffer();
+        if (!positionBuffer) return;
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        var x = pipe.from.vec.x;
+        var y = pipe.from.vec.y;
+        var width = pipe.width;
+        var height = pipe.width;
+        var x1 = x;
+        var x2 = x + width;
+        var y1 = y;
+        var y2 = y + height;
+        var positions = [x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+        return {
+            position: positionBuffer
+        };
     };
     Canvas.prototype.initCanvasContainer = function () {
         if (!this.container) return;
@@ -1824,374 +1702,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":26,"../models/architecture/wall.model":5,"../models/ghost/heating/pipe.model":9,"../models/ghost/heating/radiator.model":10,"../models/ghost/heating/valve.model":11,"../models/heating/fitting.model":12,"../models/heating/pipe.model":13,"../models/heating/radiator.model":14,"../models/heating/valve.model":15,"./fitting.view":19,"./pipe.view":20,"./radiator.view":21,"./valve.view":23}],19:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Fitting = /** @class */function () {
-    function Fitting(view, model, ctx) {
-        this.canvas = view;
-        this.ctx = ctx;
-    }
-    Fitting.prototype.drawFittings = function () {
-        var _this = this;
-        this.canvas.model.fittings.map(function (fitting) {
-            _this.drawFitting(fitting);
-        });
-    };
-    Fitting.prototype.drawFitting = function (fitting) {
-        var _a;
-        this.ctx.save();
-        this.ctx.beginPath();
-        // switch (fitting.type) {
-        //   case "2d":
-        //     {
-        //       let pipe1 = fitting.pipes[0];
-        //       let pipe2 = fitting.pipes[1];
-        //       let pipe1End, pipe1OppositeEnd, pipe2End, pipe2OppositeEnd;
-        //
-        //       pipe1End =
-        //         pipe1.from.target?.id === fitting.id ? pipe1.from : pipe1.to;
-        //       pipe1OppositeEnd = pipe1End.getOpposite();
-        //
-        //       pipe2End =
-        //         pipe2.from.target?.id === fitting.id ? pipe2.from : pipe2.to;
-        //       pipe2OppositeEnd = pipe2End.getOpposite();
-        //
-        //       if (!pipe1End || !pipe2End || !pipe1OppositeEnd || !pipe2OppositeEnd)
-        //         break;
-        //
-        //       let fitting1N = pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize();
-        //       let fitting2N = pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize();
-        //
-        //       // console.log(
-        //       //   "fitting1N.angle();",
-        //       //   fitting1N.angle1(fitting2N) * (180 / Math.PI),
-        //       //   fitting2N.angle1(fitting1N) * (180 / Math.PI)
-        //       // );
-        //
-        //       let fittingNeck1Left = fitting1N
-        //         .perpendicular("left")
-        //         .multiply(fitting.width)
-        //         .sum(fitting1N.multiply(fitting.width))
-        //         .sum(fitting.center);
-        //       let fittingNeck1Right = fitting1N
-        //         .perpendicular("right")
-        //         .multiply(fitting.width)
-        //         .sum(fitting1N.multiply(fitting.width))
-        //         .sum(fitting.center);
-        //       let fittingNeck2Left = fitting2N
-        //         .perpendicular("left")
-        //         .multiply(fitting.width)
-        //         .sum(fitting2N.multiply(fitting.width))
-        //         .sum(fitting.center);
-        //       let fittingNeck2Right = fitting2N
-        //         .perpendicular("right")
-        //         .multiply(fitting.width)
-        //         .sum(fitting2N.multiply(fitting.width))
-        //         .sum(fitting.center);
-        //
-        //       let pipe1Angle = pipe1OppositeEnd.vec.sub(pipe1End.vec).angle();
-        //       let pipe2Angle = pipe2End.vec.sub(pipe2OppositeEnd.vec).angle();
-        //       let needBezier = pipe1Angle - pipe2Angle !== 0;
-        //
-        //       let p1 = this.canvas.model.getLocalCoordinates(
-        //         fittingNeck1Right.x,
-        //         fittingNeck1Right.y
-        //       );
-        //       let p2 = this.canvas.model.getLocalCoordinates(
-        //         fittingNeck1Left.x,
-        //         fittingNeck1Left.y
-        //       );
-        //       let p3 = this.canvas.model.getLocalCoordinates(
-        //         fittingNeck2Right.x,
-        //         fittingNeck2Right.y
-        //       );
-        //       let p4 = this.canvas.model.getLocalCoordinates(
-        //         fittingNeck2Left.x,
-        //         fittingNeck2Left.y
-        //       );
-        //
-        //       this.ctx.moveTo(p1.x, p1.y);
-        //
-        //       if (needBezier) {
-        //         let curve = fitting1N
-        //           .perpendicular("right")
-        //           .sum(fitting2N.perpendicular("left"))
-        //           .normalize()
-        //           .multiply(fitting.width)
-        //           .sum(fitting.center);
-        //         let c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
-        //         this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p4.x, p4.y);
-        //       } else {
-        //         this.ctx.lineTo(p4.x, p4.y);
-        //       }
-        //
-        //       this.ctx.lineTo(p3.x, p3.y);
-        //       if (needBezier) {
-        //         let curve = fitting2N
-        //           .perpendicular("right")
-        //           .sum(fitting1N.perpendicular("left"))
-        //           .normalize()
-        //           .multiply(fitting.width)
-        //           .sum(fitting.center);
-        //         let c = this.canvas.model.getLocalCoordinates(curve.x, curve.y);
-        //         this.ctx.bezierCurveTo(c.x, c.y, c.x, c.y, p2.x, p2.y);
-        //       } else {
-        //         this.ctx.lineTo(p2.x, p2.y);
-        //       }
-        //
-        //       if (this.canvas.model.overlap.first?.id === fitting.id) {
-        //         this.ctx.shadowBlur = 5;
-        //         this.ctx.shadowColor = "gray";
-        //       }
-        //
-        //       this.ctx.closePath();
-        //       this.ctx.stroke();
-        //       this.ctx.fillStyle = "black";
-        //       this.ctx.fill();
-        //     }
-        //     break;
-        //   case "3d":
-        //     {
-        //       let pipe1 = fitting.pipes[0];
-        //       let pipe2 = fitting.pipes[1];
-        //       let pipe3 = fitting.pipes[2];
-        //       let pipe1End,
-        //         pipe1OppositeEnd,
-        //         pipe2End,
-        //         pipe2OppositeEnd,
-        //         pipe3End,
-        //         pipe3OppositeEnd;
-        //
-        //       pipe1End =
-        //         pipe1.from.target?.id === fitting.id ? pipe1.from : pipe1.to;
-        //       pipe1OppositeEnd = pipe1End.getOpposite();
-        //
-        //       pipe2End =
-        //         pipe2.from.target?.id === fitting.id ? pipe2.from : pipe2.to;
-        //       pipe2OppositeEnd = pipe2End.getOpposite();
-        //
-        //       pipe3End =
-        //         pipe3.from.target?.id === fitting.id ? pipe3.from : pipe3.to;
-        //       pipe3OppositeEnd = pipe3End.getOpposite();
-        //
-        //       if (
-        //         !pipe1End ||
-        //         !pipe2End ||
-        //         !pipe3End ||
-        //         !pipe3OppositeEnd ||
-        //         !pipe1OppositeEnd ||
-        //         !pipe2OppositeEnd
-        //       )
-        //         break;
-        //
-        //       let necks: Array<IVec> = [];
-        //       let fittingNormalized = [
-        //         pipe1OppositeEnd.vec.sub(pipe1End.vec).normalize(),
-        //         pipe2OppositeEnd.vec.sub(pipe2End.vec).normalize(),
-        //         pipe3OppositeEnd.vec.sub(pipe3End.vec).normalize(),
-        //       ];
-        //
-        //       fittingNormalized.sort((a, b) => {
-        //         return a.angle() - b.angle();
-        //       });
-        //
-        //       fittingNormalized.map((n) => {
-        //         necks.push(
-        //           n
-        //             .multiply(fitting.width)
-        //             .sub(n.multiply(fitting.width).perpendicular("right"))
-        //             .sum(fitting.center),
-        //           n
-        //             .multiply(fitting.width)
-        //             .sub(n.multiply(fitting.width).perpendicular("left"))
-        //             .sum(fitting.center)
-        //         );
-        //       });
-        //
-        //       necks.map((p, index) => {
-        //         let wP = this.canvas.model.getLocalCoordinates(p.x, p.y);
-        //
-        //         if (index === 0) this.ctx.moveTo(wP.x, wP.y);
-        //
-        //         this.ctx.lineTo(wP.x, wP.y);
-        //       });
-        //
-        //       this.ctx.closePath();
-        //       this.ctx.stroke();
-        //       this.ctx.fillStyle = "black";
-        //       this.ctx.fill();
-        //     }
-        //     break;
-        //   case "4d":
-        //     console.log("4d");
-        //     break;
-        //   default:
-        //     console.warn("no type");
-        // }
-        var wP = this.canvas.model.getLocalCoordinates(fitting.center.x, fitting.center.y);
-        this.ctx.strokeStyle = "red";
-        this.ctx.arc(wP.x, wP.y, fitting.width / 2, 0, 2 * Math.PI);
-        if (((_a = this.canvas.model.overlap.first) === null || _a === void 0 ? void 0 : _a.id) === fitting.id) {
-            this.ctx.shadowBlur = 5;
-            this.ctx.shadowColor = "gray";
-        }
-        this.ctx.fillStyle = "black";
-        this.ctx.fill();
-        this.ctx.restore();
-    };
-    Fitting.prototype.draw = function () {
-        this.drawFittings();
-    };
-    return Fitting;
-}();
-exports.default = Fitting;
-
-},{}],20:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Pipe = /** @class */function () {
-    function Pipe(view, model, ctx) {
-        this.canvas = view;
-        this.ctx = ctx;
-    }
-    Pipe.prototype.drawPipes = function () {
-        var _this = this;
-        this.canvas.model.pipes.map(function (p) {
-            _this.drawPipe(p);
-        });
-    };
-    Pipe.prototype.drawPipe = function (pipe) {
-        var _a;
-        this.ctx.save();
-        this.ctx.beginPath();
-        var from = this.canvas.model.getLocalCoordinates(pipe.from.vec.x, pipe.from.vec.y);
-        var to = this.canvas.model.getLocalCoordinates(pipe.to.vec.x, pipe.to.vec.y);
-        this.ctx.moveTo(from.x, from.y);
-        this.ctx.lineTo(to.x, to.y);
-        this.ctx.strokeStyle = pipe.color;
-        this.ctx.lineWidth = pipe.width;
-        if (((_a = this.canvas.model.overlap.first) === null || _a === void 0 ? void 0 : _a.id) === pipe.id) {
-            this.ctx.shadowBlur = 5;
-            this.ctx.shadowColor = pipe.color;
-        }
-        this.ctx.closePath();
-        this.ctx.stroke();
-        this.ctx.restore();
-    };
-    Pipe.prototype.drawGhost = function (pipe) {
-        this.ctx.save();
-        this.ctx.beginPath();
-        var from = this.canvas.model.getLocalCoordinates(pipe.from.vec.x, pipe.from.vec.y);
-        var to = this.canvas.model.getLocalCoordinates(pipe.to.vec.x, pipe.to.vec.y);
-        this.ctx.moveTo(from.x, from.y);
-        this.ctx.lineTo(to.x, to.y);
-        this.ctx.strokeStyle = pipe.color;
-        this.ctx.lineWidth = pipe.width * 2;
-        this.ctx.stroke();
-        this.ctx.restore();
-        // if (pipe.from.target?.io) {
-        //   let _wp = pipe.from.target.io.getVecAbs();
-        //   this.ctx.save();
-        //   this.ctx.beginPath();
-        //   this.ctx.strokeStyle = "red";
-        //   this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
-        //   this.ctx.fillStyle = "#ADD8E6";
-        //   this.ctx.fill();
-        //   this.ctx.restore();
-        // }
-        //
-        // if (pipe.to.target?.io) {
-        //   let _wp = pipe.to.target.io.getVecAbs();
-        //   this.ctx.save();
-        //   this.ctx.beginPath();
-        //   this.ctx.strokeStyle = "red";
-        //   this.ctx.arc(_wp.x, _wp.y, 5, 0, 2 * Math.PI);
-        //   this.ctx.fillStyle = "#ADD8E6";
-        //   this.ctx.fill();
-        //   this.ctx.restore();
-        // }
-    };
-    return Pipe;
-}();
-exports.default = Pipe;
-
-},{}],21:[function(require,module,exports){
-"use strict";
-
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var vect_1 = require("../../geometry/vect");
-var radiator_model_1 = __importDefault(require("../models/ghost/heating/radiator.model"));
-var Radiator = /** @class */function () {
-    function Radiator(view, model, ctx) {
-        this.canvas = view;
-        this.ctx = ctx;
-    }
-    Radiator.prototype.drawRadiators = function () {
-        var _this = this;
-        this.canvas.model.radiators.map(function (radiator) {
-            _this.drawRadiator(radiator);
-        });
-    };
-    Radiator.prototype.drawRadiator = function (radiator) {
-        var _this = this;
-        this.ctx.save();
-        this.ctx.beginPath();
-        var toCenter = radiator.objectCenter.sum(radiator.center);
-        var wP = this.canvas.model.getLocalCoordinates(radiator.center.x, radiator.center.y);
-        this.ctx.rect(toCenter.x, toCenter.y, radiator.width, radiator.height);
-        this.ctx.stroke();
-        this.ctx.restore();
-        radiator.IOs.map(function (io) {
-            var toCenter = io.getVecAbs();
-            var wP = _this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
-            _this.ctx.save();
-            _this.ctx.beginPath();
-            _this.ctx.strokeStyle = "red";
-            _this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
-            _this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
-            _this.ctx.fill();
-            _this.ctx.restore();
-        });
-    };
-    Radiator.prototype.drawGhost = function (radiator) {
-        var _this = this;
-        this.ctx.save();
-        this.ctx.beginPath();
-        var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center);
-        var wP = this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
-        this.ctx.strokeStyle = "red";
-        this.ctx.rect(wP.x, wP.y, radiator.width, radiator.height);
-        this.ctx.stroke();
-        this.ctx.restore();
-        radiator.IOs.map(function (io) {
-            var toCenter = new vect_1.Vector(-radiator.width / 2, -radiator.height / 2).sum(radiator.center.sum(io.vec));
-            var wP = _this.canvas.model.getLocalCoordinates(toCenter.x, toCenter.y);
-            // this.ctx.save();
-            // this.ctx.beginPath();
-            // this.ctx.strokeStyle = "red";
-            // this.ctx.arc(wP.x, wP.y, 5, 0, 2 * Math.PI);
-            // this.ctx.fillStyle = io.type === "supply" ? "red" : "blue";
-            // this.ctx.fill();
-            // this.ctx.restore();
-        });
-    };
-    Radiator.prototype.draw = function () {
-        this.drawRadiators();
-        if (this.canvas.model.placingObject && this.canvas.model.placingObject instanceof radiator_model_1.default) {
-            this.drawGhost(this.canvas.model.placingObject);
-        }
-    };
-    return Radiator;
-}();
-exports.default = Radiator;
-
-},{"../../geometry/vect":26,"../models/ghost/heating/radiator.model":10}],22:[function(require,module,exports){
+},{"../../shaders/shader":23}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2220,102 +1731,7 @@ var Stats = /** @class */function () {
 }();
 exports.default = Stats;
 
-},{}],23:[function(require,module,exports){
-"use strict";
-
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var valve_model_1 = __importDefault(require("../models/ghost/heating/valve.model"));
-var vect_1 = require("../../geometry/vect");
-var Valve = /** @class */function () {
-    function Valve(view, model, ctx) {
-        this.canvas = view;
-        this.ctx = ctx;
-    }
-    Valve.prototype.drawGhost = function (valve) {
-        var _this = this;
-        var _a;
-        this.ctx.save();
-        this.ctx.beginPath();
-        var normVector, normVectorReversed;
-        if (valve.pipes.length == 0) {
-            normVector = new vect_1.Vector(1, 0);
-            normVectorReversed = normVector.reverse();
-        } else {
-            var valvePipe = valve.pipes[0]; // get one from two pipe for angle detection
-            var pipeEnd = ((_a = valvePipe.from.target) === null || _a === void 0 ? void 0 : _a.id) === valve.id ? valvePipe.from : valvePipe.to;
-            var pipeOppositeEnd = pipeEnd.getOpposite();
-            normVector = pipeOppositeEnd.vec.sub(pipeEnd.vec).normalize();
-            normVectorReversed = normVector.reverse();
-        }
-        var points = [];
-        points.push(normVector.multiply(valve.width).perpendicular("left").sum(normVector.multiply(valve.length)).sum(valve.center), normVector.multiply(valve.width).perpendicular("right").sum(normVector.multiply(valve.length)).sum(valve.center), normVector.sum(valve.center), normVectorReversed.multiply(valve.width).perpendicular("left").sum(normVectorReversed.multiply(valve.length)).sum(valve.center), normVectorReversed.multiply(valve.width).perpendicular("right").sum(normVectorReversed.multiply(valve.length)).sum(valve.center), normVector.sum(valve.center));
-        points.map(function (p, index) {
-            var wP = _this.canvas.model.getLocalCoordinates(p.x, p.y);
-            if (index === 0) _this.ctx.moveTo(wP.x, wP.y);
-            _this.ctx.lineTo(wP.x, wP.y);
-        });
-        this.ctx.lineWidth = 2;
-        this.ctx.closePath();
-        this.ctx.stroke();
-        this.ctx.beginPath();
-        var wP = this.canvas.model.getLocalCoordinates(valve.center.x, valve.center.y);
-        this.ctx.moveTo(wP.x, wP.y);
-        this.ctx.arc(wP.x, wP.y, valve.radius, 0, 2 * Math.PI);
-        this.ctx.stroke();
-        this.ctx.fillStyle = "white";
-        this.ctx.fill();
-        this.ctx.restore();
-    };
-    Valve.prototype.drawValves = function () {
-        var _this = this;
-        this.canvas.model.valves.map(function (v) {
-            _this.drawValve(v);
-        });
-    };
-    Valve.prototype.drawValve = function (valve) {
-        var _this = this;
-        var _a;
-        if (valve.pipes.length == 0) return;
-        this.ctx.save();
-        this.ctx.beginPath();
-        var valvePipe = valve.pipes[0]; // get one from two pipe for angle detection
-        var pipeEnd = ((_a = valvePipe.from.target) === null || _a === void 0 ? void 0 : _a.id) === valve.id ? valvePipe.from : valvePipe.to;
-        var pipeOppositeEnd = pipeEnd.getOpposite();
-        var normVector = pipeOppositeEnd.vec.sub(pipeEnd.vec).normalize();
-        var normVectorReversed = normVector.reverse();
-        var points = [];
-        points.push(normVector.multiply(valve.width).perpendicular("left").sum(normVector.multiply(valve.length)).sum(valve.center), normVector.multiply(valve.width).perpendicular("right").sum(normVector.multiply(valve.length)).sum(valve.center), normVector.sum(valve.center), normVectorReversed.multiply(valve.width).perpendicular("left").sum(normVectorReversed.multiply(valve.length)).sum(valve.center), normVectorReversed.multiply(valve.width).perpendicular("right").sum(normVectorReversed.multiply(valve.length)).sum(valve.center), normVector.sum(valve.center));
-        points.map(function (p, index) {
-            var wP = _this.canvas.model.getLocalCoordinates(p.x, p.y);
-            if (index === 0) _this.ctx.moveTo(wP.x, wP.y);
-            _this.ctx.lineTo(wP.x, wP.y);
-        });
-        this.ctx.lineWidth = 2;
-        this.ctx.closePath();
-        this.ctx.stroke();
-        this.ctx.beginPath();
-        var wP = this.canvas.model.getLocalCoordinates(valve.center.x, valve.center.y);
-        this.ctx.moveTo(wP.x, wP.y);
-        this.ctx.arc(wP.x, wP.y, valve.radius, 0, 2 * Math.PI);
-        this.ctx.stroke();
-        this.ctx.fillStyle = "white";
-        this.ctx.fill();
-        this.ctx.restore();
-    };
-    Valve.prototype.draw = function () {
-        this.drawValves();
-        if (this.canvas.model.placingObject && this.canvas.model.placingObject instanceof valve_model_1.default) {
-            this.drawGhost(this.canvas.model.placingObject);
-        }
-    };
-    return Valve;
-}();
-exports.default = Valve;
-
-},{"../../geometry/vect":26,"../models/ghost/heating/valve.model":11}],24:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -2337,7 +1753,7 @@ var vect_1 = require("../geometry/vect");
 var fittingModel = function fittingModel(model) {
     var pipes = model.pipes;
     var step = model.config.net.step / 2;
-    // _2Pipes(model, pipes, step);
+    _2Pipes(model, pipes, step);
     // _3Pipes(model, pipes, step);
     // performanceCheck(model, pipes, step);
 };
@@ -2756,12 +2172,10 @@ var _2Pipes = function _2Pipes(model, pipes, step) {
         y2: 8
     }]];
     __spreadArray(__spreadArray([], arraysRL90, true), arraysLR90, true).map(function (lines, index) {
-        if (index > 1) return;
         lines.map(function (line) {
             pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, line.y2 * step)));
         });
     });
-    return;
     __spreadArray(__spreadArray([], arraysV90Down, true), arraysV90Up, true).map(function (lines, index) {
         lines.map(function (line) {
             pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 12 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 12 * step + line.y2 * step)));
@@ -3015,7 +2429,7 @@ var performanceCheck = function performanceCheck(model, pipes, step) {
     });
 };
 
-},{"../2d/models/heating/pipe.model":13,"../geometry/vect":26}],25:[function(require,module,exports){
+},{"../2d/models/heating/pipe.model":12,"../geometry/vect":21}],20:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -3026,20 +2440,21 @@ var _2d_1 = __importDefault(require("./2d"));
 var App = /** @class */function () {
     function App() {
         this._2d = new _2d_1.default();
+        // step() {
+        //   this._2d.canvas.view.draw();
+        //   window.requestAnimationFrame(this.step.bind(this));
+        // }
     }
     App.prototype.run = function () {
         window.app = this;
-        window.requestAnimationFrame(this.step.bind(this));
-    };
-    App.prototype.step = function () {
-        this._2d.canvas.view.draw();
-        window.requestAnimationFrame(this.step.bind(this));
+        this._2d.canvas.view.init();
+        // window.requestAnimationFrame(this.step.bind(this));
     };
     return App;
 }();
 exports.default = App;
 
-},{"./2d":4}],26:[function(require,module,exports){
+},{"./2d":4}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -3183,7 +2598,7 @@ var Vector = /** @class */function () {
 }();
 exports.Vector = Vector;
 
-},{}],27:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -3194,7 +2609,31 @@ var app_1 = __importDefault(require("./app"));
 var app = new app_1.default();
 app.run();
 
-},{"./app":25}],28:[function(require,module,exports){
+},{"./app":20}],23:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fragment = exports.vertex = void 0;
+var vertex = function vertex() {
+    //   return `
+    //    attribute vec4 aVertexPosition;
+    //
+    //    uniform mat4 uModelViewMatrix;
+    //    uniform mat4 uProjectionMatrix;
+    //
+    //    void main() {
+    //       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+    //    }
+    // `;
+    return "\n    attribute vec2 a_position;\n\n    uniform vec2 u_resolution;\n    \n    void main() {\n       // convert the rectangle points from pixels to 0.0 to 1.0\n       vec2 zeroToOne = a_position / u_resolution;\n    \n       // convert from 0->1 to 0->2\n       vec2 zeroToTwo = zeroToOne * 2.0;\n    \n       // convert from 0->2 to -1->+1 (clipspace)\n       vec2 clipSpace = zeroToTwo - 1.0;\n    \n       gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);\n    }\n  ";
+};
+exports.vertex = vertex;
+var fragment = function fragment() {
+    return "\n    void main() {\n      gl_FragColor = vec4(0, 0, 0, 1);\n    }\n  ";
+};
+exports.fragment = fragment;
+
+},{}],24:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -3229,7 +2668,7 @@ var InfoPanel = /** @class */function () {
 }();
 exports.default = InfoPanel;
 
-},{"../view/info-panel.view":30}],29:[function(require,module,exports){
+},{"../view/info-panel.view":26}],25:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -3288,7 +2727,7 @@ var Toolbar = /** @class */function () {
 }();
 exports.default = Toolbar;
 
-},{"../view/toolbar.view":31}],30:[function(require,module,exports){
+},{"../view/toolbar.view":27}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -3304,7 +2743,7 @@ var InfoPanel = /** @class */function () {
 }();
 exports.default = InfoPanel;
 
-},{}],31:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -3342,7 +2781,7 @@ var Toolbar = /** @class */function () {
 }();
 exports.default = Toolbar;
 
-},{}],32:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -3365,6 +2804,6 @@ function getProperty(obj, key) {
 }
 exports.getProperty = getProperty;
 
-},{}]},{},[27])
+},{}]},{},[22])
 
 //# sourceMappingURL=bundle.js.map

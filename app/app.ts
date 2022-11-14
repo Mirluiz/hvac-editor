@@ -11,14 +11,14 @@ class App {
 
   run() {
     window.app = this;
-
-    window.requestAnimationFrame(this.step.bind(this));
+    this._2d.canvas.view.init();
+    // window.requestAnimationFrame(this.step.bind(this));
   }
 
-  step() {
-    this._2d.canvas.view.draw();
-    window.requestAnimationFrame(this.step.bind(this));
-  }
+  // step() {
+  //   this._2d.canvas.view.draw();
+  //   window.requestAnimationFrame(this.step.bind(this));
+  // }
 }
 
 export default App;

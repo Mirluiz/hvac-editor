@@ -20,6 +20,7 @@ var fittingModel = function (model) {
     var step = model.config.net.step / 2;
     _2Pipes(model, pipes, step);
     // _3Pipes(model, pipes, step);
+    // performanceCheck(model, pipes, step);
 };
 exports.fittingModel = fittingModel;
 var _2Pipes = function (model, pipes, step) {
@@ -514,13 +515,10 @@ var _2Pipes = function (model, pipes, step) {
         ],
     ];
     __spreadArray(__spreadArray([], arraysRL90, true), arraysLR90, true).map(function (lines, index) {
-        if (index > 1)
-            return;
         lines.map(function (line) {
             pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, line.y2 * step)));
         });
     });
-    return;
     __spreadArray(__spreadArray([], arraysV90Down, true), arraysV90Up, true).map(function (lines, index) {
         lines.map(function (line) {
             pipes.push(new pipe_model_1.default(model, new vect_1.Vector(100 * index + line.x1 * step, 12 * step + line.y1 * step), new vect_1.Vector(100 * index + line.x2 * step, 12 * step + line.y2 * step)));
@@ -813,4 +811,19 @@ var _3Pipes = function (model, pipes, step) {
         });
     });
     combinationGroupOffset += yOffsetStep * step;
+};
+var performanceCheck = function (model, pipes, step) {
+    new Array(10000).fill(undefined).map(function (value, index) {
+        var vec1;
+        var vec2;
+        vec1 = new vect_1.Vector(4, 4);
+        vec2 = new vect_1.Vector(8, 4);
+        var offsetX = 100 * (index % 8);
+        var offsetY = 20 * Math.round(index / 8);
+        vec1.x = offsetX + vec1.x * step;
+        vec1.y = offsetY + vec1.y * step;
+        vec2.x = offsetX + vec2.x * step;
+        vec2.y = offsetY + vec2.y * step;
+        pipes.push(new pipe_model_1.default(model, vec1, vec2));
+    });
 };

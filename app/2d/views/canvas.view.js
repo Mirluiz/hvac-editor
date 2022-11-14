@@ -1,242 +1,158 @@
 "use strict";
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var vect_1 = require("../../geometry/vect");
-var pipe_view_1 = __importDefault(require("./pipe.view"));
-var valve_view_1 = __importDefault(require("./valve.view"));
-var fitting_view_1 = __importDefault(require("./fitting.view"));
-var radiator_view_1 = __importDefault(require("./radiator.view"));
-var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
-var wall_model_1 = __importDefault(require("../models/architecture/wall.model"));
-var radiator_model_1 = __importDefault(require("../models/heating/radiator.model"));
-var valve_model_1 = __importDefault(require("../models/heating/valve.model"));
-var valve_model_2 = __importDefault(require("../models/ghost/heating/valve.model"));
-var fitting_model_1 = __importDefault(require("../models/heating/fitting.model"));
-var pipe_model_2 = __importDefault(require("../models/ghost/heating/pipe.model"));
-var radiator_model_2 = __importDefault(require("../models/ghost/heating/radiator.model"));
+var shader_1 = require("../../shaders/shader");
 var Canvas = /** @class */ (function () {
     function Canvas(model) {
         this.pipe = null;
         this.valve = null;
         this.fitting = null;
         this.radiator = null;
-        this.zIndex = null;
+        this.gl = null;
         this.model = model;
         this.container = document.querySelector("#editor");
-        this.init();
+        // this.init();
     }
     Canvas.prototype.init = function () {
-        var _a;
+        var _this = this;
+        if (!this.container)
+            return;
         this.initCanvasContainer();
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (ctx) {
-            this.pipe = new pipe_view_1.default(this, this.model, ctx);
-            this.valve = new valve_view_1.default(this, this.model, ctx);
-            this.fitting = new fitting_view_1.default(this, this.model, ctx);
-            this.radiator = new radiator_view_1.default(this, this.model, ctx);
-            this.zIndex = new radiator_view_1.default(this, this.model, ctx);
-        }
-    };
-    Canvas.prototype.draw = function () {
-        var _this = this;
-        var _a, _b, _c;
-        this.clear();
-        this.drawNet();
-        this.drawWalls();
-        var _d = this.model, pipes = _d.pipes, walls = _d.walls, radiators = _d.radiators, valves = _d.valves, fittings = _d.fittings;
-        var objects = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], pipes, true), walls, true), radiators, true), valves, true), fittings, true).sort(function (a, b) {
-            return a.z - b.z;
-        });
-        objects.map(function (object) {
-            var _a, _b, _c, _d;
-            if (object instanceof pipe_model_1.default) {
-                (_a = _this.pipe) === null || _a === void 0 ? void 0 : _a.drawPipe(object);
-            }
-            if (object instanceof wall_model_1.default) {
-                // console.log("Wall");
-                // this.drawWall(o);
-            }
-            if (object instanceof radiator_model_1.default) {
-                // console.log("Radiator");
-                (_b = _this.radiator) === null || _b === void 0 ? void 0 : _b.drawRadiator(object);
-            }
-            if (object instanceof valve_model_1.default) {
-                // console.log("Vavle");
-                (_c = _this.valve) === null || _c === void 0 ? void 0 : _c.drawValve(object);
-            }
-            if (object instanceof fitting_model_1.default) {
-                (_d = _this.fitting) === null || _d === void 0 ? void 0 : _d.drawFitting(object);
-            }
-        });
-        if (this.model.actionObject &&
-            this.model.actionObject instanceof pipe_model_2.default) {
-            (_a = this.pipe) === null || _a === void 0 ? void 0 : _a.drawGhost(this.model.actionObject);
-        }
-        if (this.model.placingObject &&
-            this.model.placingObject instanceof valve_model_2.default) {
-            (_b = this.valve) === null || _b === void 0 ? void 0 : _b.drawGhost(this.model.placingObject);
-        }
-        if (this.model.placingObject &&
-            this.model.placingObject instanceof radiator_model_2.default) {
-            (_c = this.radiator) === null || _c === void 0 ? void 0 : _c.drawGhost(this.model.placingObject);
-        }
-        // this.pipe?.draw();
-        // this.valve?.draw();
-        // this.fitting?.draw();
-        // this.radiator?.draw();
-        // this.zIndex?.draw(); // draw top elements in canvas
-    };
-    Canvas.prototype.clear = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse || !this.container)
+        this.gl = this.container.getContext("webgl");
+        if (this.gl === null) {
+            alert("Unable to initialize WebGL. Your browser or machine may not support it.");
             return;
-        ctx.clearRect(0, 0, this.container.width, this.container.height);
-        ctx.fillStyle = "#f5f5f5";
-        ctx.fillRect(0, 0, this.container.width, this.container.height);
-        //f5f5f5
-    };
-    Canvas.prototype.drawMouse = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse)
-            return;
-        ctx.save();
-        ctx.beginPath();
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        ctx.arc(this.model.mouse.x, this.model.mouse.y, 1, 0, 2 * Math.PI);
-        ctx.restore();
-    };
-    Canvas.prototype.drawNet = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse || !this.container)
-            return;
-        if (!this.model.config.net.show)
-            return;
-        ctx.save();
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        var step = this.model.config.net.step * this.model.scale.amount;
-        var h = this.container.height;
-        var w = this.container.width;
-        var netOffset = new vect_1.Vector(this.model.offset.x % step, this.model.offset.y % step);
-        //x
-        var iV = 0;
-        var maxV = w / step;
-        while (iV <= maxV) {
-            var from = new vect_1.Vector(step * iV + netOffset.x, 0);
-            var to = new vect_1.Vector(step * iV + netOffset.x, h);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            iV++;
         }
-        //y
-        var iH = 0;
-        var maxH = h / step;
-        while (iH <= maxH) {
-            var from = new vect_1.Vector(0, step * iH + netOffset.y);
-            var to = new vect_1.Vector(w, step * iH + netOffset.y);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            iH++;
-        }
-        ctx.globalAlpha = 0.2;
-        ctx.stroke();
-        ctx.restore();
-    };
-    Canvas.prototype.drawNet1 = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse || !this.container)
-            return;
-        if (!this.model.config.net.show)
-            return;
-        ctx.save();
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        // let step = this.model.config.net.step * this.model.scale.amount;
-        var step = this.model.config.net.step;
-        var h = this.container.height;
-        var w = this.container.width;
-        //x
-        var iV = 0;
-        var maxV = w / step;
-        while (iV <= maxV) {
-            var from = this.model.getLocalCoordinates(step * iV, 0);
-            var to = this.model.getLocalCoordinates(step * iV, h);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            iV++;
-        }
-        //y
-        var iH = 0;
-        var maxH = h / step;
-        while (iH <= maxH) {
-            var from = this.model.getLocalCoordinates(0, step * iH);
-            var to = this.model.getLocalCoordinates(w, step * iH);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            iH++;
-        }
-        ctx.stroke();
-        ctx.restore();
-    };
-    Canvas.prototype.drawAxis = function () {
-        var _a;
-        var ctx = (_a = this.container) === null || _a === void 0 ? void 0 : _a.getContext("2d");
-        if (!ctx || !this.model.mouse || !this.container)
-            return;
-        if (!this.model.config.axis.show)
-            return;
-        ctx.save();
-        ctx.beginPath();
-        var h = this.container.height;
-        var w = this.container.width;
-        var x_From = this.model.getLocalCoordinates(0, 0);
-        var x_To = this.model.getLocalCoordinates(w, 0);
-        var y_From = this.model.getLocalCoordinates(0, 0);
-        var y_To = this.model.getLocalCoordinates(0, h);
-        ctx.moveTo(0, x_From.y);
-        ctx.lineTo(w, x_To.y);
-        ctx.moveTo(y_From.x, 0);
-        ctx.lineTo(y_To.x, h);
-        ctx.strokeStyle = "red";
-        ctx.stroke();
-        ctx.restore();
-    };
-    Canvas.prototype.drawWalls = function () {
-        var _this = this;
-        var walls = this.model.walls;
-        walls === null || walls === void 0 ? void 0 : walls.map(function (wall) {
-            if (!_this.container)
+        var objects = [];
+        var gl = this.gl;
+        this.model.pipes.map(function (pipe) {
+            var shaderProgram = _this.initShaderProgram(gl, (0, shader_1.vertex)(), (0, shader_1.fragment)());
+            if (!shaderProgram)
                 return;
-            var ctx = _this.container.getContext("2d");
-            if (!ctx)
-                return;
-            ctx.save();
-            ctx.beginPath();
-            var from = _this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
-            var to = _this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            ctx.strokeStyle = wall.color;
-            ctx.lineWidth = wall.width;
-            ctx.stroke();
-            ctx.restore();
+            var buffer = _this.initBuffers(gl, pipe);
+            var programInfo = {
+                program: shaderProgram,
+                attribLocations: {
+                    vertexPosition: gl.getAttribLocation(shaderProgram, "a_position"),
+                },
+                uniformLocations: {
+                    projectionMatrix: gl.getUniformLocation(shaderProgram, "u_resolution"),
+                },
+                buffer: buffer,
+            };
+            objects.push(programInfo);
         });
+        if (!objects)
+            return;
+        this.drawScene(objects);
+    };
+    //Array<{ position: WebGLBuffer | null }>
+    Canvas.prototype.drawScene = function (objects) {
+        if (!this.gl)
+            return;
+        var gl = this.gl;
+        var matrix = [0, 0];
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.useProgram(this.programInfo.program);
+        gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
+        // var size = 2; // 2 components per iteration
+        // var type = gl.FLOAT; // the data is 32bit floats
+        // var normalize = false; // don't normalize the data
+        // var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        // var offset = 0; // start at the beginning of the buffer
+        // gl.bindBuffer(gl.ARRAY_BUFFER, buffer.position);
+        // gl.vertexAttribPointer(
+        //   this.programInfo.attribLocations.vertexPosition,
+        //   size,
+        //   type,
+        //   normalize,
+        //   stride,
+        //   offset
+        // );
+        //
+        // // set the resolution
+        // gl.uniform2f(
+        //   this.programInfo.uniformLocations.projectionMatrix,
+        //   gl.canvas.width,
+        //   gl.canvas.height
+        // );
+        //
+        // // Draw the rectangle.
+        // var primitiveType = gl.TRIANGLES;
+        // var offset = 0;
+        // var count = 6;
+        // gl.drawArrays(primitiveType, offset, count);
+        objects.forEach(function (object) {
+            if (!object || !object.buffer || !object.buffer.position)
+                return;
+            var size = 2; // 2 components per iteration
+            var type = gl.FLOAT; // the data is 32bit floats
+            var normalize = false; // don't normalize the data
+            var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+            var offset = 0; // start at the beginning of the buffer
+            var programInfo = object.program;
+            var bufferInfo = object.buffer;
+            gl.useProgram(programInfo);
+            // Setup all the needed attributes.
+            gl.bindBuffer(gl.ARRAY_BUFFER, object.buffer.position);
+            gl.vertexAttribPointer(object.attribLocations.vertexPosition, size, type, normalize, stride, offset);
+            gl.uniform2f(object.uniformLocations.projectionMatrix, gl.canvas.width, gl.canvas.height);
+            // Draw
+            gl.drawArrays(gl.TRIANGLES, 0, 12);
+        });
+    };
+    Canvas.prototype.initShaderProgram = function (gl, vsSource, fsSource) {
+        var vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
+        var fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+        if (!vertexShader || !fragmentShader)
+            return;
+        var shaderProgram = gl.createProgram();
+        if (!shaderProgram)
+            return;
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
+        // If creating the shader program failed, alert
+        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+            alert("Unable to initialize the shader program: ".concat(gl.getProgramInfoLog(shaderProgram)));
+            return null;
+        }
+        return shaderProgram;
+    };
+    Canvas.prototype.loadShader = function (gl, type, source) {
+        var shader = gl.createShader(type);
+        if (!shader)
+            return;
+        // Send the source to the shader object
+        gl.shaderSource(shader, source);
+        // Compile the shader program
+        gl.compileShader(shader);
+        // See if it compiled successfully
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            alert("An error occurred compiling the shaders: ".concat(gl.getShaderInfoLog(shader)));
+            gl.deleteShader(shader);
+            return null;
+        }
+        return shader;
+    };
+    Canvas.prototype.initBuffers = function (gl, pipe) {
+        var positionBuffer = gl.createBuffer();
+        if (!positionBuffer)
+            return;
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        var x = pipe.from.vec.x;
+        var y = pipe.from.vec.y;
+        var width = pipe.width;
+        var height = pipe.width;
+        var x1 = x;
+        var x2 = x + width;
+        var y1 = y;
+        var y2 = y + height;
+        var positions = [x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+        return {
+            position: positionBuffer,
+        };
     };
     Canvas.prototype.initCanvasContainer = function () {
         if (!this.container)

@@ -203,8 +203,6 @@ var Fitting = /** @class */ (function () {
         //     console.warn("no type");
         // }
         var wP = this.canvas.model.getLocalCoordinates(fitting.center.x, fitting.center.y);
-        this.ctx.save();
-        this.ctx.beginPath();
         this.ctx.strokeStyle = "red";
         this.ctx.arc(wP.x, wP.y, fitting.width / 2, 0, 2 * Math.PI);
         if (((_a = this.canvas.model.overlap.first) === null || _a === void 0 ? void 0 : _a.id) === fitting.id) {

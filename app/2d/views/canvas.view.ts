@@ -13,6 +13,7 @@ import ValveGhostModel from "../models/ghost/heating/valve.model";
 import Fitting from "../models/heating/fitting.model";
 import PipeGhostModel from "../models/ghost/heating/pipe.model";
 import RadiatorModel from "../models/ghost/heating/radiator.model";
+import { fragment, vertex } from "../../shaders/shader";
 
 class Canvas {
   model: CanvasModel;
@@ -21,270 +22,241 @@ class Canvas {
   valve: ValveView | null = null;
   fitting: FittingView | null = null;
   radiator: RadiatorView | null = null;
-  zIndex: any | null = null;
+  gl: WebGLRenderingContext | null = null;
+  programInfo: any;
 
   constructor(model: CanvasModel) {
     this.model = model;
     this.container = document.querySelector("#editor");
 
-    this.init();
+    // this.init();
   }
 
   init() {
+    if (!this.container) return;
     this.initCanvasContainer();
 
-    const ctx = this.container?.getContext("2d");
+    this.gl = this.container.getContext("webgl");
 
-    if (ctx) {
-      this.pipe = new PipeView(this, this.model, ctx);
-      this.valve = new ValveView(this, this.model, ctx);
-      this.fitting = new FittingView(this, this.model, ctx);
-      this.radiator = new RadiatorView(this, this.model, ctx);
-      this.zIndex = new RadiatorView(this, this.model, ctx);
-    }
-  }
-
-  draw() {
-    this.clear();
-    this.drawNet();
-    this.drawWalls();
-
-    let { pipes, walls, radiators, valves, fittings } = this.model;
-
-    let objects = [
-      ...pipes,
-      ...walls,
-      ...radiators,
-      ...valves,
-      ...fittings,
-    ].sort((a, b) => {
-      return a.z - b.z;
-    });
-
-    objects.map((object) => {
-      if (object instanceof Pipe) {
-        this.pipe?.drawPipe(object);
-      }
-
-      if (object instanceof Wall) {
-        // console.log("Wall");
-        // this.drawWall(o);
-      }
-
-      if (object instanceof Radiator) {
-        // console.log("Radiator");
-        this.radiator?.drawRadiator(object);
-      }
-
-      if (object instanceof Valve) {
-        // console.log("Vavle");
-        this.valve?.drawValve(object);
-      }
-
-      if (object instanceof Fitting) {
-        this.fitting?.drawFitting(object);
-      }
-    });
-
-    if (
-      this.model.actionObject &&
-      this.model.actionObject instanceof PipeGhostModel
-    ) {
-      this.pipe?.drawGhost(this.model.actionObject);
-    }
-
-    if (
-      this.model.placingObject &&
-      this.model.placingObject instanceof ValveGhostModel
-    ) {
-      this.valve?.drawGhost(this.model.placingObject);
-    }
-
-    if (
-      this.model.placingObject &&
-      this.model.placingObject instanceof RadiatorModel
-    ) {
-      this.radiator?.drawGhost(this.model.placingObject);
-    }
-  }
-
-  clear() {
-    const ctx = this.container?.getContext("2d");
-
-    if (!ctx || !this.model.mouse || !this.container) return;
-
-    ctx.clearRect(0, 0, this.container.width, this.container.height);
-    ctx.fillStyle = "#f5f5f5";
-    ctx.fillRect(0, 0, this.container.width, this.container.height);
-    //f5f5f5
-  }
-
-  drawMouse() {
-    const ctx = this.container?.getContext("2d");
-
-    if (!ctx || !this.model.mouse) return;
-
-    ctx.save();
-
-    ctx.beginPath();
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
-    ctx.arc(this.model.mouse.x, this.model.mouse.y, 1, 0, 2 * Math.PI);
-
-    ctx.restore();
-  }
-
-  drawNet() {
-    const ctx = this.container?.getContext("2d");
-
-    if (!ctx || !this.model.mouse || !this.container) return;
-    if (!this.model.config.net.show) return;
-
-    ctx.save();
-
-    ctx.beginPath();
-    ctx.lineWidth = 1;
-
-    let step = this.model.config.net.step * this.model.scale.amount;
-    let h = this.container.height;
-    let w = this.container.width;
-    let netOffset: IVec = new Vector(
-      this.model.offset.x % step,
-      this.model.offset.y % step
-    );
-
-    //x
-    let iV = 0;
-    let maxV = w / step;
-    while (iV <= maxV) {
-      let from: IVec = new Vector(step * iV + netOffset.x, 0);
-      let to: IVec = new Vector(step * iV + netOffset.x, h);
-
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(to.x, to.y);
-      iV++;
-    }
-
-    //y
-    let iH = 0;
-    let maxH = h / step;
-    while (iH <= maxH) {
-      let from: IVec = new Vector(0, step * iH + netOffset.y);
-      let to: IVec = new Vector(w, step * iH + netOffset.y);
-
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(to.x, to.y);
-
-      iH++;
-    }
-
-    ctx.globalAlpha = 0.2;
-
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  drawNet1() {
-    const ctx = this.container?.getContext("2d");
-
-    if (!ctx || !this.model.mouse || !this.container) return;
-    if (!this.model.config.net.show) return;
-
-    ctx.save();
-
-    ctx.beginPath();
-    ctx.lineWidth = 1;
-
-    // let step = this.model.config.net.step * this.model.scale.amount;
-    let step = this.model.config.net.step;
-    let h = this.container.height;
-    let w = this.container.width;
-
-    //x
-    let iV = 0;
-    let maxV = w / step;
-    while (iV <= maxV) {
-      let from: IVec = this.model.getLocalCoordinates(step * iV, 0);
-      let to: IVec = this.model.getLocalCoordinates(step * iV, h);
-
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(to.x, to.y);
-      iV++;
-    }
-
-    //y
-    let iH = 0;
-    let maxH = h / step;
-    while (iH <= maxH) {
-      let from: IVec = this.model.getLocalCoordinates(0, step * iH);
-      let to: IVec = this.model.getLocalCoordinates(w, step * iH);
-
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(to.x, to.y);
-
-      iH++;
-    }
-
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  drawAxis() {
-    const ctx = this.container?.getContext("2d");
-
-    if (!ctx || !this.model.mouse || !this.container) return;
-    if (!this.model.config.axis.show) return;
-
-    ctx.save();
-    ctx.beginPath();
-
-    let h = this.container.height;
-    let w = this.container.width;
-
-    let x_From = this.model.getLocalCoordinates(0, 0);
-    let x_To = this.model.getLocalCoordinates(w, 0);
-    let y_From = this.model.getLocalCoordinates(0, 0);
-    let y_To = this.model.getLocalCoordinates(0, h);
-
-    ctx.moveTo(0, x_From.y);
-    ctx.lineTo(w, x_To.y);
-
-    ctx.moveTo(y_From.x, 0);
-    ctx.lineTo(y_To.x, h);
-    ctx.strokeStyle = "red";
-
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  drawWalls() {
-    let walls = this.model.walls;
-
-    walls?.map((wall) => {
-      if (!this.container) return;
-
-      const ctx = this.container.getContext("2d");
-
-      if (!ctx) return;
-
-      ctx.save();
-      ctx.beginPath();
-
-      let from = this.model.getLocalCoordinates(
-        wall.from.vec.x,
-        wall.from.vec.y
+    if (this.gl === null) {
+      alert(
+        "Unable to initialize WebGL. Your browser or machine may not support it."
       );
-      let to = this.model.getLocalCoordinates(wall.from.vec.x, wall.from.vec.y);
+      return;
+    }
 
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(to.x, to.y);
+    let objects: Array<{
+      program: WebGLProgram;
+      attribLocations: {
+        vertexPosition: number;
+      };
+      uniformLocations: {
+        projectionMatrix: WebGLUniformLocation | null;
+      };
+      buffer: { position: WebGLBuffer } | undefined;
+    }> = [];
 
-      ctx.strokeStyle = wall.color;
-      ctx.lineWidth = wall.width;
+    let { gl } = this;
 
-      ctx.stroke();
-      ctx.restore();
+    this.model.pipes.map((pipe) => {
+      let shaderProgram = this.initShaderProgram(gl, vertex(), fragment());
+
+      if (!shaderProgram) return;
+
+      let buffer = this.initBuffers(gl, pipe);
+
+      let programInfo = {
+        program: shaderProgram,
+        attribLocations: {
+          vertexPosition: gl.getAttribLocation(shaderProgram, "a_position"),
+        },
+        uniformLocations: {
+          projectionMatrix: gl.getUniformLocation(
+            shaderProgram,
+            "u_resolution"
+          ),
+        },
+        buffer: buffer,
+      };
+
+      objects.push(programInfo);
     });
+
+    if (!objects) return;
+
+    this.drawScene(objects);
+  }
+  //Array<{ position: WebGLBuffer | null }>
+  drawScene(
+    objects: Array<{
+      program: WebGLProgram;
+      attribLocations: {
+        vertexPosition: number;
+      };
+      uniformLocations: {
+        projectionMatrix: WebGLUniformLocation | null;
+      };
+      buffer: { position: WebGLBuffer } | undefined;
+    }>
+  ) {
+    if (!this.gl) return;
+    let { gl } = this;
+    let matrix = [0, 0];
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // gl.useProgram(this.programInfo.program);
+    //
+    // gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
+
+    // var size = 2; // 2 components per iteration
+    // var type = gl.FLOAT; // the data is 32bit floats
+    // var normalize = false; // don't normalize the data
+    // var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+    // var offset = 0; // start at the beginning of the buffer
+    // gl.bindBuffer(gl.ARRAY_BUFFER, buffer.position);
+    // gl.vertexAttribPointer(
+    //   this.programInfo.attribLocations.vertexPosition,
+    //   size,
+    //   type,
+    //   normalize,
+    //   stride,
+    //   offset
+    // );
+    //
+    // // set the resolution
+    // gl.uniform2f(
+    //   this.programInfo.uniformLocations.projectionMatrix,
+    //   gl.canvas.width,
+    //   gl.canvas.height
+    // );
+    //
+    // // Draw the rectangle.
+    // var primitiveType = gl.TRIANGLES;
+    // var offset = 0;
+    // var count = 6;
+    // gl.drawArrays(primitiveType, offset, count);
+
+    objects.forEach(function (object) {
+      if (!object || !object.buffer || !object.buffer.position) return;
+
+      var size = 2; // 2 components per iteration
+      var type = gl.FLOAT; // the data is 32bit floats
+      var normalize = false; // don't normalize the data
+      var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+      var offset = 0; // start at the beginning of the buffer
+
+      var programInfo = object.program;
+      var bufferInfo = object.buffer;
+
+      gl.useProgram(programInfo);
+      gl.enableVertexAttribArray(object.attribLocations.vertexPosition);
+
+      // Setup all the needed attributes.
+      gl.bindBuffer(gl.ARRAY_BUFFER, object.buffer.position);
+      gl.vertexAttribPointer(
+        object.attribLocations.vertexPosition,
+        size,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+
+      gl.uniform2f(
+        object.uniformLocations.projectionMatrix,
+        gl.canvas.width,
+        gl.canvas.height
+      );
+
+      // Draw
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    });
+  }
+
+  initShaderProgram(
+    gl: WebGLRenderingContext,
+    vsSource: string,
+    fsSource: string
+  ) {
+    const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+    if (!vertexShader || !fragmentShader) return;
+
+    const shaderProgram = gl.createProgram();
+
+    if (!shaderProgram) return;
+
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+
+    // If creating the shader program failed, alert
+
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+      alert(
+        `Unable to initialize the shader program: ${gl.getProgramInfoLog(
+          shaderProgram
+        )}`
+      );
+      return null;
+    }
+
+    return shaderProgram;
+  }
+
+  loadShader(gl: WebGLRenderingContext, type: number, source: string) {
+    const shader = gl.createShader(type);
+
+    if (!shader) return;
+
+    // Send the source to the shader object
+
+    gl.shaderSource(shader, source);
+
+    // Compile the shader program
+
+    gl.compileShader(shader);
+
+    // See if it compiled successfully
+
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      alert(
+        `An error occurred compiling the shaders: ${gl.getShaderInfoLog(
+          shader
+        )}`
+      );
+      gl.deleteShader(shader);
+      return null;
+    }
+
+    return shader;
+  }
+
+  initBuffers(gl: WebGLRenderingContext, pipe: Pipe) {
+    const positionBuffer = gl.createBuffer();
+
+    if (!positionBuffer) return;
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    let x = pipe.from.vec.x;
+    let y = pipe.from.vec.y;
+    let width = pipe.width;
+    let height = pipe.width;
+    var x1 = x;
+    var x2 = x + width;
+    var y1 = y;
+    var y2 = y + height;
+
+    const positions = [x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2];
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+    return {
+      position: positionBuffer,
+    };
   }
 
   initCanvasContainer(): void {

@@ -38,9 +38,10 @@ var Overlap = /** @class */ (function () {
         this.wallsOverlap();
         this.list = __spreadArray(__spreadArray(__spreadArray([], this.pipeOverlap(v), true), this.IOOverlap(v), true), this.fittingOverlap(v), true);
         this.boundList = __spreadArray(__spreadArray(__spreadArray([], this.pipeOverlap(netBoundMouse), true), this.IOOverlap(netBoundMouse), true), this.fittingOverlap(netBoundMouse), true);
-        if (this.list.length === 0 && this.boundList.length === 0) {
-            this.boundMouse = netBoundMouse.clone();
-        }
+        //problem. it updates only one. fix this
+        // if (this.list.length === 0 && this.boundList.length === 0) {
+        this.boundMouse = netBoundMouse.clone();
+        // }
         this.firstOverlap(v);
     };
     Overlap.prototype.direct = function (vec) {

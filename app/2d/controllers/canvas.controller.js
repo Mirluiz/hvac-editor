@@ -24,8 +24,8 @@ var Canvas = /** @class */ (function () {
         }
     }
     Canvas.prototype.mouseWheel = function (e) {
-        this.stats.render();
-        this.view.draw();
+        // this.stats.render();
+        // this.view.draw();
     };
     Canvas.prototype.mouseDown = function (e) {
         if (e.button === 1) {
@@ -51,8 +51,8 @@ var Canvas = /** @class */ (function () {
                 this.object.mouseDown();
                 break;
         }
-        this.stats.render();
-        this.view.draw();
+        // this.stats.render();
+        // this.view.draw();
     };
     Canvas.prototype.mouseMove = function (e) {
         if (!this.model.mouse) {
@@ -92,8 +92,8 @@ var Canvas = /** @class */ (function () {
                 this.object.mouseMove();
                 break;
         }
-        this.stats.render();
-        this.view.draw();
+        // this.stats.render();
+        // this.view.draw();
     };
     Canvas.prototype.mouseUp = function (e) {
         this.model.clicked = false;
@@ -122,8 +122,8 @@ var Canvas = /** @class */ (function () {
     Canvas.prototype.reset = function () {
         this.model.actionObject = null;
         document.body.style.cursor = "default";
-        this.stats.render();
-        this.view.draw();
+        // this.stats.render();
+        // this.view.draw();
     };
     return Canvas;
 }());

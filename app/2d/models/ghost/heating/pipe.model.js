@@ -66,21 +66,6 @@ var Pipe = /** @class */ (function (_super) {
                         .getOpposite()
                         .vec.sub(end.vec)
                         .angle(end.getOpposite().vec.sub(end.vec));
-                    if (isNaN(angleBetween)) {
-                        console.log("");
-                        var a = overlap.end.getOpposite().vec.sub(end.vec);
-                        var b = end.getOpposite().vec.sub(end.vec);
-                        console.log("----", (a.x * b.x + a.y * b.y) / (a.length * b.length)
-                        // overlap,
-                        // end,
-                        // overlap.end.getOpposite().vec.sub(end.vec),
-                        // end.getOpposite().vec.sub(end.vec),
-                        // overlap.end
-                        //   .getOpposite()
-                        //   .vec.sub(end.vec)
-                        //   .angle(end.getOpposite().vec.sub(end.vec))
-                        );
-                    }
                     if (angleBetween !== undefined &&
                         Math.abs(angleBetween * (180 / Math.PI)) < 90) {
                         can = false;

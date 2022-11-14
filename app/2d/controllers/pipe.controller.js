@@ -57,22 +57,18 @@ var Pipe = /** @class */ (function () {
                 }
             }
             if (target === null || target === void 0 ? void 0 : target.io) {
-                this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.io.getVecAbs().x;
                 this.model.actionObject.to.vec.y = target.io.getVecAbs().y;
             }
             else if ((target === null || target === void 0 ? void 0 : target.object) instanceof fitting_model_1.default) {
-                this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.object.center.x;
                 this.model.actionObject.to.vec.y = target.object.center.y;
             }
             else if (((_b = target === null || target === void 0 ? void 0 : target.body) === null || _b === void 0 ? void 0 : _b.object) instanceof pipe_model_2.default) {
-                this.model.actionObject.to.target = target;
                 this.model.actionObject.to.vec.x = target.body.vec.x;
                 this.model.actionObject.to.vec.y = target.body.vec.y;
             }
             else {
-                this.model.actionObject.to.target = null;
                 this.model.actionObject.to.vec.x = bV.x;
                 this.model.actionObject.to.vec.y = bV.y;
             }
