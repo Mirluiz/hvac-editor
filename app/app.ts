@@ -16,7 +16,7 @@ class App {
   }
 
   step() {
-    this._2d.canvas.view.draw();
+    this._2d.canvas.view.drawScene();
     window.requestAnimationFrame(this.step.bind(this));
   }
 }

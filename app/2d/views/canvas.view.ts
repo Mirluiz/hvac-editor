@@ -14,6 +14,7 @@ import Fitting from "../models/heating/fitting.model";
 import PipeGhostModel from "../models/ghost/heating/pipe.model";
 import RadiatorModel from "../models/ghost/heating/radiator.model";
 import { fragment, vertex } from "../../shaders/shader";
+import { m3 } from "../../math/m3";
 
 class Canvas {
   model: CanvasModel;
@@ -30,7 +31,8 @@ class Canvas {
       vertexPosition: number;
     };
     uniformLocations: {
-      projectionMatrix: WebGLUniformLocation | null;
+      resolutionLocation: WebGLUniformLocation | null;
+      matrixLocation: WebGLUniformLocation | null;
     };
     buffer: { position: WebGLBuffer } | undefined;
   }> = [];
@@ -72,72 +74,32 @@ class Canvas {
           vertexPosition: gl.getAttribLocation(shaderProgram, "a_position"),
         },
         uniformLocations: {
-          projectionMatrix: gl.getUniformLocation(
+          resolutionLocation: gl.getUniformLocation(
             shaderProgram,
             "u_resolution"
           ),
+          matrixLocation: gl.getUniformLocation(shaderProgram, "u_matrix"),
         },
         buffer: buffer,
       };
 
-      objects.push(programInfo);
+      this.objects.push(programInfo);
     });
 
-    if (!objects) return;
+    if (!this.objects) return;
 
-    this.drawScene(objects);
+    this.drawScene();
   }
   //Array<{ position: WebGLBuffer | null }>
-  drawScene(
-    objects: Array<{
-      program: WebGLProgram;
-      attribLocations: {
-        vertexPosition: number;
-      };
-      uniformLocations: {
-        projectionMatrix: WebGLUniformLocation | null;
-      };
-      buffer: { position: WebGLBuffer } | undefined;
-    }>
-  ) {
+  drawScene() {
     if (!this.gl) return;
     let { gl } = this;
-    let matrix = [0, 0];
+    const { objects } = this;
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // gl.useProgram(this.programInfo.program);
-    //
-    // gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
-
-    // var size = 2; // 2 components per iteration
-    // var type = gl.FLOAT; // the data is 32bit floats
-    // var normalize = false; // don't normalize the data
-    // var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-    // var offset = 0; // start at the beginning of the buffer
-    // gl.bindBuffer(gl.ARRAY_BUFFER, buffer.position);
-    // gl.vertexAttribPointer(
-    //   this.programInfo.attribLocations.vertexPosition,
-    //   size,
-    //   type,
-    //   normalize,
-    //   stride,
-    //   offset
-    // );
-    //
-    // // set the resolution
-    // gl.uniform2f(
-    //   this.programInfo.uniformLocations.projectionMatrix,
-    //   gl.canvas.width,
-    //   gl.canvas.height
-    // );
-    //
-    // // Draw the rectangle.
-    // var primitiveType = gl.TRIANGLES;
-    // var offset = 0;
-    // var count = 6;
-    // gl.drawArrays(primitiveType, offset, count);
+    let { model } = this;
 
     objects.forEach(function (object) {
       if (!object || !object.buffer || !object.buffer.position) return;
@@ -149,7 +111,6 @@ class Canvas {
       var offset = 0; // start at the beginning of the buffer
 
       var programInfo = object.program;
-      var bufferInfo = object.buffer;
 
       gl.useProgram(programInfo);
       gl.enableVertexAttribArray(object.attribLocations.vertexPosition);
@@ -166,11 +127,25 @@ class Canvas {
       );
 
       gl.uniform2f(
-        object.uniformLocations.projectionMatrix,
+        object.uniformLocations.resolutionLocation,
         gl.canvas.width,
         gl.canvas.height
       );
 
+      let translationMatrix = m3.translation(model.offset.x, model.offset.y);
+      let rotationMatrix = m3.rotation(0);
+      let scaleMatrix = m3.scaling(model.scale.amount, model.scale.amount);
+
+      // Multiply the matrices.
+      let matrix = m3.multiply(translationMatrix, rotationMatrix);
+      // matrix = m3.multiply(matrix, scaleMatrix);
+
+      // Set the matrix.
+      gl.uniformMatrix3fv(
+        object.uniformLocations.matrixLocation,
+        false,
+        matrix
+      );
       // Draw
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     });

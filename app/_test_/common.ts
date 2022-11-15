@@ -7,9 +7,9 @@ export const fittingModel = (model: CanvasModel) => {
   let pipes = model.pipes;
   let step = model.config.net.step / 2;
 
-  _2Pipes(model, pipes, step);
-  // _3Pipes(model, pipes, step);
-  // performanceCheck(model, pipes, step);
+  // _2Pipes(model, pipes, step);
+  // _3Pipes(model, pipes, step);s
+  performanceCheck(model, pipes, step);
 };
 
 const _2Pipes = (model: CanvasModel, pipes: Array<Pipe>, step: number) => {

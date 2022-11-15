@@ -315,7 +315,7 @@ var Controller = /** @class */function () {
 }();
 exports.default = Controller;
 
-},{"../ui/controller/info-panel.controller":24,"../ui/controller/toolbar.controller":25,"./controllers/canvas.controller":1}],5:[function(require,module,exports){
+},{"../ui/controller/info-panel.controller":25,"../ui/controller/toolbar.controller":26,"./controllers/canvas.controller":1}],5:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -1348,7 +1348,7 @@ var Main = /** @class */function () {
 }();
 exports.default = Main;
 
-},{"../../utils":28}],16:[function(require,module,exports){
+},{"../../utils":29}],16:[function(require,module,exports){
 "use strict";
 
 var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
@@ -1539,6 +1539,7 @@ exports.default = Overlap;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var shader_1 = require("../../shaders/shader");
+var m3_1 = require("../../math/m3");
 var Canvas = /** @class */function () {
     function Canvas(model) {
         this.pipe = null;
@@ -1546,6 +1547,7 @@ var Canvas = /** @class */function () {
         this.fitting = null;
         this.radiator = null;
         this.gl = null;
+        this.objects = [];
         this.model = model;
         this.container = document.querySelector("#editor");
         // this.init();
@@ -1559,7 +1561,7 @@ var Canvas = /** @class */function () {
             alert("Unable to initialize WebGL. Your browser or machine may not support it.");
             return;
         }
-        var objects = [];
+        this.objects = [];
         var gl = this.gl;
         this.model.pipes.map(function (pipe) {
             var shaderProgram = _this.initShaderProgram(gl, (0, shader_1.vertex)(), (0, shader_1.fragment)());
@@ -1571,52 +1573,24 @@ var Canvas = /** @class */function () {
                     vertexPosition: gl.getAttribLocation(shaderProgram, "a_position")
                 },
                 uniformLocations: {
-                    projectionMatrix: gl.getUniformLocation(shaderProgram, "u_resolution")
+                    resolutionLocation: gl.getUniformLocation(shaderProgram, "u_resolution"),
+                    matrixLocation: gl.getUniformLocation(shaderProgram, "u_matrix")
                 },
                 buffer: buffer
             };
-            objects.push(programInfo);
+            _this.objects.push(programInfo);
         });
-        if (!objects) return;
-        this.drawScene(objects);
+        if (!this.objects) return;
+        this.drawScene();
     };
     //Array<{ position: WebGLBuffer | null }>
-    Canvas.prototype.drawScene = function (objects) {
+    Canvas.prototype.drawScene = function () {
         if (!this.gl) return;
         var gl = this.gl;
-        var matrix = [0, 0];
+        var objects = this.objects;
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        // gl.useProgram(this.programInfo.program);
-        //
-        // gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
-        // var size = 2; // 2 components per iteration
-        // var type = gl.FLOAT; // the data is 32bit floats
-        // var normalize = false; // don't normalize the data
-        // var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-        // var offset = 0; // start at the beginning of the buffer
-        // gl.bindBuffer(gl.ARRAY_BUFFER, buffer.position);
-        // gl.vertexAttribPointer(
-        //   this.programInfo.attribLocations.vertexPosition,
-        //   size,
-        //   type,
-        //   normalize,
-        //   stride,
-        //   offset
-        // );
-        //
-        // // set the resolution
-        // gl.uniform2f(
-        //   this.programInfo.uniformLocations.projectionMatrix,
-        //   gl.canvas.width,
-        //   gl.canvas.height
-        // );
-        //
-        // // Draw the rectangle.
-        // var primitiveType = gl.TRIANGLES;
-        // var offset = 0;
-        // var count = 6;
-        // gl.drawArrays(primitiveType, offset, count);
+        var model = this.model;
         objects.forEach(function (object) {
             if (!object || !object.buffer || !object.buffer.position) return;
             var size = 2; // 2 components per iteration
@@ -1625,13 +1599,20 @@ var Canvas = /** @class */function () {
             var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
             var offset = 0; // start at the beginning of the buffer
             var programInfo = object.program;
-            var bufferInfo = object.buffer;
             gl.useProgram(programInfo);
             gl.enableVertexAttribArray(object.attribLocations.vertexPosition);
             // Setup all the needed attributes.
             gl.bindBuffer(gl.ARRAY_BUFFER, object.buffer.position);
             gl.vertexAttribPointer(object.attribLocations.vertexPosition, size, type, normalize, stride, offset);
-            gl.uniform2f(object.uniformLocations.projectionMatrix, gl.canvas.width, gl.canvas.height);
+            gl.uniform2f(object.uniformLocations.resolutionLocation, gl.canvas.width, gl.canvas.height);
+            var translationMatrix = m3_1.m3.translation(model.offset.x, model.offset.y);
+            var rotationMatrix = m3_1.m3.rotation(0);
+            var scaleMatrix = m3_1.m3.scaling(model.scale.amount, model.scale.amount);
+            // Multiply the matrices.
+            var matrix = m3_1.m3.multiply(translationMatrix, rotationMatrix);
+            // matrix = m3.multiply(matrix, scaleMatrix);
+            // Set the matrix.
+            gl.uniformMatrix3fv(object.uniformLocations.matrixLocation, false, matrix);
             // Draw
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         });
@@ -1702,7 +1683,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../shaders/shader":23}],18:[function(require,module,exports){
+},{"../../math/m3":23,"../../shaders/shader":24}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1753,9 +1734,9 @@ var vect_1 = require("../geometry/vect");
 var fittingModel = function fittingModel(model) {
     var pipes = model.pipes;
     var step = model.config.net.step / 2;
-    _2Pipes(model, pipes, step);
-    // _3Pipes(model, pipes, step);
-    // performanceCheck(model, pipes, step);
+    // _2Pipes(model, pipes, step);
+    // _3Pipes(model, pipes, step);s
+    performanceCheck(model, pipes, step);
 };
 exports.fittingModel = fittingModel;
 var _2Pipes = function _2Pipes(model, pipes, step) {
@@ -2440,15 +2421,15 @@ var _2d_1 = __importDefault(require("./2d"));
 var App = /** @class */function () {
     function App() {
         this._2d = new _2d_1.default();
-        // step() {
-        //   this._2d.canvas.view.draw();
-        //   window.requestAnimationFrame(this.step.bind(this));
-        // }
     }
     App.prototype.run = function () {
         window.app = this;
         this._2d.canvas.view.init();
-        // window.requestAnimationFrame(this.step.bind(this));
+        window.requestAnimationFrame(this.step.bind(this));
+    };
+    App.prototype.step = function () {
+        this._2d.canvas.view.drawScene();
+        window.requestAnimationFrame(this.step.bind(this));
     };
     return App;
 }();
@@ -2613,6 +2594,46 @@ app.run();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.m3 = void 0;
+exports.m3 = {
+    translation: function translation(tx, ty) {
+        return [1, 0, 0, 0, 1, 0, tx, ty, 1];
+    },
+    rotation: function rotation(angleInRadians) {
+        var c = Math.cos(angleInRadians);
+        var s = Math.sin(angleInRadians);
+        return [c, -s, 0, s, c, 0, 0, 0, 1];
+    },
+    scaling: function scaling(sx, sy) {
+        return [sx, 0, 0, 0, sy, 0, 0, 0, 1];
+    },
+    multiply: function multiply(a, b) {
+        var a00 = a[0 * 3 + 0];
+        var a01 = a[0 * 3 + 1];
+        var a02 = a[0 * 3 + 2];
+        var a10 = a[1 * 3 + 0];
+        var a11 = a[1 * 3 + 1];
+        var a12 = a[1 * 3 + 2];
+        var a20 = a[2 * 3 + 0];
+        var a21 = a[2 * 3 + 1];
+        var a22 = a[2 * 3 + 2];
+        var b00 = b[0 * 3 + 0];
+        var b01 = b[0 * 3 + 1];
+        var b02 = b[0 * 3 + 2];
+        var b10 = b[1 * 3 + 0];
+        var b11 = b[1 * 3 + 1];
+        var b12 = b[1 * 3 + 2];
+        var b20 = b[2 * 3 + 0];
+        var b21 = b[2 * 3 + 1];
+        var b22 = b[2 * 3 + 2];
+        return [b00 * a00 + b01 * a10 + b02 * a20, b00 * a01 + b01 * a11 + b02 * a21, b00 * a02 + b01 * a12 + b02 * a22, b10 * a00 + b11 * a10 + b12 * a20, b10 * a01 + b11 * a11 + b12 * a21, b10 * a02 + b11 * a12 + b12 * a22, b20 * a00 + b21 * a10 + b22 * a20, b20 * a01 + b21 * a11 + b22 * a21, b20 * a02 + b21 * a12 + b22 * a22];
+    }
+};
+
+},{}],24:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.fragment = exports.vertex = void 0;
 var vertex = function vertex() {
     //   return `
@@ -2625,7 +2646,7 @@ var vertex = function vertex() {
     //       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
     //    }
     // `;
-    return "\n    attribute vec2 a_position;\n\n    uniform vec2 u_resolution;\n    \n    void main() {\n       // convert the rectangle points from pixels to 0.0 to 1.0\n       vec2 zeroToOne = a_position / u_resolution;\n    \n       // convert from 0->1 to 0->2\n       vec2 zeroToTwo = zeroToOne * 2.0;\n    \n       // convert from 0->2 to -1->+1 (clipspace)\n       vec2 clipSpace = zeroToTwo - 1.0;\n    \n       gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);\n    }\n  ";
+    return "\n    attribute vec2 a_position;\n\n    uniform vec2 u_resolution;\n    uniform mat3 u_matrix;\n    \n    void main() {\n        // Multiply the position by the matrix.\n        vec2 position = (u_matrix * vec3(a_position, 1)).xy;\n      \n        // convert the position from pixels to 0.0 to 1.0\n        vec2 zeroToOne = position / u_resolution;\n      \n        // convert from 0->1 to 0->2\n        vec2 zeroToTwo = zeroToOne * 2.0;\n      \n        // convert from 0->2 to -1->+1 (clipspace)\n        vec2 clipSpace = zeroToTwo - 1.0;\n      \n        gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);\n    }\n  ";
 };
 exports.vertex = vertex;
 var fragment = function fragment() {
@@ -2633,7 +2654,7 @@ var fragment = function fragment() {
 };
 exports.fragment = fragment;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -2668,7 +2689,7 @@ var InfoPanel = /** @class */function () {
 }();
 exports.default = InfoPanel;
 
-},{"../view/info-panel.view":26}],25:[function(require,module,exports){
+},{"../view/info-panel.view":27}],26:[function(require,module,exports){
 "use strict";
 
 var __importDefault = undefined && undefined.__importDefault || function (mod) {
@@ -2727,7 +2748,7 @@ var Toolbar = /** @class */function () {
 }();
 exports.default = Toolbar;
 
-},{"../view/toolbar.view":27}],26:[function(require,module,exports){
+},{"../view/toolbar.view":28}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2743,7 +2764,7 @@ var InfoPanel = /** @class */function () {
 }();
 exports.default = InfoPanel;
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2781,7 +2802,7 @@ var Toolbar = /** @class */function () {
 }();
 exports.default = Toolbar;
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
