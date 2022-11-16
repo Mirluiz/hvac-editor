@@ -59,6 +59,7 @@ class Canvas {
         break;
       case "pipe":
         this.pipe.mouseDown();
+        this.view.update();
         break;
       case "radiator":
       case "valve":
@@ -113,7 +114,7 @@ class Canvas {
     }
 
     // this.stats.render();
-    // this.view.draw();
+    // this.view.update();
   }
 
   mouseUp(e: Event) {

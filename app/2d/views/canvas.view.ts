@@ -26,6 +26,7 @@ class Canvas {
   gl: WebGLRenderingContext | null = null;
   programInfo: any;
   objects: Array<{
+    objectID: string;
     program: WebGLProgram;
     attribLocations: {
       vertexPosition: number;
@@ -69,6 +70,7 @@ class Canvas {
       let buffer = this.initBuffers(gl, pipe);
 
       let programInfo = {
+        objectID: pipe.id,
         program: shaderProgram,
         attribLocations: {
           vertexPosition: gl.getAttribLocation(shaderProgram, "a_position"),
@@ -90,7 +92,51 @@ class Canvas {
 
     this.drawScene();
   }
-  //Array<{ position: WebGLBuffer | null }>
+
+  update() {
+    if (!this.gl) return;
+
+    let { initShaderProgram, gl, initBuffers } = this;
+
+    this.model.pipes.map((pipe) => {
+      let newPipe = this.objects.find((p) => {
+        return p.objectID !== pipe.id;
+      });
+
+      console.log("newPipe", newPipe);
+
+      if (newPipe) {
+        let shaderProgram = initShaderProgram.bind(this)(
+          gl,
+          vertex(),
+          fragment()
+        );
+
+        if (!shaderProgram) return;
+
+        let buffer = initBuffers.bind(this)(gl, pipe);
+
+        let programInfo = {
+          objectID: pipe.id,
+          program: shaderProgram,
+          attribLocations: {
+            vertexPosition: gl.getAttribLocation(shaderProgram, "a_position"),
+          },
+          uniformLocations: {
+            resolutionLocation: gl.getUniformLocation(
+              shaderProgram,
+              "u_resolution"
+            ),
+            matrixLocation: gl.getUniformLocation(shaderProgram, "u_matrix"),
+          },
+          buffer: buffer,
+        };
+
+        this.objects.push(programInfo);
+      }
+    });
+  }
+
   drawScene() {
     if (!this.gl) return;
     let { gl } = this;
@@ -211,28 +257,69 @@ class Canvas {
     return shader;
   }
 
-  initBuffers(gl: WebGLRenderingContext, pipe: Pipe) {
+  initBuffers(gl: WebGLRenderingContext, object: Pipe | Fitting) {
     const positionBuffer = gl.createBuffer();
 
     if (!positionBuffer) return;
 
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    let x = pipe.from.vec.x;
-    let y = pipe.from.vec.y;
-    let width = pipe.width;
-    let height = pipe.width;
-    var x1 = x;
-    var x2 = x + width;
-    var y1 = y;
-    var y2 = y + height;
 
-    const positions = [x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2];
+    let positions: Array<number> = [];
+
+    if (object instanceof Pipe)
+      positions =
+        this.createRect(
+          object
+        ); /*[x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2];*/
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
     return {
       position: positionBuffer,
     };
+  }
+
+  createRect(pipe: Pipe) {
+    let leftTop = pipe.from.vec
+      .sub(pipe.from.getOpposite().vec)
+      .normalize()
+      .perpendicular("left")
+      .multiply(pipe.width)
+      .sum(pipe.from.getOpposite().vec);
+    let rightTop = pipe.from.vec
+      .sub(pipe.from.getOpposite().vec)
+      .normalize()
+      .perpendicular("right")
+      .multiply(pipe.width)
+      .sum(pipe.from.getOpposite().vec);
+    let leftBottom = pipe.to.vec
+      .sub(pipe.to.getOpposite().vec)
+      .normalize()
+      .perpendicular("left")
+      .multiply(pipe.width)
+      .sum(pipe.to.getOpposite().vec);
+    let rightBottom = pipe.to.vec
+      .sub(pipe.to.getOpposite().vec)
+      .normalize()
+      .perpendicular("right")
+      .multiply(pipe.width)
+      .sum(pipe.to.getOpposite().vec);
+
+    return [
+      leftTop.x,
+      leftTop.y,
+      rightBottom.x,
+      rightBottom.y,
+      rightTop.x,
+      rightTop.y,
+
+      rightBottom.x,
+      rightBottom.y,
+      rightTop.x,
+      rightTop.y,
+      leftBottom.x,
+      leftBottom.y,
+    ];
   }
 
   initCanvasContainer(): void {

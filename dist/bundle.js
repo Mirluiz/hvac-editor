@@ -45,6 +45,7 @@ var Canvas = /** @class */function () {
                 break;
             case "pipe":
                 this.pipe.mouseDown();
+                this.view.update();
                 break;
             case "radiator":
             case "valve":
@@ -90,7 +91,7 @@ var Canvas = /** @class */function () {
                 break;
         }
         // this.stats.render();
-        // this.view.draw();
+        // this.view.update();
     };
     Canvas.prototype.mouseUp = function (e) {
         this.model.clicked = false;
@@ -1537,7 +1538,11 @@ exports.default = Overlap;
 },{"../geometry/vect":21}],17:[function(require,module,exports){
 "use strict";
 
+var __importDefault = undefined && undefined.__importDefault || function (mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
 var shader_1 = require("../../shaders/shader");
 var m3_1 = require("../../math/m3");
 var Canvas = /** @class */function () {
@@ -1568,6 +1573,7 @@ var Canvas = /** @class */function () {
             if (!shaderProgram) return;
             var buffer = _this.initBuffers(gl, pipe);
             var programInfo = {
+                objectID: pipe.id,
                 program: shaderProgram,
                 attribLocations: {
                     vertexPosition: gl.getAttribLocation(shaderProgram, "a_position")
@@ -1583,7 +1589,38 @@ var Canvas = /** @class */function () {
         if (!this.objects) return;
         this.drawScene();
     };
-    //Array<{ position: WebGLBuffer | null }>
+    Canvas.prototype.update = function () {
+        var _this = this;
+        if (!this.gl) return;
+        var _a = this,
+            initShaderProgram = _a.initShaderProgram,
+            gl = _a.gl,
+            initBuffers = _a.initBuffers;
+        this.model.pipes.map(function (pipe) {
+            var newPipe = _this.objects.find(function (p) {
+                return p.objectID !== pipe.id;
+            });
+            console.log("newPipe", newPipe);
+            if (newPipe) {
+                var shaderProgram = initShaderProgram.bind(_this)(gl, (0, shader_1.vertex)(), (0, shader_1.fragment)());
+                if (!shaderProgram) return;
+                var buffer = initBuffers.bind(_this)(gl, pipe);
+                var programInfo = {
+                    objectID: pipe.id,
+                    program: shaderProgram,
+                    attribLocations: {
+                        vertexPosition: gl.getAttribLocation(shaderProgram, "a_position")
+                    },
+                    uniformLocations: {
+                        resolutionLocation: gl.getUniformLocation(shaderProgram, "u_resolution"),
+                        matrixLocation: gl.getUniformLocation(shaderProgram, "u_matrix")
+                    },
+                    buffer: buffer
+                };
+                _this.objects.push(programInfo);
+            }
+        });
+    };
     Canvas.prototype.drawScene = function () {
         if (!this.gl) return;
         var gl = this.gl;
@@ -1648,23 +1685,23 @@ var Canvas = /** @class */function () {
         }
         return shader;
     };
-    Canvas.prototype.initBuffers = function (gl, pipe) {
+    Canvas.prototype.initBuffers = function (gl, object) {
         var positionBuffer = gl.createBuffer();
         if (!positionBuffer) return;
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        var x = pipe.from.vec.x;
-        var y = pipe.from.vec.y;
-        var width = pipe.width;
-        var height = pipe.width;
-        var x1 = x;
-        var x2 = x + width;
-        var y1 = y;
-        var y2 = y + height;
-        var positions = [x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2];
+        var positions = [];
+        if (object instanceof pipe_model_1.default) positions = this.createRect(object); /*[x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2];*/
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
         return {
             position: positionBuffer
         };
+    };
+    Canvas.prototype.createRect = function (pipe) {
+        var leftTop = pipe.from.vec.sub(pipe.from.getOpposite().vec).normalize().perpendicular("left").multiply(pipe.width).sum(pipe.from.getOpposite().vec);
+        var rightTop = pipe.from.vec.sub(pipe.from.getOpposite().vec).normalize().perpendicular("right").multiply(pipe.width).sum(pipe.from.getOpposite().vec);
+        var leftBottom = pipe.to.vec.sub(pipe.to.getOpposite().vec).normalize().perpendicular("left").multiply(pipe.width).sum(pipe.to.getOpposite().vec);
+        var rightBottom = pipe.to.vec.sub(pipe.to.getOpposite().vec).normalize().perpendicular("right").multiply(pipe.width).sum(pipe.to.getOpposite().vec);
+        return [leftTop.x, leftTop.y, rightBottom.x, rightBottom.y, rightTop.x, rightTop.y, rightBottom.x, rightBottom.y, rightTop.x, rightTop.y, leftBottom.x, leftBottom.y];
     };
     Canvas.prototype.initCanvasContainer = function () {
         if (!this.container) return;
@@ -1683,7 +1720,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../math/m3":23,"../../shaders/shader":24}],18:[function(require,module,exports){
+},{"../../math/m3":23,"../../shaders/shader":24,"../models/heating/pipe.model":12}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1734,9 +1771,9 @@ var vect_1 = require("../geometry/vect");
 var fittingModel = function fittingModel(model) {
     var pipes = model.pipes;
     var step = model.config.net.step / 2;
-    // _2Pipes(model, pipes, step);
-    // _3Pipes(model, pipes, step);s
-    performanceCheck(model, pipes, step);
+    _2Pipes(model, pipes, step);
+    // _3Pipes(model, pipes, step);
+    // performanceCheck(model, pipes, step);
 };
 exports.fittingModel = fittingModel;
 var _2Pipes = function _2Pipes(model, pipes, step) {
