@@ -1,28 +1,13 @@
-import { IVec, Vector } from "../../geometry/vect";
 import CanvasModel from "../models/canvas.model";
-import PipeView from "./pipe.view";
-import ValveView from "./valve.view";
-import FittingView from "./fitting.view";
-import RadiatorView from "./radiator.view";
 import Pipe from "../models/heating/pipe.model";
-import PipeGhost from "../models/ghost/heating/pipe.model";
-import Wall from "../models/architecture/wall.model";
-import Radiator from "../models/heating/radiator.model";
-import Valve from "../models/heating/valve.model";
-import ValveGhostModel from "../models/ghost/heating/valve.model";
-import Fitting from "../models/heating/fitting.model";
-import PipeGhostModel from "../models/ghost/heating/pipe.model";
-import RadiatorModel from "../models/ghost/heating/radiator.model";
 import { fragment, vertex } from "../../shaders/shader";
 import { m3 } from "../../math/m3";
+import Fitting from "../models/heating/fitting.model";
+import { Vector } from "../../geometry/vect";
 
 class Canvas {
   model: CanvasModel;
   container: HTMLCanvasElement | null;
-  pipe: PipeView | null = null;
-  valve: ValveView | null = null;
-  fitting: FittingView | null = null;
-  radiator: RadiatorView | null = null;
   gl: WebGLRenderingContext | null = null;
   programInfo: any;
   objects: Array<{
@@ -30,12 +15,13 @@ class Canvas {
     program: WebGLProgram;
     attribLocations: {
       vertexPosition: number;
+      vertexColor: number;
     };
     uniformLocations: {
       resolutionLocation: WebGLUniformLocation | null;
       matrixLocation: WebGLUniformLocation | null;
     };
-    buffer: { position: WebGLBuffer } | undefined;
+    buffer: { position: WebGLBuffer; count: number } | undefined;
   }> = [];
 
   constructor(model: CanvasModel) {
@@ -62,31 +48,33 @@ class Canvas {
 
     let { gl } = this;
 
-    this.model.pipes.map((pipe) => {
-      let shaderProgram = this.initShaderProgram(gl, vertex(), fragment());
+    let shaderProgram = this.initShaderProgram(gl, vertex(), fragment());
 
-      if (!shaderProgram) return;
+    if (!shaderProgram) return;
 
-      let buffer = this.initBuffers(gl, pipe);
+    let buffer = this.initBuffers(gl, [
+      ...this.model.pipes,
+      ...this.model.fittings,
+    ]);
 
-      let programInfo = {
-        objectID: pipe.id,
-        program: shaderProgram,
-        attribLocations: {
-          vertexPosition: gl.getAttribLocation(shaderProgram, "a_position"),
-        },
-        uniformLocations: {
-          resolutionLocation: gl.getUniformLocation(
-            shaderProgram,
-            "u_resolution"
-          ),
-          matrixLocation: gl.getUniformLocation(shaderProgram, "u_matrix"),
-        },
-        buffer: buffer,
-      };
+    let programInfo = {
+      objectID: "asd",
+      program: shaderProgram,
+      attribLocations: {
+        vertexPosition: gl.getAttribLocation(shaderProgram, "a_position"),
+        vertexColor: gl.getAttribLocation(shaderProgram, "a_color"),
+      },
+      uniformLocations: {
+        resolutionLocation: gl.getUniformLocation(
+          shaderProgram,
+          "u_resolution"
+        ),
+        matrixLocation: gl.getUniformLocation(shaderProgram, "u_matrix"),
+      },
+      buffer: buffer,
+    };
 
-      this.objects.push(programInfo);
-    });
+    this.objects.push(programInfo);
 
     if (!this.objects) return;
 
@@ -103,8 +91,6 @@ class Canvas {
         return p.objectID !== pipe.id;
       });
 
-      console.log("newPipe", newPipe);
-
       if (newPipe) {
         let shaderProgram = initShaderProgram.bind(this)(
           gl,
@@ -114,13 +100,14 @@ class Canvas {
 
         if (!shaderProgram) return;
 
-        let buffer = initBuffers.bind(this)(gl, pipe);
+        let buffer = initBuffers.bind(this)(gl, []);
 
         let programInfo = {
           objectID: pipe.id,
           program: shaderProgram,
           attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, "a_position"),
+            vertexColor: gl.getAttribLocation(shaderProgram, "a_color"),
           },
           uniformLocations: {
             resolutionLocation: gl.getUniformLocation(
@@ -146,7 +133,6 @@ class Canvas {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     let { model } = this;
-
     objects.forEach(function (object) {
       if (!object || !object.buffer || !object.buffer.position) return;
 
@@ -160,6 +146,16 @@ class Canvas {
 
       gl.useProgram(programInfo);
       gl.enableVertexAttribArray(object.attribLocations.vertexPosition);
+
+      // gl.bindBuffer(gl.ARRAY_BUFFER, object.attribLocations.vertexColor);
+      // set the color
+      // gl.uniform4fv(object.attribLocations.vertexColor, color);
+
+      // {
+      //   var color = [Math.random(), Math.random(), Math.random(), 1];
+      //   // set the color
+      //   gl.uniform4fv(gl.getUniformLocation(object.program, "u_color"), color);
+      // }
 
       // Setup all the needed attributes.
       gl.bindBuffer(gl.ARRAY_BUFFER, object.buffer.position);
@@ -193,7 +189,7 @@ class Canvas {
         matrix
       );
       // Draw
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      gl.drawArrays(gl.TRIANGLES, 0, object.buffer.count);
     });
   }
 
@@ -234,15 +230,8 @@ class Canvas {
 
     if (!shader) return;
 
-    // Send the source to the shader object
-
     gl.shaderSource(shader, source);
-
-    // Compile the shader program
-
     gl.compileShader(shader);
-
-    // See if it compiled successfully
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
       alert(
@@ -257,25 +246,69 @@ class Canvas {
     return shader;
   }
 
-  initBuffers(gl: WebGLRenderingContext, object: Pipe | Fitting) {
+  initBuffers(gl: WebGLRenderingContext, objects: Array<Pipe | Fitting>) {
     const positionBuffer = gl.createBuffer();
-
+    // const colorBuffer = gl.createBuffer();
     if (!positionBuffer) return;
 
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 
     let positions: Array<number> = [];
+    let colors: Array<number> = [];
 
-    if (object instanceof Pipe)
-      positions =
-        this.createRect(
-          object
-        ); /*[x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2];*/
+    objects.map((object) => {
+      if (object instanceof Pipe) {
+        positions = positions.concat(this.createRect(object));
+        // colors = [
+        //   0.0,
+        //   0.0,
+        //   0.0,
+        //   0.0, // white
+        //   1.0,
+        //   1.0,
+        //   1.0,
+        //   1.0, // red
+        //   0.0,
+        //   0.0,
+        //   0.0,
+        //   0.0, // green
+        //   0.0,
+        //   0.0,
+        //   0.0,
+        //   0.0, // blue
+        // ];
+      }
+
+      // if (object instanceof Fitting) {
+      //   positions = positions.concat(this.createCircle(object));
+      //   colors = [
+      //     0,
+      //     0,
+      //     0,
+      //     0, // white
+      //     0,
+      //     0,
+      //     0,
+      //     0, // red
+      //     0,
+      //     0,
+      //     0,
+      //     0, // green
+      //     0,
+      //     0,
+      //     0,
+      //     0, // blue
+      //   ];
+      // }
+    });
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 
     return {
       position: positionBuffer,
+      count: positions.length,
     };
   }
 
@@ -320,6 +353,37 @@ class Canvas {
       leftBottom.x,
       leftBottom.y,
     ];
+  }
+
+  createCircle(fitting: Fitting) {
+    let ret: Array<number> = [];
+
+    const pieces = 12;
+    let i = 0;
+    let a = 360 / pieces;
+
+    while (i < pieces) {
+      let angle1 = (i * a * Math.PI) / 180;
+      let angle2 = ((i * a + a) * Math.PI) / 180;
+      let A = new Vector(0, 0);
+      let B = A.sub(new Vector(Math.cos(angle1), Math.sin(angle1))).multiply(
+        fitting.width
+      );
+      let C = A.sub(new Vector(Math.cos(angle2), Math.sin(angle2))).multiply(
+        fitting.width
+      );
+
+      A = A.sum(fitting.center);
+      B = B.sum(fitting.center);
+      C = C.sum(fitting.center);
+
+      ret.push(A.x, A.y, B.x, B.y, C.x, C.y);
+      i++;
+    }
+
+    console.log("ret", ret);
+
+    return ret;
   }
 
   initCanvasContainer(): void {

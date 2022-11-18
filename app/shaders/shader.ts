@@ -1,15 +1,4 @@
 export const vertex = () => {
-  //   return `
-  //    attribute vec4 aVertexPosition;
-  //
-  //    uniform mat4 uModelViewMatrix;
-  //    uniform mat4 uProjectionMatrix;
-  //
-  //    void main() {
-  //       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-  //    }
-  // `;
-
   return `
     attribute vec2 a_position;
 
@@ -36,8 +25,12 @@ export const vertex = () => {
 
 export const fragment = () => {
   return `
+    precision mediump float;
+
+    uniform vec4 a_color;
+    
     void main() {
-      gl_FragColor = vec4(0, 0, 0, 1);
+      gl_FragColor =vec4(1.0, 1.0, 1.0, 1.0);
     }
   `;
 };

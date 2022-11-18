@@ -1,7 +1,7 @@
-import Pipe from "../2d/models/heating/pipe.model";
-import { IVec, Vector } from "../geometry/vect";
-import CanvasModel from "../2d/models/canvas.model";
-import Line from "../2d/models/geometry/line.model";
+import Pipe from "../app/2d/models/heating/pipe.model";
+import { IVec, Vector } from "../app/geometry/vect";
+import CanvasModel from "../app/2d/models/canvas.model";
+import Line from "../app/2d/models/geometry/line.model";
 
 export const fittingModel = (model: CanvasModel) => {
   let pipes = model.pipes;
