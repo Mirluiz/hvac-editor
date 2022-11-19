@@ -29,6 +29,12 @@ var Canvas = /** @class */function () {
         e.preventDefault();
         this.model.scale.amount += -Math.sign(e.deltaY) * 0.1;
         this.model.scale.amount = Math.min(Math.max(0.5, this.model.scale.amount), 4);
+        if (this.model.scale.coord) {
+            this.model.scale.coord.x = e.offsetX;
+            this.model.scale.coord.y = e.offsetY;
+        } else {
+            this.model.scale.coord = { x: e.offsetX, y: e.offsetY, z: 0 };
+        }
     };
     Canvas.prototype.mouseDown = function (e) {
         if (e.button === 1) {
@@ -471,7 +477,9 @@ var Canvas = /** @class */function () {
     };
     //TODO: apply scale transformation here
     Canvas.prototype.getWorldCoordinates = function (x, y) {
-        return new vect_1.Vector((x - this.offset.x) * this.scale.amount, (y - this.offset.y) * this.scale.amount);
+        // console.log("this.offset.x", this.offset.x);
+        // return new Vector(x - this.offset.x, y - this.offset.y);
+        return new vect_1.Vector(x / this.scale.amount - this.offset.x, y / this.scale.amount - this.offset.y);
     };
     //x: (x + this.model.offset.x) * this.model.scale.amount * this.model.scale.coord.x,
     //       y: (y + this.model.offset.y)  * this.model.scale.amount,
@@ -874,7 +882,7 @@ var Fitting = /** @class */function (_super) {
         _this._pipes = [];
         _this.width = 20;
         _this.height = 20;
-        _this.color = [1, 1, 0];
+        _this.color = [0, 0, 0];
         _this.model = model;
         return _this;
     }
@@ -1654,7 +1662,28 @@ var Canvas = /** @class */function () {
             var scaleMatrix = m3_1.m3.scaling(model.scale.amount, model.scale.amount);
             // Multiply the matrices.
             var matrix = m3_1.m3.multiply(translationMatrix, rotationMatrix);
+            // if (model.scale.coord) {
+            //   matrix = m3.multiply(
+            //     matrix,
+            //     m3.translation(model.scale.coord.x, model.scale.coord.y)
+            //   );
+            // }
+            if (model.scale.coord) {
+                var wp = model.getWorldCoordinates(model.scale.coord.x, model.scale.coord.y);
+                console.log("wp", wp);
+                matrix = m3_1.m3.multiply(matrix, m3_1.m3.translation(wp.x, wp.y));
+            }
             matrix = m3_1.m3.multiply(matrix, scaleMatrix);
+            // if (model.scale.coord) {
+            //   matrix = m3.multiply(
+            //     matrix,
+            //     m3.translation(-model.scale.coord.x, -model.scale.coord.y)
+            //   );
+            // }
+            if (model.scale.coord) {
+                var wp = model.getWorldCoordinates(model.scale.coord.x, model.scale.coord.y);
+                matrix = m3_1.m3.multiply(matrix, m3_1.m3.translation(-wp.x, -wp.y));
+            }
             // Set the matrix.
             gl.uniformMatrix3fv(object.uniformLocations.matrixLocation, false, matrix);
             // Draw

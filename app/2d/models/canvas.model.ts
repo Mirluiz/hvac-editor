@@ -165,9 +165,11 @@ class Canvas {
 
   //TODO: apply scale transformation here
   getWorldCoordinates(x: number, y: number): IVec {
+    // console.log("this.offset.x", this.offset.x);
+    // return new Vector(x - this.offset.x, y - this.offset.y);
     return new Vector(
-      (x - this.offset.x) * this.scale.amount,
-      (y - this.offset.y) * this.scale.amount
+      x / this.scale.amount - this.offset.x,
+      y / this.scale.amount - this.offset.y
     );
   }
 

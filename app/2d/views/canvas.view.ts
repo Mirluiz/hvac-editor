@@ -175,11 +175,42 @@ class Canvas {
 
       let translationMatrix = m3.translation(model.offset.x, model.offset.y);
       let rotationMatrix = m3.rotation(0);
+
       let scaleMatrix = m3.scaling(model.scale.amount, model.scale.amount);
 
       // Multiply the matrices.
       let matrix = m3.multiply(translationMatrix, rotationMatrix);
+
+      // if (model.scale.coord) {
+      //   matrix = m3.multiply(
+      //     matrix,
+      //     m3.translation(model.scale.coord.x, model.scale.coord.y)
+      //   );
+      // }
+      if (model.scale.coord) {
+        let wp = model.getWorldCoordinates(
+          model.scale.coord.x,
+          model.scale.coord.y
+        );
+        console.log("wp", wp);
+        matrix = m3.multiply(matrix, m3.translation(wp.x, wp.y));
+      }
+
       matrix = m3.multiply(matrix, scaleMatrix);
+
+      // if (model.scale.coord) {
+      //   matrix = m3.multiply(
+      //     matrix,
+      //     m3.translation(-model.scale.coord.x, -model.scale.coord.y)
+      //   );
+      // }
+      if (model.scale.coord) {
+        let wp = model.getWorldCoordinates(
+          model.scale.coord.x,
+          model.scale.coord.y
+        );
+        matrix = m3.multiply(matrix, m3.translation(-wp.x, -wp.y));
+      }
 
       // Set the matrix.
       gl.uniformMatrix3fv(

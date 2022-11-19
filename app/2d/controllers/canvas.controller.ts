@@ -44,6 +44,13 @@ class Canvas {
       Math.max(0.5, this.model.scale.amount),
       4
     );
+
+    if (this.model.scale.coord) {
+      this.model.scale.coord.x = e.offsetX;
+      this.model.scale.coord.y = e.offsetY;
+    } else {
+      this.model.scale.coord = { x: e.offsetX, y: e.offsetY, z: 0 };
+    }
   }
 
   mouseDown(e: MouseEvent): void {
