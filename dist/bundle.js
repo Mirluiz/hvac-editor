@@ -546,7 +546,7 @@ var Arc = /** @class */function (_super) {
     function Arc(center) {
         var _this = _super.call(this) || this;
         _this.radius = 5;
-        _this.color = "#fff";
+        _this.color = [1, 1, 0];
         _this.width = 10;
         _this.center = center;
         return _this;
@@ -647,8 +647,8 @@ var Pipe = /** @class */function (_super) {
             }
         }) || this;
         _this.model = model;
-        _this.z = 10;
         return _this;
+        // this.z = 10;
     }
     Object.defineProperty(Pipe.prototype, "color", {
         get: function get() {
@@ -874,7 +874,7 @@ var Fitting = /** @class */function (_super) {
         _this._pipes = [];
         _this.width = 20;
         _this.height = 20;
-        _this.color = "black";
+        _this.color = [1, 1, 0];
         _this.model = model;
         return _this;
     }
@@ -973,7 +973,7 @@ var Pipe = /** @class */function (_super) {
     }
     Object.defineProperty(Pipe.prototype, "color", {
         get: function get() {
-            return this.type === "supply" ? "red" : "blue";
+            return this.type === "supply" ? [1, 0, 0] : [0, 0, 1];
         },
         enumerable: false,
         configurable: true
@@ -1343,7 +1343,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("../../utils");
 var Main = /** @class */function () {
     function Main() {
-        this.z = 0;
         this.id = (0, utils_1.uuid)();
     }
     return Main;
@@ -1659,7 +1658,8 @@ var Canvas = /** @class */function () {
             // Set the matrix.
             gl.uniformMatrix3fv(object.uniformLocations.matrixLocation, false, matrix);
             // Draw
-            gl.drawArrays(gl.TRIANGLES, 0, object.buffer.count);
+            // console.log(" object.buffer.count", object.buffer.count);
+            gl.drawArrays(gl.TRIANGLES, 0, object.buffer.count / 2);
         });
     };
     Canvas.prototype.initBuffers = function () {
@@ -1686,29 +1686,30 @@ var Canvas = /** @class */function () {
         };
     };
     Canvas.prototype.createBuffer = function (data) {
-        // Create a buffer object
-        var buffer_id;
+        var buffer;
         var gl = this.gl;
         if (!gl) return;
-        buffer_id = gl.createBuffer();
-        if (!buffer_id) {
-            console.log("error");
+        buffer = gl.createBuffer();
+        if (!buffer) {
+            console.error("buffer error");
             return null;
         }
-        // Make the buffer object the active buffer.
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer_id);
-        // Upload the data for this buffer object to the GPU.
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-        return buffer_id;
+        return buffer;
     };
     Canvas.prototype.createRect = function (pipe) {
         var leftTop = pipe.from.vec.sub(pipe.from.getOpposite().vec).normalize().perpendicular("left").multiply(pipe.width).sum(pipe.from.getOpposite().vec);
         var rightTop = pipe.from.vec.sub(pipe.from.getOpposite().vec).normalize().perpendicular("right").multiply(pipe.width).sum(pipe.from.getOpposite().vec);
         var leftBottom = pipe.to.vec.sub(pipe.to.getOpposite().vec).normalize().perpendicular("left").multiply(pipe.width).sum(pipe.to.getOpposite().vec);
         var rightBottom = pipe.to.vec.sub(pipe.to.getOpposite().vec).normalize().perpendicular("right").multiply(pipe.width).sum(pipe.to.getOpposite().vec);
+        var color = [];
+        new Array(6).fill(0).map(function () {
+            color.push.apply(color, pipe.color);
+        });
         return {
             vertices: [leftTop.x, leftTop.y, rightBottom.x, rightBottom.y, rightTop.x, rightTop.y, rightBottom.x, rightBottom.y, rightTop.x, rightTop.y, leftBottom.x, leftBottom.y],
-            colors: [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
+            colors: color
         };
     };
     Canvas.prototype.createCircle = function (fitting) {
@@ -1728,9 +1729,13 @@ var Canvas = /** @class */function () {
             ret.push(A.x, A.y, B.x, B.y, C.x, C.y);
             i++;
         }
+        var color = [];
+        new Array(pieces * 9).fill(0).map(function () {
+            color.push.apply(color, fitting.color);
+        });
         return {
             vertices: ret,
-            colors: new Array(pieces * 9).fill(0)
+            colors: color
         };
     };
     Canvas.prototype.initShaderProgram = function (gl, vsSource, fsSource) {

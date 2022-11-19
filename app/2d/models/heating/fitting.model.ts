@@ -13,7 +13,7 @@ class Fitting extends Arc {
   constructor(model: CanvasModel, center: IVec) {
     super(center);
 
-    this.color = "black";
+    this.color = [1, 1, 0];
     this.model = model;
   }
 

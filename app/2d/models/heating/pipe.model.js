@@ -52,7 +52,7 @@ var Pipe = /** @class */ (function (_super) {
     }
     Object.defineProperty(Pipe.prototype, "color", {
         get: function () {
-            return this.type === "supply" ? "red" : "blue";
+            return this.type === "supply" ? [1, 0, 0] : [0, 0, 1];
         },
         enumerable: false,
         configurable: true

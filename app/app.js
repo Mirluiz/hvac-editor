@@ -7,15 +7,15 @@ var _2d_1 = __importDefault(require("./2d"));
 var App = /** @class */ (function () {
     function App() {
         this._2d = new _2d_1.default();
-        // step() {
-        //   this._2d.canvas.view.draw();
-        //   window.requestAnimationFrame(this.step.bind(this));
-        // }
     }
     App.prototype.run = function () {
         window.app = this;
         this._2d.canvas.view.init();
-        // window.requestAnimationFrame(this.step.bind(this));
+        window.requestAnimationFrame(this.step.bind(this));
+    };
+    App.prototype.step = function () {
+        this._2d.canvas.view.drawScene();
+        window.requestAnimationFrame(this.step.bind(this));
     };
     return App;
 }());

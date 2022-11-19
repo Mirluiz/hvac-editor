@@ -41,8 +41,8 @@ var Pipe = /** @class */ (function (_super) {
             },
         }) || this;
         _this.model = model;
-        _this.z = 10;
         return _this;
+        // this.z = 10;
     }
     Object.defineProperty(Pipe.prototype, "color", {
         get: function () {

@@ -188,7 +188,8 @@ class Canvas {
         matrix
       );
       // Draw
-      gl.drawArrays(gl.TRIANGLES, 0, object.buffer.count);
+      // console.log(" object.buffer.count", object.buffer.count);
+      gl.drawArrays(gl.TRIANGLES, 0, object.buffer.count / 2);
     });
   }
 
@@ -220,27 +221,22 @@ class Canvas {
   }
 
   createBuffer(data: Float32Array) {
-    // Create a buffer object
-    let buffer_id;
-
+    let buffer;
     let { gl } = this;
 
     if (!gl) return;
 
-    buffer_id = gl.createBuffer();
+    buffer = gl.createBuffer();
 
-    if (!buffer_id) {
-      console.log("error");
+    if (!buffer) {
+      console.error("buffer error");
       return null;
     }
 
-    // Make the buffer object the active buffer.
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer_id);
-
-    // Upload the data for this buffer object to the GPU.
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
 
-    return buffer_id;
+    return buffer;
   }
 
   createRect(pipe: Pipe) {
@@ -269,6 +265,11 @@ class Canvas {
       .multiply(pipe.width)
       .sum(pipe.to.getOpposite().vec);
 
+    let color: Array<number> = [];
+    new Array(6).fill(0).map(() => {
+      color.push(...pipe.color);
+    });
+
     return {
       vertices: [
         leftTop.x,
@@ -285,7 +286,7 @@ class Canvas {
         leftBottom.x,
         leftBottom.y,
       ],
-      colors: [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+      colors: color,
     };
   }
 
@@ -314,9 +315,15 @@ class Canvas {
       ret.push(A.x, A.y, B.x, B.y, C.x, C.y);
       i++;
     }
+
+    let color: Array<number> = [];
+    new Array(pieces * 9).fill(0).map(() => {
+      color.push(...fitting.color);
+    });
+
     return {
       vertices: ret,
-      colors: new Array(pieces * 9).fill(0),
+      colors: color,
     };
   }
 

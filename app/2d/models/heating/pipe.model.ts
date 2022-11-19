@@ -56,7 +56,7 @@ class Pipe extends Line<IPipeEnd> {
   }
 
   get color() {
-    return this.type === "supply" ? "red" : "blue";
+    return this.type === "supply" ? [1, 0, 0] : [0, 0, 1];
   }
 
   toOrigin(): IVec {

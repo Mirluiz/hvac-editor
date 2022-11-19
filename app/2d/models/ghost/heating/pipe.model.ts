@@ -36,7 +36,7 @@ class Pipe extends Line<IGhostPipeEnd> {
     );
 
     this.model = model;
-    this.z = 10;
+    // this.z = 10;
   }
 
   get color() {

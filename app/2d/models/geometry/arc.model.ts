@@ -5,7 +5,7 @@ class Arc extends Main {
   radius: number = 5;
   center: IVec;
 
-  color: string = "#fff";
+  color: [number, number, number] = [1, 1, 0];
   width: number = 10;
 
   constructor(center: IVec) {

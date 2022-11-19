@@ -24,7 +24,7 @@ var Arc = /** @class */ (function (_super) {
     function Arc(center) {
         var _this = _super.call(this) || this;
         _this.radius = 5;
-        _this.color = "#fff";
+        _this.color = [1, 1, 0];
         _this.width = 10;
         _this.center = center;
         return _this;

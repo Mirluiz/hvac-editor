@@ -19,11 +19,11 @@ var Pipe = /** @class */ (function () {
         var to = this.canvas.model.getLocalCoordinates(pipe.to.vec.x, pipe.to.vec.y);
         this.ctx.moveTo(from.x, from.y);
         this.ctx.lineTo(to.x, to.y);
-        this.ctx.strokeStyle = pipe.color;
+        // this.ctx.strokeStyle = pipe.color;
         this.ctx.lineWidth = pipe.width;
         if (((_a = this.canvas.model.overlap.first) === null || _a === void 0 ? void 0 : _a.id) === pipe.id) {
             this.ctx.shadowBlur = 5;
-            this.ctx.shadowColor = pipe.color;
+            // this.ctx.shadowColor = pipe.color;
         }
         this.ctx.closePath();
         this.ctx.stroke();

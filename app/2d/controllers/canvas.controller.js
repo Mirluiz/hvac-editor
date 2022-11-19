@@ -24,8 +24,9 @@ var Canvas = /** @class */ (function () {
         }
     }
     Canvas.prototype.mouseWheel = function (e) {
-        // this.stats.render();
-        // this.view.draw();
+        e.preventDefault();
+        this.model.scale.amount += -Math.sign(e.deltaY) * 0.1;
+        this.model.scale.amount = Math.min(Math.max(0.5, this.model.scale.amount), 4);
     };
     Canvas.prototype.mouseDown = function (e) {
         if (e.button === 1) {
@@ -45,6 +46,7 @@ var Canvas = /** @class */ (function () {
                 break;
             case "pipe":
                 this.pipe.mouseDown();
+                this.view.update();
                 break;
             case "radiator":
             case "valve":
@@ -93,7 +95,7 @@ var Canvas = /** @class */ (function () {
                 break;
         }
         // this.stats.render();
-        // this.view.draw();
+        // this.view.update();
     };
     Canvas.prototype.mouseUp = function (e) {
         this.model.clicked = false;
