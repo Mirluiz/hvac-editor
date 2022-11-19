@@ -1,4 +1,4 @@
-import CanvasModel from "../../app/2d/models/canvas.model";
+import CanvasModel from "../../2d/models/canvas.model";
 import ToolbarView from "../view/toolbar.view";
 
 class Toolbar {

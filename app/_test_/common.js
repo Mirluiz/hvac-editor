@@ -18,10 +18,8 @@ var __importDefault =
   };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fittingModel = void 0;
-var pipe_model_1 = __importDefault(
-  require("../app/2d/models/heating/pipe.model")
-);
-var vect_1 = require("../app/geometry/vect");
+var pipe_model_1 = __importDefault(require("../2d/models/heating/pipe.model"));
+var vect_1 = require("../geometry/vect");
 var fittingModel = function (model) {
   var pipes = model.pipes;
   var step = model.config.net.step / 2;

@@ -9,10 +9,10 @@ var canvas_controller_1 = __importDefault(
   require("./controllers/canvas.controller")
 );
 var toolbar_controller_1 = __importDefault(
-  require("../../ui/controller/toolbar.controller")
+  require("../ui/controller/toolbar.controller")
 );
 var info_panel_controller_1 = __importDefault(
-  require("../../ui/controller/info-panel.controller")
+  require("../ui/controller/info-panel.controller")
 );
 var Controller = /** @class */ (function () {
   function Controller() {

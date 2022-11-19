@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vect_1 = require("../../geometry/vect");
 var valve_model_1 = __importDefault(require("./ghost/heating/valve.model"));
 var overlap_model_1 = __importDefault(require("../overlap.model"));
-var common_1 = require("../../../_test_/common");
+var common_1 = require("../../_test_/common");
 var radiator_model_1 = __importDefault(
   require("./ghost/heating/radiator.model")
 );

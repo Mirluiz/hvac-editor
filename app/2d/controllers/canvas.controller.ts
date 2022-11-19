@@ -37,8 +37,13 @@ class Canvas {
   }
 
   mouseWheel(e: WheelEvent) {
-    // this.stats.render();
-    // this.view.draw();
+    e.preventDefault();
+
+    this.model.scale.amount += -Math.sign(e.deltaY) * 0.1;
+    this.model.scale.amount = Math.min(
+      Math.max(0.5, this.model.scale.amount),
+      4
+    );
   }
 
   mouseDown(e: MouseEvent): void {

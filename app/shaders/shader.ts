@@ -1,9 +1,12 @@
 export const vertex = () => {
   return `
     attribute vec2 a_position;
+    attribute vec3 a_color;
 
     uniform vec2 u_resolution;
     uniform mat3 u_matrix;
+    
+    varying vec4 vColor;
     
     void main() {
         // Multiply the position by the matrix.
@@ -19,6 +22,7 @@ export const vertex = () => {
         vec2 clipSpace = zeroToTwo - 1.0;
       
         gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+        vColor =  vec4(a_color, 1.0);
     }
   `;
 };
@@ -26,11 +30,10 @@ export const vertex = () => {
 export const fragment = () => {
   return `
     precision mediump float;
-
-    uniform vec4 a_color;
+    varying vec4 vColor;
     
     void main() {
-      gl_FragColor =vec4(1.0, 1.0, 1.0, 1.0);
+      gl_FragColor = vColor;
     }
   `;
 };

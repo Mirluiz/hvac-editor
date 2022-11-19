@@ -21,7 +21,9 @@ class Canvas {
       resolutionLocation: WebGLUniformLocation | null;
       matrixLocation: WebGLUniformLocation | null;
     };
-    buffer: { position: WebGLBuffer; count: number } | undefined;
+    buffer:
+      | { position: WebGLBuffer; count: number; color: WebGLBuffer }
+      | undefined;
   }> = [];
 
   constructor(model: CanvasModel) {
@@ -52,10 +54,7 @@ class Canvas {
 
     if (!shaderProgram) return;
 
-    let buffer = this.initBuffers(gl, [
-      ...this.model.pipes,
-      ...this.model.fittings,
-    ]);
+    let buffer = this.initBuffers();
 
     let programInfo = {
       objectID: "asd",
@@ -100,7 +99,7 @@ class Canvas {
 
         if (!shaderProgram) return;
 
-        let buffer = initBuffers.bind(this)(gl, []);
+        let buffer = initBuffers.bind(this)();
 
         let programInfo = {
           objectID: pipe.id,
@@ -133,40 +132,40 @@ class Canvas {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     let { model } = this;
+
     objects.forEach(function (object) {
       if (!object || !object.buffer || !object.buffer.position) return;
 
-      var size = 2; // 2 components per iteration
-      var type = gl.FLOAT; // the data is 32bit floats
-      var normalize = false; // don't normalize the data
-      var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-      var offset = 0; // start at the beginning of the buffer
+      const { program } = object;
 
-      var programInfo = object.program;
-
-      gl.useProgram(programInfo);
-      gl.enableVertexAttribArray(object.attribLocations.vertexPosition);
-
-      // gl.bindBuffer(gl.ARRAY_BUFFER, object.attribLocations.vertexColor);
-      // set the color
-      // gl.uniform4fv(object.attribLocations.vertexColor, color);
-
-      // {
-      //   var color = [Math.random(), Math.random(), Math.random(), 1];
-      //   // set the color
-      //   gl.uniform4fv(gl.getUniformLocation(object.program, "u_color"), color);
-      // }
+      gl.useProgram(program);
 
       // Setup all the needed attributes.
-      gl.bindBuffer(gl.ARRAY_BUFFER, object.buffer.position);
-      gl.vertexAttribPointer(
-        object.attribLocations.vertexPosition,
-        size,
-        type,
-        normalize,
-        stride,
-        offset
-      );
+      {
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.buffer.position);
+        gl.vertexAttribPointer(
+          object.attribLocations.vertexPosition,
+          2,
+          gl.FLOAT,
+          false,
+          0,
+          0
+        );
+        gl.enableVertexAttribArray(object.attribLocations.vertexPosition);
+      }
+
+      {
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.buffer.color);
+        gl.vertexAttribPointer(
+          object.attribLocations.vertexColor,
+          3,
+          gl.FLOAT,
+          false,
+          0,
+          0
+        );
+        gl.enableVertexAttribArray(object.attribLocations.vertexColor);
+      }
 
       gl.uniform2f(
         object.uniformLocations.resolutionLocation,
@@ -180,7 +179,7 @@ class Canvas {
 
       // Multiply the matrices.
       let matrix = m3.multiply(translationMatrix, rotationMatrix);
-      // matrix = m3.multiply(matrix, scaleMatrix);
+      matrix = m3.multiply(matrix, scaleMatrix);
 
       // Set the matrix.
       gl.uniformMatrix3fv(
@@ -191,6 +190,134 @@ class Canvas {
       // Draw
       gl.drawArrays(gl.TRIANGLES, 0, object.buffer.count);
     });
+  }
+
+  initBuffers() {
+    let vertices: Array<number> = [];
+    let colors: Array<number> = [];
+
+    [...this.model.pipes, ...this.model.fittings].map((object) => {
+      if (object instanceof Pipe) {
+        vertices = vertices.concat(this.createRect(object).vertices);
+        colors = colors.concat(this.createRect(object).colors);
+      }
+      if (object instanceof Fitting) {
+        vertices = vertices.concat(this.createCircle(object).vertices);
+        colors = colors.concat(this.createCircle(object).colors);
+      }
+    });
+
+    let positionBuffer = this.createBuffer(new Float32Array(vertices));
+    let colorBuffer = this.createBuffer(new Float32Array(colors));
+
+    if (!positionBuffer || !colorBuffer) return;
+
+    return {
+      position: positionBuffer,
+      color: colorBuffer,
+      count: vertices.length,
+    };
+  }
+
+  createBuffer(data: Float32Array) {
+    // Create a buffer object
+    let buffer_id;
+
+    let { gl } = this;
+
+    if (!gl) return;
+
+    buffer_id = gl.createBuffer();
+
+    if (!buffer_id) {
+      console.log("error");
+      return null;
+    }
+
+    // Make the buffer object the active buffer.
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer_id);
+
+    // Upload the data for this buffer object to the GPU.
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+
+    return buffer_id;
+  }
+
+  createRect(pipe: Pipe) {
+    let leftTop = pipe.from.vec
+      .sub(pipe.from.getOpposite().vec)
+      .normalize()
+      .perpendicular("left")
+      .multiply(pipe.width)
+      .sum(pipe.from.getOpposite().vec);
+    let rightTop = pipe.from.vec
+      .sub(pipe.from.getOpposite().vec)
+      .normalize()
+      .perpendicular("right")
+      .multiply(pipe.width)
+      .sum(pipe.from.getOpposite().vec);
+    let leftBottom = pipe.to.vec
+      .sub(pipe.to.getOpposite().vec)
+      .normalize()
+      .perpendicular("left")
+      .multiply(pipe.width)
+      .sum(pipe.to.getOpposite().vec);
+    let rightBottom = pipe.to.vec
+      .sub(pipe.to.getOpposite().vec)
+      .normalize()
+      .perpendicular("right")
+      .multiply(pipe.width)
+      .sum(pipe.to.getOpposite().vec);
+
+    return {
+      vertices: [
+        leftTop.x,
+        leftTop.y,
+        rightBottom.x,
+        rightBottom.y,
+        rightTop.x,
+        rightTop.y,
+
+        rightBottom.x,
+        rightBottom.y,
+        rightTop.x,
+        rightTop.y,
+        leftBottom.x,
+        leftBottom.y,
+      ],
+      colors: [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+    };
+  }
+
+  createCircle(fitting: Fitting) {
+    let ret: Array<number> = [];
+
+    const pieces = 12;
+    let i = 0;
+    let a = 360 / pieces;
+
+    while (i < pieces) {
+      let angle1 = (i * a * Math.PI) / 180;
+      let angle2 = ((i * a + a) * Math.PI) / 180;
+      let A = new Vector(0, 0);
+      let B = A.sub(new Vector(Math.cos(angle1), Math.sin(angle1))).multiply(
+        fitting.width
+      );
+      let C = A.sub(new Vector(Math.cos(angle2), Math.sin(angle2))).multiply(
+        fitting.width
+      );
+
+      A = A.sum(fitting.center);
+      B = B.sum(fitting.center);
+      C = C.sum(fitting.center);
+
+      ret.push(A.x, A.y, B.x, B.y, C.x, C.y);
+      i++;
+    }
+    return {
+      vertices: ret,
+      colors: new Array(pieces * 9).fill(0),
+    };
   }
 
   initShaderProgram(
@@ -244,146 +371,6 @@ class Canvas {
     }
 
     return shader;
-  }
-
-  initBuffers(gl: WebGLRenderingContext, objects: Array<Pipe | Fitting>) {
-    const positionBuffer = gl.createBuffer();
-    // const colorBuffer = gl.createBuffer();
-    if (!positionBuffer) return;
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-
-    let positions: Array<number> = [];
-    let colors: Array<number> = [];
-
-    objects.map((object) => {
-      if (object instanceof Pipe) {
-        positions = positions.concat(this.createRect(object));
-        // colors = [
-        //   0.0,
-        //   0.0,
-        //   0.0,
-        //   0.0, // white
-        //   1.0,
-        //   1.0,
-        //   1.0,
-        //   1.0, // red
-        //   0.0,
-        //   0.0,
-        //   0.0,
-        //   0.0, // green
-        //   0.0,
-        //   0.0,
-        //   0.0,
-        //   0.0, // blue
-        // ];
-      }
-
-      // if (object instanceof Fitting) {
-      //   positions = positions.concat(this.createCircle(object));
-      //   colors = [
-      //     0,
-      //     0,
-      //     0,
-      //     0, // white
-      //     0,
-      //     0,
-      //     0,
-      //     0, // red
-      //     0,
-      //     0,
-      //     0,
-      //     0, // green
-      //     0,
-      //     0,
-      //     0,
-      //     0, // blue
-      //   ];
-      // }
-    });
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-    // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
-    return {
-      position: positionBuffer,
-      count: positions.length,
-    };
-  }
-
-  createRect(pipe: Pipe) {
-    let leftTop = pipe.from.vec
-      .sub(pipe.from.getOpposite().vec)
-      .normalize()
-      .perpendicular("left")
-      .multiply(pipe.width)
-      .sum(pipe.from.getOpposite().vec);
-    let rightTop = pipe.from.vec
-      .sub(pipe.from.getOpposite().vec)
-      .normalize()
-      .perpendicular("right")
-      .multiply(pipe.width)
-      .sum(pipe.from.getOpposite().vec);
-    let leftBottom = pipe.to.vec
-      .sub(pipe.to.getOpposite().vec)
-      .normalize()
-      .perpendicular("left")
-      .multiply(pipe.width)
-      .sum(pipe.to.getOpposite().vec);
-    let rightBottom = pipe.to.vec
-      .sub(pipe.to.getOpposite().vec)
-      .normalize()
-      .perpendicular("right")
-      .multiply(pipe.width)
-      .sum(pipe.to.getOpposite().vec);
-
-    return [
-      leftTop.x,
-      leftTop.y,
-      rightBottom.x,
-      rightBottom.y,
-      rightTop.x,
-      rightTop.y,
-
-      rightBottom.x,
-      rightBottom.y,
-      rightTop.x,
-      rightTop.y,
-      leftBottom.x,
-      leftBottom.y,
-    ];
-  }
-
-  createCircle(fitting: Fitting) {
-    let ret: Array<number> = [];
-
-    const pieces = 12;
-    let i = 0;
-    let a = 360 / pieces;
-
-    while (i < pieces) {
-      let angle1 = (i * a * Math.PI) / 180;
-      let angle2 = ((i * a + a) * Math.PI) / 180;
-      let A = new Vector(0, 0);
-      let B = A.sub(new Vector(Math.cos(angle1), Math.sin(angle1))).multiply(
-        fitting.width
-      );
-      let C = A.sub(new Vector(Math.cos(angle2), Math.sin(angle2))).multiply(
-        fitting.width
-      );
-
-      A = A.sum(fitting.center);
-      B = B.sum(fitting.center);
-      C = C.sum(fitting.center);
-
-      ret.push(A.x, A.y, B.x, B.y, C.x, C.y);
-      i++;
-    }
-
-    console.log("ret", ret);
-
-    return ret;
   }
 
   initCanvasContainer(): void {

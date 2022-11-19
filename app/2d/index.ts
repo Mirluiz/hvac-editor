@@ -1,7 +1,7 @@
 import CanvasController from "./controllers/canvas.controller";
-import Toolbar from "../../ui/controller/toolbar.controller";
+import Toolbar from "../ui/controller/toolbar.controller";
 import StatsView from "./views/stats.view";
-import InfoPanel from "../../ui/controller/info-panel.controller";
+import InfoPanel from "../ui/controller/info-panel.controller";
 
 class Controller {
   canvas: CanvasController = new CanvasController();
