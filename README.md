@@ -9,7 +9,7 @@ Features
 - duplication templates
 - Share project
 
-Starup project for HVAC system web-editor
+startup project for HVAC system web-editor
 
 current phase - testing webgl performance.
 
