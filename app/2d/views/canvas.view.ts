@@ -3,7 +3,7 @@ import Pipe from "../models/heating/pipe.model";
 import { fragment, vertex } from "../../shaders/shader";
 import { m3 } from "../../math/m3";
 import Fitting from "../models/heating/fitting.model";
-import { Vector } from "../../geometry/vect";
+import { IVec, Vector } from "../../geometry/vect";
 
 class Canvas {
   model: CanvasModel;
@@ -134,7 +134,13 @@ class Canvas {
     let { model } = this;
 
     objects.forEach(function (object) {
-      if (!object || !object.buffer || !object.buffer.position) return;
+      if (
+        !object ||
+        !object.buffer ||
+        !object.buffer.position ||
+        !model.canvasSize?.x
+      )
+        return;
 
       const { program } = object;
 
@@ -167,50 +173,15 @@ class Canvas {
         gl.enableVertexAttribArray(object.attribLocations.vertexColor);
       }
 
-      gl.uniform2f(
-        object.uniformLocations.resolutionLocation,
-        gl.canvas.width,
-        gl.canvas.height
+      let matrix = m3.projection(model.canvasSize.x, model.canvasSize.y);
+      let translationMatrix = m3.translation(
+        model.offset.x / model.canvasSize.x,
+        model.offset.y / model.canvasSize.y
       );
-
-      let translationMatrix = m3.translation(model.offset.x, model.offset.y);
-      let rotationMatrix = m3.rotation(0);
-
-      let scaleMatrix = m3.scaling(model.scale.amount, model.scale.amount);
-
-      // Multiply the matrices.
-      let matrix = m3.multiply(translationMatrix, rotationMatrix);
-
-      // if (model.scale.coord) {
-      //   matrix = m3.multiply(
-      //     matrix,
-      //     m3.translation(model.scale.coord.x, model.scale.coord.y)
-      //   );
-      // }
-      if (model.scale.coord) {
-        let wp = model.getWorldCoordinates(
-          model.scale.coord.x,
-          model.scale.coord.y
-        );
-        console.log("wp", wp);
-        matrix = m3.multiply(matrix, m3.translation(wp.x, wp.y));
-      }
-
-      matrix = m3.multiply(matrix, scaleMatrix);
-
-      // if (model.scale.coord) {
-      //   matrix = m3.multiply(
-      //     matrix,
-      //     m3.translation(-model.scale.coord.x, -model.scale.coord.y)
-      //   );
-      // }
-      if (model.scale.coord) {
-        let wp = model.getWorldCoordinates(
-          model.scale.coord.x,
-          model.scale.coord.y
-        );
-        matrix = m3.multiply(matrix, m3.translation(-wp.x, -wp.y));
-      }
+      // let rotationMatrix = m3.rotation(0);
+      // let scaleMatrix = m3.scaling(model.scale.amount, model.scale.amount);
+      matrix = m3.multiply(matrix, translationMatrix);
+      // matrix = m3.multiply(matrix, scaleMatrix);
 
       // Set the matrix.
       gl.uniformMatrix3fv(
@@ -228,15 +199,27 @@ class Canvas {
     let vertices: Array<number> = [];
     let colors: Array<number> = [];
 
-    [...this.model.pipes, ...this.model.fittings].map((object) => {
-      if (object instanceof Pipe) {
-        vertices = vertices.concat(this.createRect(object).vertices);
-        colors = colors.concat(this.createRect(object).colors);
-      }
-      if (object instanceof Fitting) {
-        vertices = vertices.concat(this.createCircle(object).vertices);
-        colors = colors.concat(this.createCircle(object).colors);
-      }
+    // [...this.model.pipes, ...this.model.fittings].map((object) => {
+    //   if (object instanceof Pipe) {
+    //     vertices = vertices.concat(this.createRect(object).vertices);
+    //     colors = colors.concat(this.createRect(object).colors);
+    //   }
+    //   if (object instanceof Fitting) {
+    //     vertices = vertices.concat(this.createCircle(object).vertices);
+    //     colors = colors.concat(this.createCircle(object).colors);
+    //   }
+    // });
+    [
+      new Vector(10, 10),
+      new Vector(100, 100),
+      new Vector(150, 150),
+      new Vector(250, 150),
+      new Vector(
+        (this.model?.canvasSize?.x ?? 0) / 2,
+        (this.model?.canvasSize?.y ?? 0) / 2
+      ),
+    ].map((object) => {
+      vertices = vertices.concat(this.createExampleCircle(object).vertices);
     });
 
     let positionBuffer = this.createBuffer(new Float32Array(vertices));
@@ -355,6 +338,34 @@ class Canvas {
     return {
       vertices: ret,
       colors: color,
+    };
+  }
+
+  createExampleCircle(center: IVec) {
+    let ret: Array<number> = [];
+
+    const pieces = 12;
+    let i = 0;
+    let a = 360 / pieces;
+
+    while (i < pieces) {
+      let angle1 = (i * a * Math.PI) / 180;
+      let angle2 = ((i * a + a) * Math.PI) / 180;
+      let A = new Vector(0, 0);
+      let B = A.sub(new Vector(Math.cos(angle1), Math.sin(angle1))).multiply(5);
+      let C = A.sub(new Vector(Math.cos(angle2), Math.sin(angle2))).multiply(5);
+
+      A = A.sum(center);
+      B = B.sum(center);
+      C = C.sum(center);
+
+      ret.push(A.x, A.y, B.x, B.y, C.x, C.y);
+      i++;
+    }
+
+    return {
+      vertices: ret,
+      colors: [],
     };
   }
 

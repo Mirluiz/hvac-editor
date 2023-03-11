@@ -53,7 +53,7 @@ class Canvas {
       show: true,
     },
     net: {
-      bind: true,
+      bind: false,
       show: true,
       step: 20,
     },

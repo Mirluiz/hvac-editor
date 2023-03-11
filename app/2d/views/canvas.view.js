@@ -1,21 +1,6 @@
 "use strict";
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
 var shader_1 = require("../../shaders/shader");
-var m3_1 = require("../../math/m3");
-var fitting_model_1 = __importDefault(require("../models/heating/fitting.model"));
 var vect_1 = require("../../geometry/vect");
 var Canvas = /** @class */ (function () {
     function Canvas(model) {
@@ -114,12 +99,12 @@ var Canvas = /** @class */ (function () {
                 gl.enableVertexAttribArray(object.attribLocations.vertexColor);
             }
             gl.uniform2f(object.uniformLocations.resolutionLocation, gl.canvas.width, gl.canvas.height);
-            var translationMatrix = m3_1.m3.translation(model.offset.x, model.offset.y);
-            var rotationMatrix = m3_1.m3.rotation(0);
-            var scaleMatrix = m3_1.m3.scaling(model.scale.amount, model.scale.amount);
-            // Multiply the matrices.
-            var matrix = m3_1.m3.multiply(translationMatrix, rotationMatrix);
-            matrix = m3_1.m3.multiply(matrix, scaleMatrix);
+            // console.log("model.offset", model.offset);
+            // let translationMatrix = m3.translation(model.offset.x, model.offset.y);
+            // let rotationMatrix = m3.rotation(0);
+            // let scaleMatrix = m3.scaling(model.scale.amount, model.scale.amount);
+            // let matrix = m3.multiply(translationMatrix, rotationMatrix);
+            // matrix = m3.multiply(matrix, scaleMatrix);
             // Set the matrix.
             gl.uniformMatrix3fv(object.uniformLocations.matrixLocation, false, matrix);
             // Draw
@@ -129,17 +114,27 @@ var Canvas = /** @class */ (function () {
     };
     Canvas.prototype.initBuffers = function () {
         var _this = this;
+        var _a, _b, _c, _d, _e, _f;
         var vertices = [];
         var colors = [];
-        __spreadArray(__spreadArray([], this.model.pipes, true), this.model.fittings, true).map(function (object) {
-            if (object instanceof pipe_model_1.default) {
-                vertices = vertices.concat(_this.createRect(object).vertices);
-                colors = colors.concat(_this.createRect(object).colors);
-            }
-            if (object instanceof fitting_model_1.default) {
-                vertices = vertices.concat(_this.createCircle(object).vertices);
-                colors = colors.concat(_this.createCircle(object).colors);
-            }
+        // [...this.model.pipes, ...this.model.fittings].map((object) => {
+        //   if (object instanceof Pipe) {
+        //     vertices = vertices.concat(this.createRect(object).vertices);
+        //     colors = colors.concat(this.createRect(object).colors);
+        //   }
+        //   if (object instanceof Fitting) {
+        //     vertices = vertices.concat(this.createCircle(object).vertices);
+        //     colors = colors.concat(this.createCircle(object).colors);
+        //   }
+        // });
+        [
+            new vect_1.Vector(10, 10),
+            new vect_1.Vector(100, 100),
+            new vect_1.Vector(150, 150),
+            new vect_1.Vector(250, 150),
+            new vect_1.Vector(((_c = (_b = (_a = this.model) === null || _a === void 0 ? void 0 : _a.canvasSize) === null || _b === void 0 ? void 0 : _b.x) !== null && _c !== void 0 ? _c : 0) / 2, ((_f = (_e = (_d = this.model) === null || _d === void 0 ? void 0 : _d.canvasSize) === null || _e === void 0 ? void 0 : _e.y) !== null && _f !== void 0 ? _f : 0) / 2),
+        ].map(function (object) {
+            vertices = vertices.concat(_this.createExampleCircle(object).vertices);
         });
         var positionBuffer = this.createBuffer(new Float32Array(vertices));
         var colorBuffer = this.createBuffer(new Float32Array(colors));
@@ -229,9 +224,35 @@ var Canvas = /** @class */ (function () {
             ret.push(A.x, A.y, B.x, B.y, C.x, C.y);
             i++;
         }
+        var color = [];
+        new Array(pieces * 9).fill(0).map(function () {
+            color.push.apply(color, fitting.color);
+        });
         return {
             vertices: ret,
-            colors: new Array(pieces * 9).fill(0),
+            colors: color,
+        };
+    };
+    Canvas.prototype.createExampleCircle = function (center) {
+        var ret = [];
+        var pieces = 12;
+        var i = 0;
+        var a = 360 / pieces;
+        while (i < pieces) {
+            var angle1 = (i * a * Math.PI) / 180;
+            var angle2 = ((i * a + a) * Math.PI) / 180;
+            var A = new vect_1.Vector(0, 0);
+            var B = A.sub(new vect_1.Vector(Math.cos(angle1), Math.sin(angle1))).multiply(5);
+            var C = A.sub(new vect_1.Vector(Math.cos(angle2), Math.sin(angle2))).multiply(5);
+            A = A.sum(center);
+            B = B.sum(center);
+            C = C.sum(center);
+            ret.push(A.x, A.y, B.x, B.y, C.x, C.y);
+            i++;
+        }
+        return {
+            vertices: ret,
+            colors: [],
         };
     };
     Canvas.prototype.initShaderProgram = function (gl, vsSource, fsSource) {

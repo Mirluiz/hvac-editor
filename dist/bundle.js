@@ -26,14 +26,92 @@ var Canvas = /** @class */function () {
         }
     }
     Canvas.prototype.mouseWheel = function (e) {
-        e.preventDefault();
-        this.model.scale.amount += -Math.sign(e.deltaY) * 0.1;
-        this.model.scale.amount = Math.min(Math.max(0.5, this.model.scale.amount), 4);
-        if (this.model.scale.coord) {
-            this.model.scale.coord.x = e.offsetX;
-            this.model.scale.coord.y = e.offsetY;
-        } else {
-            this.model.scale.coord = { x: e.offsetX, y: e.offsetY, z: 0 };
+        // e.preventDefault();
+        //
+        // let preZoom;
+        // let afterZoom;
+        //
+        // if (this.model.canvasSize) {
+        //   preZoom = {
+        //     x: this.model.canvasSize.x / this.model.scale.amount,
+        //     y: this.model.canvasSize.y / this.model.scale.amount,
+        //   };
+        // }
+        //
+        // this.model.scale.amount += -Math.sign(e.deltaY) * 0.1;
+        // this.model.scale.amount =
+        //   Math.round(Math.min(Math.max(0.5, this.model.scale.amount), 2) * 100) /
+        //   100;
+        //
+        // // let newZoom = this.model.scale.amount * Math.pow(2, e.deltaY * -0.1);
+        // // this.model.scale.amount = Math.min(Math.max(0.5, newZoom), 2);
+        //
+        // if (this.model.canvasSize) {
+        //   afterZoom = {
+        //     x: this.model.canvasSize.x / this.model.scale.amount,
+        //     y: this.model.canvasSize.y / this.model.scale.amount,
+        //   };
+        // }
+        //
+        // if (this.model.scale.coord) {
+        //   this.model.scale.coord.x = e.offsetX;
+        //   this.model.scale.coord.y = e.offsetY;
+        // } else {
+        //   this.model.scale.coord = { x: e.offsetX, y: e.offsetY, z: 0 };
+        // }
+        //
+        // let limitReached =
+        //   Math.abs(this.model.scale.amount - 0.5) < Number.EPSILON ||
+        //   Math.abs(this.model.scale.amount - 2) < Number.EPSILON;
+        //
+        // if (limitReached) return;
+        //
+        // if (
+        //   preZoom &&
+        //   afterZoom &&
+        //   this.model.canvasSize &&
+        //   this.model.scale.coord
+        // ) {
+        //   let ratioX =
+        //     Math.round((this.model.scale.coord.x / this.model.canvasSize.x) * 100) /
+        //     100;
+        //   let ratioY =
+        //     Math.round((this.model.scale.coord.y / this.model.canvasSize.y) * 100) /
+        //     100;
+        //   this.model.offset.x +=
+        //     Math.sign(e.deltaY) * (this.model.canvasSize.x * 0.1) * ratioX;
+        //   this.model.offset.y +=
+        //     Math.sign(e.deltaY) * (this.model.canvasSize.y * 0.1) * ratioY;
+        // }
+    };
+    Canvas.prototype.uF = function () {
+        var preZoom;
+        var afterZoom;
+        // this.model.scale.amount = 1;
+        if (this.model.canvasSize) {
+            preZoom = {
+                x: this.model.canvasSize.x / this.model.scale.amount,
+                y: this.model.canvasSize.y / this.model.scale.amount
+            };
+        }
+        this.model.scale.amount = this.model.scale.amount - 0.1;
+        // this.model.scale.amount = 0.8;
+        if (this.model.canvasSize) {
+            afterZoom = {
+                x: this.model.canvasSize.x / this.model.scale.amount,
+                y: this.model.canvasSize.y / this.model.scale.amount
+            };
+        }
+        if (preZoom && afterZoom && this.model.canvasSize) {
+            this.model.offset.x += this.model.canvasSize.x * 0.1 * 0.14;
+            // (afterZoom.x - preZoom.x) * 0.5 * this.model.scale.amount;
+            this.model.offset.y += this.model.canvasSize.y * 0.1 * 0.14;
+            // (afterZoom.y - preZoom.y) * 0.5 * this.model.scale.amount;
+            console.log("");
+            console.log("amount", this.model.scale.amount);
+            console.log("diff", afterZoom.x - preZoom.x);
+            console.log("diff result", (afterZoom.x - preZoom.x) * 0.5 * this.model.scale.amount, (afterZoom.y - preZoom.y) * 0.5 * this.model.scale.amount);
+            console.log("");
         }
     };
     Canvas.prototype.mouseDown = function (e) {
@@ -365,7 +443,7 @@ var Canvas = /** @class */function () {
                 show: true
             },
             net: {
-                bind: true,
+                bind: false,
                 show: true,
                 step: 20
             },
@@ -1546,23 +1624,9 @@ exports.default = Overlap;
 },{"../geometry/vect":21}],17:[function(require,module,exports){
 "use strict";
 
-var __spreadArray = undefined && undefined.__spreadArray || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-var __importDefault = undefined && undefined.__importDefault || function (mod) {
-    return mod && mod.__esModule ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var pipe_model_1 = __importDefault(require("../models/heating/pipe.model"));
 var shader_1 = require("../../shaders/shader");
 var m3_1 = require("../../math/m3");
-var fitting_model_1 = __importDefault(require("../models/heating/fitting.model"));
 var vect_1 = require("../../geometry/vect");
 var Canvas = /** @class */function () {
     function Canvas(model) {
@@ -1642,7 +1706,8 @@ var Canvas = /** @class */function () {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         var model = this.model;
         objects.forEach(function (object) {
-            if (!object || !object.buffer || !object.buffer.position) return;
+            var _a;
+            if (!object || !object.buffer || !object.buffer.position || !((_a = model.canvasSize) === null || _a === void 0 ? void 0 : _a.x)) return;
             var program = object.program;
             gl.useProgram(program);
             // Setup all the needed attributes.
@@ -1656,34 +1721,12 @@ var Canvas = /** @class */function () {
                 gl.vertexAttribPointer(object.attribLocations.vertexColor, 3, gl.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(object.attribLocations.vertexColor);
             }
-            gl.uniform2f(object.uniformLocations.resolutionLocation, gl.canvas.width, gl.canvas.height);
-            var translationMatrix = m3_1.m3.translation(model.offset.x, model.offset.y);
-            var rotationMatrix = m3_1.m3.rotation(0);
-            var scaleMatrix = m3_1.m3.scaling(model.scale.amount, model.scale.amount);
-            // Multiply the matrices.
-            var matrix = m3_1.m3.multiply(translationMatrix, rotationMatrix);
-            // if (model.scale.coord) {
-            //   matrix = m3.multiply(
-            //     matrix,
-            //     m3.translation(model.scale.coord.x, model.scale.coord.y)
-            //   );
-            // }
-            if (model.scale.coord) {
-                var wp = model.getWorldCoordinates(model.scale.coord.x, model.scale.coord.y);
-                console.log("wp", wp);
-                matrix = m3_1.m3.multiply(matrix, m3_1.m3.translation(wp.x, wp.y));
-            }
-            matrix = m3_1.m3.multiply(matrix, scaleMatrix);
-            // if (model.scale.coord) {
-            //   matrix = m3.multiply(
-            //     matrix,
-            //     m3.translation(-model.scale.coord.x, -model.scale.coord.y)
-            //   );
-            // }
-            if (model.scale.coord) {
-                var wp = model.getWorldCoordinates(model.scale.coord.x, model.scale.coord.y);
-                matrix = m3_1.m3.multiply(matrix, m3_1.m3.translation(-wp.x, -wp.y));
-            }
+            var matrix = m3_1.m3.projection(model.canvasSize.x, model.canvasSize.y);
+            var translationMatrix = m3_1.m3.translation(model.offset.x / model.canvasSize.x, model.offset.y / model.canvasSize.y);
+            // let rotationMatrix = m3.rotation(0);
+            // let scaleMatrix = m3.scaling(model.scale.amount, model.scale.amount);
+            matrix = m3_1.m3.multiply(matrix, translationMatrix);
+            // matrix = m3.multiply(matrix, scaleMatrix);
             // Set the matrix.
             gl.uniformMatrix3fv(object.uniformLocations.matrixLocation, false, matrix);
             // Draw
@@ -1693,17 +1736,21 @@ var Canvas = /** @class */function () {
     };
     Canvas.prototype.initBuffers = function () {
         var _this = this;
+        var _a, _b, _c, _d, _e, _f;
         var vertices = [];
         var colors = [];
-        __spreadArray(__spreadArray([], this.model.pipes, true), this.model.fittings, true).map(function (object) {
-            if (object instanceof pipe_model_1.default) {
-                vertices = vertices.concat(_this.createRect(object).vertices);
-                colors = colors.concat(_this.createRect(object).colors);
-            }
-            if (object instanceof fitting_model_1.default) {
-                vertices = vertices.concat(_this.createCircle(object).vertices);
-                colors = colors.concat(_this.createCircle(object).colors);
-            }
+        // [...this.model.pipes, ...this.model.fittings].map((object) => {
+        //   if (object instanceof Pipe) {
+        //     vertices = vertices.concat(this.createRect(object).vertices);
+        //     colors = colors.concat(this.createRect(object).colors);
+        //   }
+        //   if (object instanceof Fitting) {
+        //     vertices = vertices.concat(this.createCircle(object).vertices);
+        //     colors = colors.concat(this.createCircle(object).colors);
+        //   }
+        // });
+        [new vect_1.Vector(10, 10), new vect_1.Vector(100, 100), new vect_1.Vector(150, 150), new vect_1.Vector(250, 150), new vect_1.Vector(((_c = (_b = (_a = this.model) === null || _a === void 0 ? void 0 : _a.canvasSize) === null || _b === void 0 ? void 0 : _b.x) !== null && _c !== void 0 ? _c : 0) / 2, ((_f = (_e = (_d = this.model) === null || _d === void 0 ? void 0 : _d.canvasSize) === null || _e === void 0 ? void 0 : _e.y) !== null && _f !== void 0 ? _f : 0) / 2)].map(function (object) {
+            vertices = vertices.concat(_this.createExampleCircle(object).vertices);
         });
         var positionBuffer = this.createBuffer(new Float32Array(vertices));
         var colorBuffer = this.createBuffer(new Float32Array(colors));
@@ -1767,6 +1814,28 @@ var Canvas = /** @class */function () {
             colors: color
         };
     };
+    Canvas.prototype.createExampleCircle = function (center) {
+        var ret = [];
+        var pieces = 12;
+        var i = 0;
+        var a = 360 / pieces;
+        while (i < pieces) {
+            var angle1 = i * a * Math.PI / 180;
+            var angle2 = (i * a + a) * Math.PI / 180;
+            var A = new vect_1.Vector(0, 0);
+            var B = A.sub(new vect_1.Vector(Math.cos(angle1), Math.sin(angle1))).multiply(5);
+            var C = A.sub(new vect_1.Vector(Math.cos(angle2), Math.sin(angle2))).multiply(5);
+            A = A.sum(center);
+            B = B.sum(center);
+            C = C.sum(center);
+            ret.push(A.x, A.y, B.x, B.y, C.x, C.y);
+            i++;
+        }
+        return {
+            vertices: ret,
+            colors: []
+        };
+    };
     Canvas.prototype.initShaderProgram = function (gl, vsSource, fsSource) {
         var vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
         var fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
@@ -1812,7 +1881,7 @@ var Canvas = /** @class */function () {
 }();
 exports.default = Canvas;
 
-},{"../../geometry/vect":21,"../../math/m3":23,"../../shaders/shader":24,"../models/heating/fitting.model":11,"../models/heating/pipe.model":12}],18:[function(require,module,exports){
+},{"../../geometry/vect":21,"../../math/m3":23,"../../shaders/shader":24}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2555,6 +2624,7 @@ var App = /** @class */function () {
     App.prototype.run = function () {
         window.app = this;
         this._2d.canvas.view.init();
+        this._2d.canvas.view.drawScene();
         window.requestAnimationFrame(this.step.bind(this));
     };
     App.prototype.step = function () {
@@ -2726,37 +2796,23 @@ app.run();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.m3 = void 0;
 exports.m3 = {
+    identity: function identity() {
+        return [1, 0, 0, 0, 1, 0, 0, 0, 1];
+    },
+    projection: function projection(width, height) {
+        // prettier-ignore
+        return [2 / width, 0, 0, 0, -2 / height, 0, -1, 1, 1];
+    },
     translation: function translation(tx, ty) {
+        // prettier-ignore
         return [1, 0, 0, 0, 1, 0, tx, ty, 1];
     },
-    rotation: function rotation(angleInRadians) {
-        var c = Math.cos(angleInRadians);
-        var s = Math.sin(angleInRadians);
-        return [c, -s, 0, s, c, 0, 0, 0, 1];
-    },
-    scaling: function scaling(sx, sy) {
-        return [sx, 0, 0, 0, sy, 0, 0, 0, 1];
-    },
     multiply: function multiply(a, b) {
-        var a00 = a[0 * 3 + 0];
-        var a01 = a[0 * 3 + 1];
-        var a02 = a[0 * 3 + 2];
-        var a10 = a[1 * 3 + 0];
-        var a11 = a[1 * 3 + 1];
-        var a12 = a[1 * 3 + 2];
-        var a20 = a[2 * 3 + 0];
-        var a21 = a[2 * 3 + 1];
-        var a22 = a[2 * 3 + 2];
-        var b00 = b[0 * 3 + 0];
-        var b01 = b[0 * 3 + 1];
-        var b02 = b[0 * 3 + 2];
-        var b10 = b[1 * 3 + 0];
-        var b11 = b[1 * 3 + 1];
-        var b12 = b[1 * 3 + 2];
-        var b20 = b[2 * 3 + 0];
-        var b21 = b[2 * 3 + 1];
-        var b22 = b[2 * 3 + 2];
-        return [b00 * a00 + b01 * a10 + b02 * a20, b00 * a01 + b01 * a11 + b02 * a21, b00 * a02 + b01 * a12 + b02 * a22, b10 * a00 + b11 * a10 + b12 * a20, b10 * a01 + b11 * a11 + b12 * a21, b10 * a02 + b11 * a12 + b12 * a22, b20 * a00 + b21 * a10 + b22 * a20, b20 * a01 + b21 * a11 + b22 * a21, b20 * a02 + b21 * a12 + b22 * a22];
+        return a.map(function (number, index) {
+            var offsetX = 3 * Math.floor(index / 3);
+            var offsetY = index % 3;
+            return a[offsetX] * b[offsetY] + a[offsetX + 1] * b[3 + offsetY] + a[offsetX + 2] * b[6 + offsetY];
+        });
     }
 };
 
@@ -2766,7 +2822,7 @@ exports.m3 = {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fragment = exports.vertex = void 0;
 var vertex = function vertex() {
-    return "\n    attribute vec2 a_position;\n    attribute vec3 a_color;\n\n    uniform vec2 u_resolution;\n    uniform mat3 u_matrix;\n    \n    varying vec4 vColor;\n    \n    void main() {\n        // Multiply the position by the matrix.\n        vec2 position = (u_matrix * vec3(a_position, 1)).xy;\n      \n        // convert the position from pixels to 0.0 to 1.0\n        vec2 zeroToOne = position / u_resolution;\n      \n        // convert from 0->1 to 0->2\n        vec2 zeroToTwo = zeroToOne * 2.0;\n      \n        // convert from 0->2 to -1->+1 (clipspace)\n        vec2 clipSpace = zeroToTwo - 1.0;\n      \n        gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);\n        vColor =  vec4(a_color, 1.0);\n    }\n  ";
+    return "\n    attribute vec2 a_position;\n    attribute vec3 a_color;\n    varying vec4 vColor;\n    \n    uniform mat3 u_matrix;\n    \n    void main() {\n        gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);\n        // gl_Position = vec4(a_position, 0, 1);\n        vColor =  vec4(a_color, 1.0);\n    }\n  ";
 };
 exports.vertex = vertex;
 var fragment = function fragment() {
